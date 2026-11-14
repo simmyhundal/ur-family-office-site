@@ -17,7 +17,7 @@ Each page is `folder/index.html` with relative links, so it works under any sub-
 - `js/calc.mjs` is the maths, `js/app.js` the page. `data/universe.json` lists the tickers offered.
 - **Prices:** `scripts/fetch_site_prices.py` writes `data/prices.json` (not committed). The GitHub Actions workflow runs it on every deploy and on weekdays, then publishes `site/` to Pages. Without that file the page uses invented demo prices (`scripts/make_demo_prices.py`). Visitors can also load their own CSV.
 - **Copy of the prices:** each workflow run also pushes `prices.json` to the `prices` branch. `scripts/build_single_page.py PRICES OUT.html` builds the **Try page** as one file (style, scripts and prices inlined; the nav links to other pages are dropped).
-- **Pages:** on (Settings > Pages > Source: GitHub Actions). Address: https://simmyhundal.github.io/ur-family-office-site/
+- **Pages:** published from the public repo https://github.com/simmyhundal/ur-family-office-site (its own workflow fetches prices and deploys). Address: https://simmyhundal.github.io/ur-family-office-site/. Edits here reach it through `.github/workflows/sync-site.yml` (this repo is private).
 - **Locally:** `cd site && python -m http.server 8000` (page paths work at the root too, since all links are relative).
 - **Tests:** `node --test tests/site/*.test.mjs` and `pytest` (parity with `src/ufo/performance/metrics.py`, and the price builder).
 - Information only, not advice.
