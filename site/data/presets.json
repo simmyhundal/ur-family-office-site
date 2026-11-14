@@ -1,0 +1,5 @@
+[
+ {"name": "Broad US stocks", "weights": {"VTI": 100}},
+ {"name": "Classic 60/40", "weights": {"VTI": 60, "BND": 40}},
+ {"name": "Global three-fund", "weights": {"VTI": 50, "VXUS": 30, "BND": 20}}
+]

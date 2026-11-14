@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try it · UFO</title>
+<meta name="description" content="Enter a mix of funds and compare it with a benchmark like SPY. Runs in your browser.">
+<meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0b1c" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../css/try-tools.css">
+<script>document.documentElement.className = "js";</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head"><div class="wrap head-row">
+  <a class="brand" href="../" aria-label="UFO, home"><img class="brand-mark" src="../img/logo.svg" alt="" width="36" height="36"><span class="brand-tag">A higher view of your money</span></a>
+  <nav class="main-nav" aria-label="Main"><a href="../try/" aria-current="page">Try it</a><a href="../learn/">Learn</a><a href="../teach/">Teach</a><a href="../pricing/">Pricing</a><a href="../about/">About</a></nav>
+  <a class="nav-cta" href="../signup/">Sign up</a>
+</div></header>
+<main id="main">
+
+<div class="page-top mesh try-top">
+<div class="wrap">
+  <p id="data-banner" class="banner" role="status"></p>
+  <div class="result-card glass">
+  <section class="summary" aria-live="polite">
+    <span class="eyebrow">Your result</span>
+    <h1 id="headline">Loading prices…</h1>
+    <p class="sub" id="headline-sub"></p>
+    <div id="hl-stats" class="hl-stats"></div>
+  </section>
+  <p id="error" class="error" role="alert"></p>
+  <figure class="chart-fig">
+    <div class="chart-head">
+      <figcaption id="chart-title">Value over time</figcaption>
+      <div id="legend" class="legend"></div>
+    </div>
+    <div id="chart" class="chart" tabindex="0" role="img" aria-labelledby="chart-title chart-desc"></div>
+    <p id="chart-desc" class="sr-only"></p>
+  </figure>
+  </div>
+</div>
+</div>
+<div class="wrap">
+  <p id="link-note" class="banner" role="status" hidden><b>Opened from a shared link.</b> It carried only percentages, a benchmark and a time window. Deposits are yours to set under “Your mix and settings”.</p>
+  <div class="tool-bar">
+    <button type="button" id="save-mix" class="secondary">Save this mix</button>
+    <button type="button" id="share-open" class="secondary" aria-expanded="false" aria-controls="share-panel">Share…</button>
+    <span id="save-status" class="muted small" role="status"></span>
+  </div>
+  <section id="share-panel" class="share-panel" hidden aria-labelledby="share-h">
+    <h3 id="share-h">What you would share</h3>
+    <div class="share-grid">
+      <canvas id="share-card" width="1200" height="630" role="img" aria-label="Preview of the share card"></canvas>
+      <div>
+        <label class="field"><span class="lbl">Link</span><input id="share-link" readonly aria-describedby="share-what"></label>
+        <p id="share-what" class="muted small"></p>
+        <div class="controls">
+          <button type="button" id="share-copy" class="secondary">Copy link</button>
+          <button type="button" id="share-png" class="secondary">Download card (PNG)</button>
+        </div>
+        <p class="muted small">Nothing is uploaded. The link and the card are made in your browser; you decide where to paste them.</p>
+      </div>
+    </div>
+  </section>
+  <p id="sample-note" class="banner" role="status" hidden><b>Sample portfolio.</b> An invented person (“Sample MBA student”): $2,000 to start, then $500 a month into a made-up mix of funds. The prices are real; the person is not. Open “Your mix” to try your own.</p>
+  <aside id="next-step" class="next-step" hidden aria-labelledby="ns-title">
+    <div class="ns-copy">
+      <span class="eyebrow">What next</span>
+      <h2 id="ns-title"></h2>
+      <p id="ns-body" class="muted"></p>
+      <p id="ns-ask" class="ns-ask"></p>
+      <div class="ns-actions">
+        <a class="btn" href="../signup/?plan=plus">Join the Plus list</a>
+        <a class="btn ghost" href="../#plus">See what Plus looks like</a>
+        <button type="button" id="ns-own" class="link">Try your own mix</button>
+      </div>
+    </div>
+    <a class="ns-learn" href="../learn/sharpe/"><span class="tag">Lesson</span><b>What is a Sharpe ratio?</b><span class="muted small">The number beside the return, in five short steps.</span></a>
+  </aside>
+
+  <details class="details">
+    <summary>Show details: full results</summary>
+    <div class="inner">
+      <p id="period-line" class="muted"></p>
+      <div class="cards" id="cards"></div>
+      <p id="verdict" class="verdict"></p>
+      <div id="benchmarks" class="bench-table"></div>
+      <button type="button" id="toggle-table" class="link" aria-expanded="false" aria-controls="table-wrap">Show month-by-month table</button>
+      <div id="table-wrap" hidden></div>
+    </div>
+  </details>
+
+  <details class="details" id="settings">
+    <summary>Your mix and settings</summary>
+    <div class="inner">
+      <div class="mix-head"><h3 id="mix-h" style="margin:0">Mix</h3><label class="inline">Start from <select id="preset"></select></label>
+        <button type="button" id="sample" class="secondary">Load the sample</button></div>
+      <div id="rows"></div>
+      <div class="row-actions"><button type="button" id="add-row" class="secondary">Add a fund</button><span id="weight-note" class="muted"></span></div>
+      <datalist id="tickers"></datalist>
+      <h3 style="margin-top:28px">Compare with</h3>
+      <div class="controls">
+        <label><span class="tip" tabindex="0" data-tip="A simple yardstick fund to measure against. SPY tracks the 500 biggest US companies (the S&amp;P 500).">Benchmark</span><input id="benchmark" list="tickers" autocomplete="off" spellcheck="false" value="SPY"></label>
+        <div class="field"><span id="years-l" class="lbl">History</span>
+          <div class="seg" role="group" aria-labelledby="years-l">
+            <button type="button" data-years="1">1y</button><button type="button" data-years="3">3y</button>
+            <button type="button" data-years="5" aria-pressed="true">5y</button><button type="button" data-years="10">10y</button>
+            <button type="button" data-years="99">Max</button></div></div>
+        <label><span class="tip" tabindex="0" data-tip="Buy and hold never trades. Rebalancing sells what grew and buys what lagged, to get back to your weights, every year or month.">Style</span><select id="strategy">
+          <option value="hold">Buy and hold</option><option value="annual">Rebalance yearly</option><option value="monthly">Rebalance monthly</option></select></label>
+        <label><span class="tip" tabindex="0" data-tip="The amount invested on the first day.">Start ($)</span><input id="initial" type="number" min="1" step="100" value="10000" inputmode="decimal"></label>
+        <label><span class="tip" tabindex="0" data-tip="Money added at the end of every month, split by your weights.">Add monthly ($)</span><input id="monthly" type="number" min="0" step="50" value="0" inputmode="decimal"></label>
+      </div>
+      <h3 style="margin-top:28px">My portfolios</h3>
+      <p class="muted small">Saved in this browser only. Nothing is sent anywhere.</p>
+      <ul id="saved-list" class="saved-list"></ul>
+      <p id="saved-empty" class="muted small">None yet. Use “Save this mix” under the chart.</p>
+      <button type="button" id="clear-all" class="link">Clear everything saved on this device</button>
+      <h3 style="margin-top:28px">Start from your holdings</h3>
+      <p class="muted small">Drop a positions file and it becomes a mix, by weight. Dollar amounts are used to work out the percentages and then forgotten; they are not saved or shared. Parsed in your browser.</p>
+      <div id="drop" class="drop" tabindex="-1"><label class="file">Positions CSV<input id="positions" type="file" accept=".csv,text/csv"></label>
+        <span class="muted small">or drop it here</span></div>
+      <p class="muted small"><a href="#" id="template-dl">Download the template</a> (symbol, value). From Fidelity: Accounts &gt; Positions &gt; Download.</p>
+      <p id="positions-msg" class="muted small" role="status"></p>
+    </div>
+  </details>
+
+  <details class="details">
+    <summary>Use your own prices (CSV)</summary>
+    <div class="inner">
+      <p class="muted small"><code>date,SPY,VTI</code> or <code>date,symbol,price</code>, adjusted prices. Stays in your browser; nothing is uploaded.</p>
+      <div class="controls">
+        <label class="file">File<input id="csv" type="file" accept=".csv,text/csv"></label>
+        <button type="button" id="reset-data" class="secondary" hidden>Back to built-in prices</button>
+      </div>
+    </div>
+  </details>
+</div>
+</main>
+<footer class="site-foot"><div class="wrap foot-grid">
+  <div class="foot-brand"><a class="brand" href="../"><img class="brand-mark" src="../img/logo.svg" alt="" width="32" height="32"><span class="brand-name">UFO</span></a>
+    <p>A higher view of your money. Compare a mix of funds with the market, privately, in your browser.</p></div>
+  <nav class="foot-col" aria-label="Product"><h2>Product</h2><a href="../try/">Try it</a><a href="../learn/">Learn</a><a href="../teach/">For instructors</a><a href="../pricing/">Pricing</a></nav>
+  <nav class="foot-col" aria-label="Company"><h2>Company</h2><a href="../about/">About</a><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../signup/">Sign up</a></nav>
+</div>
+<div class="wrap foot-legal">
+  <p><b>Information, not investment advice.</b> Results are before taxes and trading costs, and past results don’t predict future ones.</p>
+  <p>Prices: month-end adjusted closes, completed months only. Cash rate: 3-month Treasury bills from FRED.</p>
+  <p class="copy">© 2026 Mycorrhiza Partners LLC DBA Ur Family Office</p>
+</div></footer>
+<script type="module" src="../js/app.js"></script>
+<script type="module" src="../js/chrome.mjs"></script>
+</body>
+</html>
