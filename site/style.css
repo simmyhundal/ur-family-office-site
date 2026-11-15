@@ -163,13 +163,8 @@ a.arrow:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: no-preference) {
   .float-a { animation: bob 7s ease-in-out infinite; } .float-b { animation: bob 8s ease-in-out -3s infinite; }
   .orbit { animation: spin 60s linear infinite; }
-  .pv-chart .draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.8s .3s var(--ease) forwards; }
 }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-copy > *, .stage { animation: rise .9s var(--ease) both; }
-  .hero-copy > :nth-child(2) { animation-delay: .06s; } .hero-copy > :nth-child(3) { animation-delay: .12s; }
-  .hero-copy > :nth-child(4) { animation-delay: .18s; } .hero-copy > :nth-child(5) { animation-delay: .24s; } .stage { animation-delay: .2s; }
-}
+/* the hero is visible at first paint: no fade or delay on anything above the fold (issue 238) */
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes bob { 50% { transform: translateY(-8px); } }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -396,10 +391,6 @@ label.check { align-items: flex-start; font-weight: 450; color: var(--ink-2); ba
 .fine svg { width: 16px; height: 16px; flex: none; color: var(--good); }
 [hidden] { display: none !important; }
 main > .section:last-child { padding-bottom: 16px; }
-/* first-screen headings animate in with CSS, not the scroll observer, so they never wait on it */
-@media (prefers-reduced-motion: no-preference) {
-  .js .page-head.reveal { opacity: 1; transform: none; animation: rise .8s var(--ease) both; }
-}
 /* sign-up on phones: heading, then the form, then the reassurance list */
 @media (max-width: 899px) {
   .signup-side { display: contents; }

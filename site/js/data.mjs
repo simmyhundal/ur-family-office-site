@@ -1,7 +1,9 @@
 // Loads the bundled prices (the files the workflow writes to site/data/). Paths resolve from js/, so any page depth works.
 // Completed months only: a month that has not ended yet is dropped before anything is computed.
 import { completedMonths, localToday, throughLabel } from "./calc.mjs";
-const url = (name) => new URL("../data/" + name, import.meta.url).href;
+// On the deployed site this module is loaded as data.mjs?v=<build id> (scripts/version_site_assets.py); the data files
+// get the same stamp, so a cached old prices.json or site.json can never meet a new page. Unstamped when run from source.
+const url = (name) => { const u = new URL("../data/" + name, import.meta.url); u.search = new URL(import.meta.url).search; return u.href; };
 
 export async function getJson(name) {
   const res = await fetch(url(name));

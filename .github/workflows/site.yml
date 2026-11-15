@@ -1,9 +1,10 @@
-# Fetches real prices, then publishes site/ to GitHub Pages. Needs Settings > Pages > Source: "GitHub Actions" (once).
+# Source of the public repo's .github/workflows/site.yml: lives in the private repo, copied there by sync-site.yml.
+# Fetches real prices, stamps every asset URL with a build id (cache fix, issue 238), then publishes site/ to GitHub Pages. Needs Settings > Pages > Source: "GitHub Actions" (once).
 name: Publish site
 on:
   push:
     branches: [main]
-    paths: ["site/**", "scripts/fetch_site_prices.py", "src/ufo/providers/prices.py", ".github/workflows/site.yml"]
+    paths: ["site/**", "scripts/fetch_site_prices.py", "scripts/version_site_assets.py", "src/ufo/providers/prices.py", ".github/workflows/site.yml"]
   schedule:
     - cron: "17 11 * * 1-5"   # weekdays, so prices stay current
   workflow_dispatch:
@@ -47,6 +48,8 @@ jobs:
           git -C "$d" add prices.json
           git -C "$d" commit -qm "Prices as of $(date -u +%F)"
           git -C "$d" push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" prices
+      - name: Stamp asset URLs with a build id (GitHub Pages caches every file for 10 minutes; see scripts/version_site_assets.py)
+        run: python scripts/version_site_assets.py site
       - uses: actions/configure-pages@v5
         with:
           enablement: true   # may need a token with admin rights; if it fails, enable Pages by hand (Settings > Pages > GitHub Actions)
