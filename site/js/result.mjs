@@ -1,23 +1,48 @@
 // One result, computed the same way on every page (Home preview, Try, the Sharpe lesson). Pure: no DOM, no network.
 import { compare, sliceFor, normalizeWeights } from "./calc.mjs";
+import { spct, money } from "./util.mjs";
 
 export const OTHER = ["SPY", "VTI", "QQQ", "IWM", "AGG"]; // Try's "other benchmarks" table; they also set the shared window
-// The invented sample person. The prices are real (bundled); the person is not.
-export const SAMPLE = {
-  real: { weights: { VTI: 50, VXUS: 20, BND: 20, QQQ: 10 } },
-  demo: { weights: { DEMOUS: 60, DEMOBD: 30, DEMOGD: 10 } },
-  initial: 2000, monthly: 500, years: 5, name: "Sample MBA student",
+// The invented samples. The prices are real (bundled); the people are not.
+// household (the default: Home hero, ?sample=1): an everyday couple's 401(k), IRA and brokerage account, added up into one mix.
+// student (?sample=student): a small monthly investor, used by the instructor session plan.
+export const SAMPLES = {
+  household: {
+    id: "household", name: "Sample household",
+    who: "An invented couple with a 401(k), an IRA and a brokerage account",
+    // Each account's starting value and funds. The mix below is these added up by value (a test checks it);
+    // monthly deposits are split by that combined mix.
+    accounts: [
+      { label: "401(k)", start: 60000, funds: "Target-date style: US stocks, international stocks, bonds", weights: { VTI: 50, VXUS: 25, BND: 25 } },
+      { label: "IRA", start: 25000, funds: "An S&P 500 index fund", weights: { VOO: 100 } },
+      { label: "Brokerage", start: 15000, funds: "US total market and Nasdaq-100", weights: { VTI: 60, QQQ: 40 } },
+    ],
+    real: { weights: { VTI: 39, VOO: 25, VXUS: 15, BND: 15, QQQ: 6 } },
+    demo: { weights: { DEMOUS: 70, DEMOBD: 20, DEMOGD: 10 } },
+    initial: 100000, monthly: 1500, years: 5,
+  },
+  student: {
+    id: "student", name: "Sample student",
+    who: "An invented student putting $500 a month into a few funds",
+    real: { weights: { VTI: 50, VXUS: 20, BND: 20, QQQ: 10 } },
+    demo: { weights: { DEMOUS: 60, DEMOBD: 30, DEMOGD: 10 } },
+    initial: 2000, monthly: 500, years: 5,
+  },
 };
+export const SAMPLE = SAMPLES.household; // the default sample
+/** "1", "household", "student" (from ?sample=) -> a sample id; anything else gives the default. */
+export const sampleId = (v) => (typeof v === "string" && Object.hasOwn(SAMPLES, v) ? v : SAMPLE.id);
 
 export const defaultBenchmark = (series) => ("SPY" in series ? "SPY" : Object.keys(series)[0]);
 
-/** The sample as a full configuration for these prices (real funds when they are there, else the demo funds). */
-export function sampleConfig(data) {
+/** A sample as a full configuration for these prices (real funds when they are there, else the demo funds). */
+export function sampleConfig(data, id = SAMPLE.id) {
+  const S = SAMPLES[sampleId(id)];
   const has = (x) => x in data.series;
-  const pick = Object.keys(SAMPLE.real.weights).every(has) ? SAMPLE.real : SAMPLE.demo;
+  const pick = Object.keys(S.real.weights).every(has) ? S.real : S.demo;
   if (!Object.keys(pick.weights).every(has)) return null;
-  return { weights: { ...pick.weights }, benchmark: defaultBenchmark(data.series), initial: SAMPLE.initial, monthly: SAMPLE.monthly,
-    strategy: "hold", years: SAMPLE.years, name: SAMPLE.name };
+  return { weights: { ...pick.weights }, benchmark: defaultBenchmark(data.series), initial: S.initial, monthly: S.monthly,
+    strategy: "hold", years: S.years, name: S.name, sample: S.id };
 }
 
 /** Mix vs benchmark over the window Try uses: from the latest start among the mix, the benchmark and the other benchmarks. */
@@ -59,9 +84,24 @@ export function nextStep(h) {
     ask: "Want to see what would have lowered risk across all your accounts? That’s Plus." };
 }
 
+/** The Home hero card leads with the question, then the honest answer, whichever way the prices go (issue 181).
+ *  `h` is a previewModel (or headline) result; the answer is never a recommendation. */
+export function heroAnswer(h, years) {
+  const tone = h.diff > 0 ? "ahead" : h.diff < 0 ? "behind" : "even";
+  const span = years ? ` after ${years} years` : "";
+  return {
+    tone,
+    question: `Did this household keep up with ${h.bench}?`,
+    answer: { ahead: "Yes.", behind: "Not quite.", even: "Neck and neck." }[tone],
+    rates: `${spct(h.mixAnnual)} vs ${spct(h.benchAnnual)} a year`,
+    gap: tone === "even" ? `The same money${span}.` : `${tone === "ahead" ? "Ahead" : "Behind"} by ${money(Math.abs(h.diff))}${span}.`,
+    hook: "Would yours?",
+  };
+}
+
 /** The Home page preview: the sample, run exactly as Try runs it, plus the value series for the small chart. */
-export function previewModel(data) {
-  const cfg = sampleConfig(data);
+export function previewModel(data, id = SAMPLE.id) {
+  const cfg = sampleConfig(data, id);
   if (!cfg) return null;
   const res = runResult(data, cfg);
   return { ...headline(res, cfg.name), years: cfg.years,

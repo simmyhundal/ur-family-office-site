@@ -1,7 +1,7 @@
 // The page. All data stays in the browser: no network calls except loading the bundled demo prices.
 import { compare, parsePricesCsv, completedMonths, localToday } from "./calc.mjs";
 import { $, el, svg, money, pct, spct, monthYear, revealOnScroll, saveMix } from "./util.mjs";
-import { runResult, sampleConfig, defaultBenchmark, headline, nextStep } from "./result.mjs";
+import { runResult, sampleConfig, defaultBenchmark, headline, nextStep, SAMPLES, sampleId } from "./result.mjs";
 import { loadPrices } from "./data.mjs";
 import { savePortfolio, listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
 import { parsePositions, TEMPLATE_CSV } from "./positions.mjs";
@@ -17,7 +17,7 @@ const TIPS = {
 };
 const tip = (label, key) => el("span", { class: "tip", tabindex: "0", "data-tip": TIPS[key], "aria-description": TIPS[key] }, label);
 
-const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: [], presets: [], mixName: "Your mix", sample: false };
+const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: [], presets: [], mixName: "Your mix", sample: "", own: false };
 
 async function load() {
   const p = await loadPrices();
@@ -31,7 +31,11 @@ async function load() {
   setup();
   const shared = decodeShare(location.search);
   if (shared) applyConfig({ ...shared, name: "Shared mix" }, { fromLink: true });
-  else if (new URLSearchParams(location.search).get("sample") === "1") loadSample();
+  else if (new URLSearchParams(location.search).has("sample")) loadSample(sampleId(new URLSearchParams(location.search).get("sample")));
+  if (new URLSearchParams(location.search).has("own")) { // "Check your own mix" from Home: go straight to the two paths
+    state.own = true; drawOwn();
+    setTimeout(() => $("own").scrollIntoView({ block: "start", behavior: "instant" }), 80);
+  }
   renderSaved();
 }
 
@@ -39,13 +43,14 @@ const symbols = () => Object.keys(state.data.series);
 const rowsOf = (p) => Object.entries(p.weights).map(([sym, w]) => ({ sym, w }));
 const starter = () => (["VTI", "BND"].every((x) => x in state.data.series) ? [{ sym: "VTI", w: 60 }, { sym: "BND", w: 40 }]
   : symbols().slice(0, 2).map((sym, i) => ({ sym, w: i ? 40 : 60 })));
-function markCustom() { state.sample = false; state.mixName = "Your mix"; $("preset").value = "custom"; }
+function markCustom() { state.sample = ""; state.mixName = "Your mix"; $("preset").value = "custom"; }
 
 function setup() {
-  $("data-banner").textContent = state.demo
-    ? "Demo data: invented funds, not real prices."
-    : state.source || `Your file: ${symbols().length} funds.`;
-  $("sample-note").hidden = !state.sample;
+  // Demo data and a visitor's own file get a banner; the built-in real prices get a small plain date line (issue 225).
+  const note = state.demo ? "Demo data: invented funds, not real prices." : state.source ? "" : `Your file: ${symbols().length} funds.`;
+  $("data-banner").textContent = note; $("data-banner").hidden = !note;
+  $("data-date").textContent = state.source ? `${state.source} Month-end adjusted closes, completed months only.` : "";
+  drawSampleNote();
   $("reset-data").hidden = state.demo && !$("csv").value;
   $("tickers").replaceChildren(...symbols().map((s) => el("option", { value: s }, state.labels[s] || "")));
   state.rows = state.rows.filter((r) => symbols().includes(r.sym));
@@ -124,6 +129,7 @@ function drawSummary(h) {
   $("next-step").dataset.tone = n.tone;
   $("ns-title").textContent = n.title; $("ns-body").textContent = n.body; $("ns-ask").textContent = n.ask;
   $("ns-own").textContent = state.sample ? "Try your own mix" : "Change the mix";
+  drawOwn();
   $("next-step").hidden = false;
 }
 function statPair(label, mv, bv, h, key) {
@@ -268,12 +274,23 @@ function drawTable(dates, an, bn, a, b, put) {
   $("table-wrap").replaceChildren(el("div", { class: "table-scroll" }, table));
 }
 
-// ---------- sample portfolio ----------
-// An invented person with invented deposits; the prices are the real bundled ones (or the demo set when running on demo data).
-function loadSample() {
-  const c = sampleConfig(state.data);
+// ---------- sample portfolios ----------
+// Invented people with invented deposits; the prices are the real bundled ones (or the demo set when running on demo data).
+function drawSampleNote() {
+  const note = $("sample-note"), S = SAMPLES[state.sample];
+  note.hidden = !S;
+  if (!S) return;
+  const head = el("p", {}, el("b", {}, `${S.name}.`), ` ${S.who}: ${money(S.initial)} to start, then ${money(S.monthly)} a month. Invented people, real prices.`);
+  const parts = [head];
+  if (S.accounts) parts.push(el("ul", { class: "sample-accts" }, ...S.accounts.map((a) =>
+    el("li", {}, el("b", {}, a.label), ` ${money(a.start)} · ${a.funds}`))),
+    el("p", { class: "muted small" }, "The three accounts are added up into one mix, and deposits are split the same way."));
+  note.replaceChildren(...parts);
+}
+function loadSample(id = "household") {
+  const c = sampleConfig(state.data, id);
   if (!c) { $("error").textContent = "The sample needs the built-in prices; click “Back to built-in prices” first."; return; }
-  state.rows = rowsOf(c); state.mixName = c.name; state.sample = true;
+  state.rows = rowsOf(c); state.mixName = c.name; state.sample = c.sample;
   $("initial").value = c.initial; $("monthly").value = c.monthly; $("strategy").value = c.strategy; $("benchmark").value = c.benchmark;
   state.years = c.years;
   document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(Number(o.dataset.years) === c.years)));
@@ -287,7 +304,7 @@ function applyConfig(c, { fromLink = false } = {}) {
   const rows = Object.entries(c.weights).filter(([sym]) => have.includes(sym)).map(([sym, w]) => ({ sym, w }));
   const missing = Object.keys(c.weights).filter((x) => !have.includes(x));
   if (!rows.length) { $("error").textContent = "None of those funds have prices in the current data."; return; }
-  state.rows = rows; state.mixName = c.name || "Your mix"; state.sample = false;
+  state.rows = rows; state.mixName = c.name || "Your mix"; state.sample = "";
   if (c.benchmark && have.includes(c.benchmark)) $("benchmark").value = c.benchmark;
   if (c.strategy) $("strategy").value = c.strategy;
   if (c.initial > 0) $("initial").value = c.initial;
@@ -342,9 +359,25 @@ $("clear-all").addEventListener("click", () => {
   $("save-status").textContent = n ? "Cleared everything saved on this device." : "Nothing was saved on this device.";
 });
 
+// ---------- "Now check your own mix" (issue 184): shown after a sample, or when asked for with ?own=1 ----------
+function drawOwn() { $("own").hidden = !(state.sample || state.own); }
+function startTyping() {
+  state.own = true;
+  const d = $("settings"); d.open = true;
+  d.scrollIntoView({ behavior: "smooth", block: "start" });
+  const first = $("rows").querySelector("input");
+  if (first) setTimeout(() => first.focus({ preventScroll: true }), 300);
+}
+$("own-type").addEventListener("click", (e) => { e.preventDefault(); startTyping(); });
+$("own-file").addEventListener("change", (e) => { if (e.target.files[0]) { state.own = true; loadPositions(e.target.files[0]); } });
+const ownDrop = $("own-drop");
+for (const ev of ["dragenter", "dragover"]) ownDrop.addEventListener(ev, (e) => { e.preventDefault(); ownDrop.classList.add("over"); });
+for (const ev of ["dragleave", "drop"]) ownDrop.addEventListener(ev, (e) => { e.preventDefault(); ownDrop.classList.remove("over"); });
+ownDrop.addEventListener("drop", (e) => { const f = e.dataTransfer?.files?.[0]; if (f) { state.own = true; loadPositions(f); } });
+
 // ---------- positions CSV -> mix ----------
 async function loadPositions(file) {
-  const msg = $("positions-msg");
+  const msg = { set textContent(t) { $("positions-msg").textContent = t; $("own-msg").textContent = t; } };
   try {
     const res = parsePositions(await file.text(), symbols());
     applyConfig({ weights: res.weights, name: "My holdings" });
@@ -358,12 +391,14 @@ const drop = $("drop");
 for (const ev of ["dragenter", "dragover"]) drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); });
 for (const ev of ["dragleave", "drop"]) drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); });
 drop.addEventListener("drop", (e) => { const f = e.dataTransfer?.files?.[0]; if (f) loadPositions(f); });
-$("template-dl").addEventListener("click", (e) => {
+function downloadTemplate(e) {
   e.preventDefault();
   const url = URL.createObjectURL(new Blob([TEMPLATE_CSV], { type: "text/csv" }));
   const a = el("a", { href: url, download: "positions-template.csv" });
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
+}
+$("template-dl").addEventListener("click", downloadTemplate);
+$("own-template").addEventListener("click", downloadTemplate);
 
 // ---------- share link and card (percentages only) ----------
 function shareConfig() {
@@ -462,8 +497,12 @@ $("csv").addEventListener("change", async (e) => {
     $("error").textContent = err.message;
   }
 });
-$("sample").addEventListener("click", loadSample);
-$("ns-own").addEventListener("click", () => { const d = $("settings"); d.open = true; d.scrollIntoView({ behavior: "smooth", block: "start" }); });
+$("sample").addEventListener("click", () => loadSample("household"));
+$("sample-student").addEventListener("click", () => loadSample("student"));
+$("ns-own").addEventListener("click", () => {
+  if (!$("own").hidden) $("own").scrollIntoView({ behavior: "smooth", block: "start" });
+  else { const d = $("settings"); d.open = true; d.scrollIntoView({ behavior: "smooth", block: "start" }); }
+});
 $("reset-data").addEventListener("click", () => { $("csv").value = ""; load(); });
 
 revealOnScroll();

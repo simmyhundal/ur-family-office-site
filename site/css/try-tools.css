@@ -13,3 +13,32 @@
 .saved-list button { min-height: 36px; padding: 0 12px; font-size: .9rem; }
 .drop { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border: 2px dashed var(--line); border-radius: 14px; padding: 14px; }
 .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+
+/* The plain data date under the chart (issue 225: no highlighted chip). */
+.data-date { margin: 10px 2px 0; }
+.data-date:empty { display: none; }
+
+/* The sample banner: who the invented people are and, for the household, its three accounts. */
+.sample-note p { margin: 0; }
+.sample-note .sample-accts { list-style: none; padding: 0; margin: 8px 0 6px; display: grid; gap: 4px; }
+.sample-note .sample-accts b { display: inline-block; min-width: 6.5em; }
+
+/* "Now check your own mix" (issue 184): two big, plain paths right after a sample result. */
+.own-panel { scroll-margin-top: 120px; margin: 4px 0 18px; padding: clamp(20px, 4vw, 30px); border-radius: var(--r-lg); background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--line)); box-shadow: var(--shadow); }
+.own-panel h2 { font-size: clamp(1.3rem, 3.4vw, 1.6rem); margin: 8px 0 6px; }
+.own-panel > p { margin: 0 0 16px; }
+.own-grid { display: grid; gap: 14px; }
+@media (min-width: 700px) { .own-grid { grid-template-columns: 1fr 1fr; } }
+.own-path { display: grid; gap: 6px; align-content: start; padding: 18px; border-radius: var(--r); background: var(--tint); color: var(--ink); text-decoration: none;
+  border: 2px dashed transparent; transition: border-color .2s, transform .2s var(--ease); }
+a.own-path:hover { border-color: var(--accent); transform: translateY(-2px); }
+#own-drop { border-color: var(--line-strong, var(--line)); }
+#own-drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.own-path > b { font-size: 1.08rem; }
+.own-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.own-ic svg { width: 22px; height: 22px; }
+.own-go { margin-top: 6px; font-weight: 700; color: var(--accent); }
+.own-file { position: relative; justify-self: start; margin-top: 8px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: var(--r-pill);
+  background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; }
+.own-file:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+.own-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }

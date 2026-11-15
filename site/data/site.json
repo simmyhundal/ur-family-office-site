@@ -1,11 +1,12 @@
 {
-  "name": "UFO",
+  "name": "Ur Family Office",
   "wordmark": "UFO",
   "tagline": "A higher view of your money",
   "legal_name": "Mycorrhiza Partners LLC DBA Ur Family Office",
   "logo": "img/logo.svg",
+  "base_url": "https://simmyhundal.github.io/ur-family-office-site/",
   "contact_email": "",
-  "signup_endpoint": "",
+  "signup_endpoint": "https://formspree.io/f/mvkakrvd",
   "checkout_urls": {},
   "founder": { "name": "Simmy Hundal", "photo": "img/founder.jpg", "linkedin": "" }
 }

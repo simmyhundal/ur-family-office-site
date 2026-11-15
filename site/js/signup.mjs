@@ -1,6 +1,9 @@
-// Sign-up form logic. The payload holds email, role, school, plan and consent, and nothing else.
-export const ROLES = ["student", "instructor", "other"];
+// Sign-up form logic. The payload holds email, role, school, plan and consent, and nothing else. It is posted to the form
+// service in site.json signup_endpoint (Formspree, decision 0012) with Formspree's honeypot field _gotcha, which people
+// leave empty. No third-party script is loaded: the page posts JSON with fetch and reads the JSON reply.
+export const ROLES = ["investor", "student", "instructor", "other"];
 export const PLANS = ["free", "plus", "scheduler"];
+export const MAX = { email: 254, role: 40, school: 120, plan: 40 }; // field lengths (role and plan values fit 40)
 
 // ?plan= and ?role= preselect the form; unknown values are ignored.
 export function parseParams(search) {
@@ -11,10 +14,10 @@ export function parseParams(search) {
 
 export function buildSignupPayload(f = {}) {
   return {
-    email: String(f.email ?? "").trim(),
-    role: String(f.role ?? "").trim(),
-    school: String(f.school ?? "").trim(),
-    plan: String(f.plan ?? "").trim(),
+    email: String(f.email ?? "").trim().slice(0, MAX.email),
+    role: String(f.role ?? "").trim().slice(0, MAX.role),
+    school: String(f.school ?? "").trim().slice(0, MAX.school),
+    plan: String(f.plan ?? "").trim().slice(0, MAX.plan),
     consent: f.consent === true,
   };
 }
@@ -30,15 +33,28 @@ export function validateSignup(p) {
   return e;
 }
 
-// Sends nothing without an endpoint. Returns { sent, reason? }.
-export async function submitSignup(payload, endpoint, fetchFn = globalThis.fetch) {
-  if (!endpoint) return { sent: false, reason: "no-endpoint" };
+/** The exact body posted: the five fields plus the honeypot (empty for people). */
+export const signupBody = (payload, gotcha = "") => ({ ...buildSignupPayload(payload), _gotcha: String(gotcha ?? "") });
+
+// Sends nothing without an https endpoint. Reads Formspree's JSON reply: { ok: true } on success, { errors: [...] } on
+// failure. Returns { sent, reason? }; a network failure throws (the page shows a retry message).
+export async function submitSignup(payload, endpoint, fetchFn = globalThis.fetch, gotcha = "") {
+  if (!endpoint || !/^https:\/\//.test(endpoint)) return { sent: false, reason: "no-endpoint" };
   const res = await fetchFn(endpoint, {
     method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(buildSignupPayload(payload)),
+    body: JSON.stringify(signupBody(payload, gotcha)),
   });
-  if (!res.ok) return { sent: false, reason: "http-" + res.status };
+  let reply = null;
+  try { reply = await res.json(); } catch { /* a reply that is not JSON */ }
+  if (!res.ok || (reply && (reply.ok === false || Array.isArray(reply.errors) && reply.errors.length))) return { sent: false, reason: "http-" + res.status };
   return { sent: true };
+}
+
+/** What the page shows after a try: { done } swaps the form for the thank-you card; else `text` is a plain retry line. */
+export function signupOutcome(r) {
+  if (r && r.sent) return { done: true, text: "Thanks, you’re on the list." };
+  if (r && r.reason === "no-endpoint") return { done: false, text: "Sign-ups are paused for a moment. Nothing was sent." };
+  return { done: false, text: "That didn’t go through. Please check your connection and try again in a moment." };
 }
 
 // While the form has no endpoint, a mailto link to the site's contact address (only when one is set). Nothing is sent by the page.
