@@ -1,10 +1,10 @@
 // The page. All data stays in the browser: no network calls except loading the bundled demo prices.
-import { compare, parsePricesCsv, completedMonths, localToday } from "./calc.mjs";
+import { compare } from "./calc.mjs";
 import { $, el, svg, money, pct, spct, monthYear, revealOnScroll, saveMix } from "./util.mjs";
 import { runResult, sampleConfig, defaultBenchmark, headline, SAMPLES, sampleId } from "./result.mjs";
 import { loadPrices } from "./data.mjs";
 import { savePortfolio, listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
-import { parsePositions, TEMPLATE_CSV } from "./positions.mjs";
+import { investmentChoices, createFundPicker } from "./fund-picker.mjs";
 import { encodeShare, decodeShare, cardContent } from "./share.mjs";
 
 const TIPS = {
@@ -22,7 +22,6 @@ const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: 
 async function load() {
   const p = await loadPrices();
   state.data = p.data; state.labels = p.labels; state.demo = p.demo; state.source = p.source;
-  const has = (x) => x in p.data.series;
   state.presets = p.presets;
   state.rows = p.demo ? [{ sym: "DEMOUS", w: 60 }, { sym: "DEMOBD", w: 30 }, { sym: "DEMOGD", w: 10 }]
     : state.presets.length ? rowsOf(state.presets[0]) : starter();
@@ -37,6 +36,8 @@ async function load() {
 }
 
 const symbols = () => Object.keys(state.data.series);
+const choices = () => investmentChoices(symbols(), state.labels);
+let firstFundPicker;
 const rowsOf = (p) => Object.entries(p.weights).map(([sym, w]) => ({ sym, w }));
 const starter = () => (["VTI", "BND"].every((x) => x in state.data.series) ? [{ sym: "VTI", w: 60 }, { sym: "BND", w: 40 }]
   : symbols().slice(0, 2).map((sym, i) => ({ sym, w: i ? 40 : 60 })));
@@ -48,8 +49,9 @@ function setup() {
   $("data-banner").textContent = note; $("data-banner").hidden = !note;
   $("data-date").textContent = state.source ? `${state.source} Month-end adjusted closes, completed months only. Cash rate: 3-month Treasury bills from FRED.` : "";
   drawSampleNote();
-  $("reset-data").hidden = state.demo && !$("csv").value;
-  $("tickers").replaceChildren(...symbols().map((s) => el("option", { value: s }, state.labels[s] || "")));
+  const benchmarkPicker = createFundPicker({ id: "benchmark-choice", label: "Benchmark", symbol: $("benchmark").value, choices: choices(),
+    onChange: (symbol) => { $("benchmark").value = symbol; render(); } });
+  $("benchmark-picker").replaceChildren(benchmarkPicker.element);
   state.rows = state.rows.filter((r) => symbols().includes(r.sym));
   if (!state.rows.length) state.rows = [{ sym: symbols()[0], w: 100 }];
   const pre = $("preset");
@@ -64,13 +66,14 @@ function renderRows() {
   const box = $("rows");
   box.replaceChildren();
   state.rows.forEach((row, i) => {
-    const sel = el("input", { list: "tickers", autocomplete: "off", spellcheck: "false", value: row.sym, "aria-label": `Fund ${i + 1}`, placeholder: "Ticker" });
-    sel.addEventListener("input", () => { row.sym = sel.value.trim().toUpperCase(); markCustom(); render(); });
+    const picker = createFundPicker({ id: `fund-${i + 1}`, label: `Investment ${i + 1}`, symbol: row.sym, choices: choices(),
+      onChange: (symbol) => { row.sym = symbol; markCustom(); render(); } });
+    if (i === 0) firstFundPicker = picker;
     const w = el("input", { type: "number", min: "0", max: "100", step: "1", value: String(row.w), "aria-label": `Weight ${i + 1}, percent` });
     w.addEventListener("input", () => { row.w = Number(w.value); markCustom(); render(); });
     const rm = el("button", { type: "button", class: "rm", "aria-label": `Remove fund ${i + 1}` }, "×");
     rm.addEventListener("click", () => { state.rows.splice(i, 1); markCustom(); renderRows(); render(); });
-    box.append(el("div", { class: "mix-row" }, sel, w, rm));
+    box.append(el("div", { class: "mix-row" }, picker.element, el("label", { class: "investment-weight" }, "Weight (%)", w), rm));
   });
 }
 
@@ -83,6 +86,8 @@ function mixWeights() {
 let lastR = null; // the latest result, for the share card
 
 function render() {
+  drawSampleNote();
+  $("try-own").hidden = !state.sample;
   const err = $("error");
   err.textContent = "";
   const total = state.rows.reduce((s, r) => s + (r.w > 0 ? r.w : 0), 0);
@@ -281,7 +286,7 @@ function drawSampleNote() {
 }
 function loadSample(id = "household") {
   const c = sampleConfig(state.data, id);
-  if (!c) { $("error").textContent = "The sample needs the built-in prices; click “Back to built-in prices” first."; return; }
+  if (!c) { $("error").textContent = "The sample is unavailable with these prices."; return; }
   state.rows = rowsOf(c); state.mixName = c.name; state.sample = c.sample;
   $("initial").value = c.initial; $("monthly").value = c.monthly; $("strategy").value = c.strategy; $("benchmark").value = c.benchmark;
   state.years = c.years;
@@ -355,33 +360,17 @@ $("clear-all").addEventListener("click", () => {
 function startTyping() {
   const d = $("settings"); d.open = true;
   d.scrollIntoView({ behavior: "smooth", block: "start" });
-  const first = $("rows").querySelector("input");
-  if (first) setTimeout(() => first.focus({ preventScroll: true }), 300);
+  firstFundPicker?.focus();
 }
 
-// ---------- positions CSV -> mix ----------
-async function loadPositions(file) {
-  const msg = $("positions-msg");
-  try {
-    const res = parsePositions(await file.text(), symbols());
-    applyConfig({ weights: res.weights, name: "My holdings" });
-    markCustom(); state.mixName = "My holdings"; render();
-    msg.textContent = `Loaded ${Object.keys(res.weights).length} holdings from a ${res.format === "fidelity" ? "Fidelity positions" : "template"} file as percentages. ${res.notes.join(" ")}`;
-    $("error").textContent = "";
-  } catch (e) { msg.textContent = e.message; }
+$("try-own-button").addEventListener("click", startTyping);
+// Free has no import handlers. Until paid Plus access exists, imports are unavailable.
+// Prevent dropped files from navigating away; never read their contents.
+for (const type of ["dragover", "drop"]) {
+  document.addEventListener(type, (event) => {
+    if (Array.from(event.dataTransfer?.types || []).includes("Files")) event.preventDefault();
+  });
 }
-$("positions").addEventListener("change", (e) => { if (e.target.files[0]) loadPositions(e.target.files[0]); });
-const drop = $("drop");
-for (const ev of ["dragenter", "dragover"]) drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); });
-for (const ev of ["dragleave", "drop"]) drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); });
-drop.addEventListener("drop", (e) => { const f = e.dataTransfer?.files?.[0]; if (f) loadPositions(f); });
-function downloadTemplate(e) {
-  e.preventDefault();
-  const url = URL.createObjectURL(new Blob([TEMPLATE_CSV], { type: "text/csv" }));
-  const a = el("a", { href: url, download: "positions-template.csv" });
-  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-$("template-dl").addEventListener("click", downloadTemplate);
 
 // ---------- share link and card (percentages only) ----------
 function shareConfig() {
@@ -444,6 +433,7 @@ new ResizeObserver(() => {
 $("preset").addEventListener("change", () => {
   const p = state.presets[Number($("preset").value)];
   state.rows = p ? rowsOf(p) : starter();
+  state.sample = "";
   state.mixName = p ? p.name : "Your mix";
   renderRows(); render();
 });
@@ -464,25 +454,8 @@ $("toggle-table").addEventListener("click", () => {
   $("toggle-table").setAttribute("aria-expanded", String(open));
   $("toggle-table").textContent = open ? "Hide table" : "Show table";
 });
-$("csv").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    const parsed = completedMonths(parsePricesCsv(await file.text()), localToday()); // completed months only, as with the built-in prices
-    if (parsed.dates.length < 13) throw new Error("Need at least 13 months of prices that every fund shares.");
-    state.data = { dates: parsed.dates, series: parsed.series, rf: null }; // no cash rate in a CSV, so no Sharpe
-    state.labels = {}; state.demo = false; state.source = ""; state.presets = []; state.mixName = "Your mix";
-    const names = Object.keys(parsed.series);
-    state.rows = names.slice(0, 2).map((s, i) => ({ sym: s, w: i ? 40 : 60 }));
-    $("benchmark").value = names[0];
-    setup();
-  } catch (err) {
-    $("error").textContent = err.message;
-  }
-});
 $("sample").addEventListener("click", () => loadSample("household"));
 $("sample-student").addEventListener("click", () => loadSample("student"));
-$("reset-data").addEventListener("click", () => { $("csv").value = ""; load(); });
 
 revealOnScroll();
 load().catch((e) => { $("error").textContent = "Could not load prices: " + e.message; });

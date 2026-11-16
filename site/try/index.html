@@ -83,6 +83,10 @@
     </div>
   </section>
   <div id="sample-note" class="banner sample-note" role="status" hidden></div>
+  <aside id="try-own" class="own-action" hidden aria-label="Try your own investments">
+    <button id="try-own-button" class="btn" type="button">Try your own investments <span aria-hidden="true">→</span></button>
+    <p class="muted small">Choose investments by name or ticker, then set your percentages.</p>
+  </aside>
   <aside id="next-step" class="next-step ns-one" hidden aria-label="Plus early access">
     <p class="ns-ask">Want this for all your accounts?</p>
     <a class="btn" href="../signup/?plan=plus">Join Plus early access <span class="arr" aria-hidden="true">→</span></a>
@@ -108,10 +112,9 @@
         <button type="button" id="sample-student" class="secondary">Sample student</button></div>
       <div id="rows"></div>
       <div class="row-actions"><button type="button" id="add-row" class="secondary">Add a fund</button><span id="weight-note" class="muted"></span></div>
-      <datalist id="tickers"></datalist>
       <h3 style="margin-top:28px">Compare with</h3>
       <div class="controls">
-        <label><span class="tip" tabindex="0" data-tip="A simple yardstick fund to measure against. SPY tracks the 500 biggest US companies (the S&amp;P 500).">Benchmark</span><input id="benchmark" list="tickers" autocomplete="off" spellcheck="false" value="SPY"></label>
+        <div class="field"><span class="lbl">Benchmark</span><div id="benchmark-picker"></div><input id="benchmark" type="hidden" value="SPY"></div>
         <div class="field"><span id="years-l" class="lbl">History</span>
           <div class="seg" role="group" aria-labelledby="years-l">
             <button type="button" data-years="1">1y</button><button type="button" data-years="3">3y</button>
@@ -127,24 +130,14 @@
       <ul id="saved-list" class="saved-list"></ul>
       <p id="saved-empty" class="muted small">None yet. Use “Save this mix” under the chart.</p>
       <button type="button" id="clear-all" class="link">Clear everything saved on this device</button>
-      <h3 style="margin-top:28px">Start from your holdings</h3>
-      <p class="muted small">Drop a positions file (from Fidelity: Accounts › Positions › Download, or <a href="#" id="template-dl">the template</a>) and it becomes a mix by weight. Nothing is uploaded.</p>
-      <div id="drop" class="drop" tabindex="-1"><label class="file">Positions CSV<input id="positions" type="file" accept=".csv,text/csv"></label>
-        <span class="muted small">or drop it here</span></div>
-      <p id="positions-msg" class="muted small" role="status"></p>
     </div>
   </details>
 
-  <details class="details">
-    <summary>Advanced: use your own price history (CSV)</summary>
-    <div class="inner">
-      <p class="muted small"><code>date,SPY,VTI</code> or <code>date,symbol,price</code>, adjusted prices.</p>
-      <div class="controls">
-        <label class="file">File<input id="csv" type="file" accept=".csv,text/csv"></label>
-        <button type="button" id="reset-data" class="secondary" hidden>Back to built-in prices</button>
-      </div>
-    </div>
-  </details>
+  <aside class="plus-imports" aria-label="Plus file imports">
+    <h2>File imports are a Plus feature</h2>
+    <p>Brokerage holdings and price-history CSV imports require Plus. Coming with Plus; joining the list does not unlock imports.</p>
+    <a href="../signup/?plan=plus">Join Plus early access →</a>
+  </aside>
 </div>
 </main>
 <footer class="site-foot"><div class="wrap foot-grid">

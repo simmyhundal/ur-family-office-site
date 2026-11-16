@@ -23,25 +23,33 @@
 .sample-note .sample-accts { list-style: none; padding: 0; margin: 8px 0 6px; display: grid; gap: 4px; }
 .sample-note .sample-accts b { display: inline-block; min-width: 6.5em; }
 
-/* "Now check your own mix" (issue 184): two big, plain paths right after a sample result. */
-.own-panel { scroll-margin-top: 120px; margin: 4px 0 18px; padding: clamp(20px, 4vw, 30px); border-radius: var(--r-lg); background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--line)); box-shadow: var(--shadow); }
-.own-panel h2 { font-size: clamp(1.3rem, 3.4vw, 1.6rem); margin: 8px 0 6px; }
-.own-panel > p { margin: 0 0 16px; }
-.own-grid { display: grid; gap: 14px; }
-@media (min-width: 700px) { .own-grid { grid-template-columns: 1fr 1fr; } }
-.own-path { display: grid; gap: 6px; align-content: start; padding: 18px; border-radius: var(--r); background: var(--tint); color: var(--ink); text-decoration: none;
-  border: 2px dashed transparent; transition: border-color .2s, transform .2s var(--ease); }
-a.own-path:hover { border-color: var(--accent); transform: translateY(-2px); }
-#own-drop { border-color: var(--line-strong, var(--line)); }
-#own-drop.over { border-color: var(--accent); background: var(--accent-soft); }
-.own-path > b { font-size: 1.08rem; }
-.own-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
-.own-ic svg { width: 22px; height: 22px; }
-.own-go { margin-top: 6px; font-weight: 700; color: var(--accent); }
-.own-file { position: relative; justify-self: start; margin-top: 8px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: var(--r-pill);
-  background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; }
-.own-file:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
-.own-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+/* Manual selection: keep the selected investment understandable after the picker closes. */
+.own-action { margin: 12px 0 24px; }
+.own-action p { margin: 8px 0 0; }
+.plus-imports { margin: 22px 0; padding: 18px 22px; border: 1px solid var(--line); border-radius: var(--r); }
+.plus-imports h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.plus-imports p { margin: 0 0 10px; color: var(--ink-2); }
+.fund-field { min-width: 0; }
+.fund-picker { min-width: 0; border: 1.5px solid var(--line-strong); border-radius: var(--r-input); background: var(--surface); }
+.fund-picker > summary { padding: 12px; min-height: 48px; cursor: pointer; overflow-wrap: anywhere; font-weight: 600; }
+.fund-picker > summary:focus-visible, .fund-option:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.fund-description { margin: 6px 2px 0; font-size: .85rem; color: var(--ink-2); line-height: 1.45; }
+.fund-picker-body { padding: 0 10px 10px; }
+.fund-picker input[type=search] { width: 100%; min-width: 0; min-height: 48px; padding: 10px; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-xs); }
+.fund-picker-body > p { margin: 8px 0; }
+.fund-results { display: grid; gap: 6px; max-height: 260px; overflow-y: auto; overscroll-behavior: contain; }
+.fund-results .fund-option { display: grid; justify-content: stretch; justify-items: start; gap: 4px; width: 100%; min-height: 48px; padding: 10px; text-align: left; white-space: normal; border-radius: var(--r-xs); box-shadow: none; background: var(--bg-2); color: var(--ink); }
+.fund-option span { font-weight: 400; font-size: .85rem; color: var(--ink-2); }
+#rows .mix-row { grid-template-columns: minmax(0, 1fr) 80px 44px; align-items: start; }
+#rows .mix-row > input { min-width: 0; width: 100%; }
+.investment-weight { min-width: 0; font-size: .8rem; color: var(--ink-2); }
+.investment-weight input { width: 100%; min-width: 0; font-size: 1rem; }
+@media (max-width: 600px) {
+  #rows .mix-row { grid-template-columns: minmax(0, 1fr) 44px; margin-bottom: 18px; }
+  #rows .mix-row .fund-field { grid-column: 1 / -1; }
+  #rows .mix-row > .investment-weight { width: 110px; }
+}
+
 /* The one invitation after a result (issue 239): a line and a button. */
 .next-step.ns-one .ns-ask { margin: 0; font-size: 1.1rem; }
 .next-step.ns-one .btn { justify-self: start; }
