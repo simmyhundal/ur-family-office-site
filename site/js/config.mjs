@@ -113,17 +113,16 @@ export function headerHtml(cfg, root, current) {
   <a class="nav-cta" href="${root}signup/"${current === "signup" ? ' aria-current="page"' : ""}>Sign up</a>
 </div>`;
 }
-export function footerHtml(cfg, root) {
+// `current` is the page's nav key; the price and cash-rate note shows only on the Try page, where the numbers are.
+export function footerHtml(cfg, root, current) {
   const contact = cfg.contact_email ? `<a href="mailto:${esc(cfg.contact_email)}">${esc(cfg.contact_email)}</a>` : "";
   return `<div class="wrap foot-grid">
-  <div class="foot-brand"><a class="brand" href="${root}">${mark(cfg, root, 32)}<span class="brand-word">${nameHtml(cfg)}</span></a>
-    <p>${esc(cfg.tagline)}. Compare a mix of funds with the market, privately, in your browser.</p></div>
+  <div class="foot-brand"><a class="brand" href="${root}">${mark(cfg, root, 32)}<span class="brand-word">${nameHtml(cfg)}</span></a></div>
   <nav class="foot-col" aria-label="Product"><h2>Product</h2><a href="${root}try/">Try it</a><a href="${root}learn/">Learn</a><a href="${root}teach/">For instructors</a><a href="${root}pricing/">Pricing</a></nav>
   <nav class="foot-col" aria-label="Company"><h2>Company</h2><a href="${root}about/">About</a><a href="${root}privacy/">Privacy</a><a href="${root}terms/">Terms</a><a href="${root}signup/">Sign up</a>${contact}</nav>
 </div>
 <div class="wrap foot-legal">
   <p><b>Information, not investment advice.</b> Results are before taxes and trading costs, and past results don’t predict future ones.</p>
-  <p>Prices: month-end adjusted closes, completed months only. Cash rate: 3-month Treasury bills from FRED.</p>
-  <p class="copy">${esc(copyright(cfg))}</p>
+${current === "try" ? "  <p>Prices: month-end adjusted closes, completed months only. Cash rate: 3-month Treasury bills from FRED.</p>\n" : ""}  <p class="copy">${esc(copyright(cfg))}</p>
 </div>`;
 }

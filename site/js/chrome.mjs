@@ -8,5 +8,5 @@ export const cfg = await loadSiteConfig(new URL("../data/site.json", import.meta
 const prefix = new URL("../", import.meta.url).href;
 const head = document.querySelector("header.site-head"), foot = document.querySelector("footer.site-foot");
 if (head) head.innerHTML = headerHtml(cfg, prefix, currentKey);
-if (foot) foot.innerHTML = footerHtml(cfg, prefix);
+if (foot) foot.innerHTML = footerHtml(cfg, prefix, currentKey);
 document.title = document.title.replace(/UFO/g, cfg.name);

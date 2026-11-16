@@ -28,18 +28,6 @@
       ],
       "checkout_url": "",
       "teaser": "#plus"
-    },
-    {
-      "id": "scheduler",
-      "name": "Scheduler",
-      "price": "To be decided",
-      "status": "later",
-      "blurb": "Coming later. Reminders first.",
-      "features": [
-        "Reminders to review your mix",
-        "Everything in Plus"
-      ],
-      "checkout_url": ""
     }
   ]
 }
