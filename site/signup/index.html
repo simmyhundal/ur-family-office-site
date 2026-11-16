@@ -39,25 +39,20 @@
 <div class="page-top mesh">
 <div class="wrap signup-layout">
   <div class="signup-side">
-    <div class="page-head"><span class="eyebrow">Early access</span><h1>Be first to see what’s next</h1><p class="sub">Join the list and we will email you when new features open. No payment, no portfolio data, no promises about returns.</p></div>
-    <ul class="checks">
-      <li><div><b>Plus: every account side by side</b><span>With what-if tests to lower risk. <a href="../plus-demo/">See Plus with a sample household</a>.</span></div></li>
-      <li><div><b>Class pilots for instructors</b><span>Choose “Instructor” and we will get in touch about your course.</span></div></li>
-      <li><div><b>Only what you type here is sent</b><span>Email, role, school, plan interest and consent, to our form service, Formspree. Nothing else.</span></div></li>
-    </ul>
+    <div class="page-head"><span class="eyebrow">Early access</span><h1>Be first to see what’s next</h1><p class="sub">We’ll email you when new features open. Nothing is charged.</p></div>
   </div>
   <div>
   <form id="signup" class="form form-card glass" novalidate>
-    <h2>Join the list</h2><p class="muted small" style="margin:0 0 6px">It takes less than a minute.</p>
+    <h2>Join the list</h2>
     <label>Email<input id="f-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" required></label><p class="field-error" id="e-email" role="alert"></p>
     <label>I am a<select id="f-role" name="role" required><option value="">Choose…</option><option value="investor">Investor (my own money)</option><option value="student">Student</option><option value="instructor">Instructor</option><option value="other">Something else</option></select></label><p class="field-error" id="e-role" role="alert"></p>
-    <label><span>School <span class="optional">(optional, for students and instructors)</span></span><input id="f-school" name="school" type="text" maxlength="120" autocomplete="organization"></label>
-    <label>Plan I am interested in<select id="f-plan" name="plan"><option value="">Choose…</option><option value="free">Free</option><option value="plus">Plus (planned)</option><option value="scheduler">Scheduler (later)</option></select></label><p class="field-error" id="e-plan" role="alert"></p>
+    <label id="school-field" hidden><span>School <span class="optional">(optional)</span></span><input id="f-school" name="school" type="text" maxlength="120" autocomplete="organization"></label>
+    <label>Plan I am interested in<select id="f-plan" name="plan"><option value="">Choose…</option><option value="free">Free</option><option value="plus">Plus (planned)</option></select></label><p class="field-error" id="e-plan" role="alert"></p>
     <label class="inline check"><input id="f-consent" name="consent" type="checkbox"> <span>I agree to be emailed about early access, and I have read the <a href="../privacy/">privacy page</a>.</span></label><p class="field-error" id="e-consent" role="alert"></p>
     <div class="hp" aria-hidden="true"><label>Leave this empty<input id="f-gotcha" name="_gotcha" type="text" tabindex="-1" autocomplete="off"></label></div>
     <button type="submit" id="go">Join the list</button>
     <p id="status" class="muted small" role="status" style="margin:0"></p>
-    <p class="fine"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Only your email, role, school, plan interest and consent are sent, to Formspree. No portfolio data. Information, not investment advice.</p>
+    <p class="fine"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Only your email, role, school (if given), plan interest and consent go to Formspree. No portfolio data.</p>
   </form>
   <div id="thanks" class="form-card glass" hidden tabindex="-1"><h2>Thanks, you’re on the list</h2><p>We will only email you about early access. Nothing has been charged.</p><p><a class="btn" href="../try/?sample=1">Try the sample portfolio</a></p></div>
   </div>
@@ -79,11 +74,14 @@
 <script type="module" src="../js/chrome.mjs"></script>
 <script type="module">
 import { cfg } from "../js/chrome.mjs";
-import { parseParams, buildSignupPayload, validateSignup, submitSignup, signupOutcome, mailtoJoin } from "../js/signup.mjs";
+import { parseParams, buildSignupPayload, validateSignup, submitSignup, signupOutcome, mailtoJoin, showsSchool } from "../js/signup.mjs";
 const $ = (id) => document.getElementById(id);
 const pre = parseParams(location.search);
 if (pre.plan) $("f-plan").value = pre.plan;
 if (pre.role) $("f-role").value = pre.role;
+// School only for students and instructors; a hidden field sends nothing.
+const school = () => { const on = showsSchool($("f-role").value); $("school-field").hidden = !on; if (!on) $("f-school").value = ""; };
+$("f-role").addEventListener("change", school); school();
 if (!cfg.signup_endpoint) {
   $("go").disabled = true;
   const href = mailtoJoin(cfg.contact_email, pre.plan);

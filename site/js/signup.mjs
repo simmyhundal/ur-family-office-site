@@ -2,7 +2,9 @@
 // service in site.json signup_endpoint (Formspree, decision 0012) with Formspree's honeypot field _gotcha, which people
 // leave empty. No third-party script is loaded: the page posts JSON with fetch and reads the JSON reply.
 export const ROLES = ["investor", "student", "instructor", "other"];
-export const PLANS = ["free", "plus", "scheduler"];
+export const PLANS = ["free", "plus"]; // the form's plan choices (Scheduler is not offered; issue 239)
+// The School field shows only for these roles (issue 239).
+export const showsSchool = (role) => role === "student" || role === "instructor";
 export const MAX = { email: 254, role: 40, school: 120, plan: 40 }; // field lengths (role and plan values fit 40)
 
 // ?plan= and ?role= preselect the form; unknown values are ignored.

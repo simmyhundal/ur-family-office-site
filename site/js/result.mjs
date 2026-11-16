@@ -67,23 +67,6 @@ export function headline({ r, slice, bench }, name) {
     from: slice.dates[0], to: slice.dates.at(-1), months: m.months };
 }
 
-/** What to do next, given the result. Plain information, never a recommendation to buy or sell. */
-export function nextStep(h) {
-  const ahead = h.diff > 0, even = h.diff === 0;
-  const s = h.mixSharpe, sb = h.benchSharpe, bothSharpe = s != null && sb != null;
-  let title, body;
-  if (even) { title = `Level with ${h.bench}.`; body = "Same money at the end. The difference is in the ride."; }
-  else if (!ahead) {
-    title = `${h.name || "Your mix"} trailed ${h.bench}.`;
-    body = bothSharpe && s > sb ? "It earned less, but with more return for each unit of risk." : "Was it the funds, the timing, or the risk you took?";
-  } else {
-    title = `${h.name || "Your mix"} beat ${h.bench}.`;
-    body = bothSharpe && s < sb ? "But it took more risk for each unit of return." : "And it earned more for each unit of risk.";
-  }
-  return { tone: even ? "even" : ahead ? "ahead" : "behind", title, body,
-    ask: "Want to see what would have lowered risk across all your accounts? That’s Plus." };
-}
-
 /** The Home hero card leads with the question, then the honest answer, whichever way the prices go (issue 181).
  *  `h` is a previewModel (or headline) result; the answer is never a recommendation. */
 export function heroAnswer(h, years) {

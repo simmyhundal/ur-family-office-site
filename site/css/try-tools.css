@@ -42,3 +42,7 @@ a.own-path:hover { border-color: var(--accent); transform: translateY(-2px); }
   background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; }
 .own-file:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
 .own-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+/* The one invitation after a result (issue 239): a line and a button. */
+.next-step.ns-one .ns-ask { margin: 0; font-size: 1.1rem; }
+.next-step.ns-one .btn { justify-self: start; }
+@media (min-width: 860px) { .next-step.ns-one .btn { justify-self: end; } }

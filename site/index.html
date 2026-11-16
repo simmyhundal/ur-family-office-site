@@ -40,21 +40,16 @@
 <section class="home-hero mesh">
   <div class="wrap">
     <div class="hero-copy">
-      <span class="eyebrow">A higher view of your money</span>
       <h1>Is your mix <span class="grad-text">keeping up?</span></h1>
-      <p class="sub">See how your 401(k), IRA or brokerage mix did against the market, in plain language. Free, and worked out in your browser.</p>
+      <p class="sub">See how your 401(k), IRA or brokerage mix did against the market, in plain language, for free.</p>
       <div class="hero-actions">
         <a class="btn big" href="try/?own=1">Check your own mix <span class="arr" aria-hidden="true">→</span></a>
         <a class="btn big ghost" href="plus-demo/">See Plus with a sample household</a>
       </div>
-      <ul class="trust-row" aria-label="At a glance">
-        <li><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5" stroke-width="1.8"/><path d="M8 12.4l2.7 2.7L16 9.6"/></svg>No account needed</li><li><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5" stroke-width="1.8"/><path d="M8 12.4l2.7 2.7L16 9.6"/></svg>Nothing is uploaded</li><li><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5" stroke-width="1.8"/><path d="M8 12.4l2.7 2.7L16 9.6"/></svg>Free to use</li>
-      </ul>
-      <p class="hero-lesson">New to this? <a href="learn/sharpe/">What a Sharpe ratio is, in five steps →</a></p>
     </div>
     <div class="stage">
       <div class="orbit" aria-hidden="true"></div>
-      <a class="preview glass" id="pv" href="try/?sample=1" aria-describedby="pv-sr">
+      <a class="preview glass" id="pv" href="try/?sample=1">
         <div class="pv-top"><span class="pv-label">Sample · invented household, real prices</span><span class="pv-chip" id="pv-chip">5 years</span></div>
         <p class="pv-q" id="pv-q">Did this household keep up with the market?</p>
         <p class="pv-headline" id="pv-headline"><span class="pv-ans" id="pv-ans"></span> <span class="m" id="pv-m">…</span> vs <span class="b" id="pv-b">…</span> <span class="pv-per">a year</span></p>
@@ -68,11 +63,8 @@
           <path id="pv-mline" class="draw" pathLength="1" d="" fill="none" stroke="var(--mix)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div class="pv-legend" aria-hidden="true"><span><i style="background:var(--mix)"></i>The household</span><span><i style="background:var(--bench)"></i><span id="pv-bench2">SPY</span></span><span><i style="background:var(--put)"></i>What you put in</span></div>
-        <p class="pv-hook"><b id="pv-hook">Would yours?</b> <span>See this sample in full, then try your own →</span></p>
-        <span class="sr-only" id="pv-sr">Opens the sample household on the Try page.</span>
+        <p class="pv-hook"><b id="pv-hook">Would yours?</b> <span>Try your own →</span></p>
       </a>
-      <div class="float-card glass float-b" aria-hidden="true"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"/><path d="M15 7h5v5"/></svg></div><div><b id="pv-sharpe">Sharpe …</b><span id="pv-sharpe-sub">Return per unit of risk</span></div></div>
-      <div class="float-card glass float-a" aria-hidden="true"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div><div><b>Nothing uploaded</b><span>Runs in your browser</span></div></div>
     </div>
   </div>
 </section>
@@ -82,24 +74,17 @@
     <div class="plus-head reveal">
       <span class="eyebrow">Plus</span>
       <h2 id="plus-h">Your whole portfolio, <span class="grad-text">from above</span></h2>
-      <p class="lead">Every account you own, measured the same way, side by side. Then test a change before you make it.</p>
+      <p class="lead">Every account you own, side by side and measured the same way, with what-if tests before you change anything.</p>
     </div>
     <figure class="phone-wrap reveal" aria-labelledby="ph-cap">
       <a class="phone phone-shot" href="plus-demo/" aria-describedby="ph-cap">
         <picture><source srcset="img/plus-demo-dark.png" media="(prefers-color-scheme: dark)"><img src="img/plus-demo-light.png" alt="The Plus dashboard on a phone: an invented household's accounts added up and compared with the market" width="390" height="844" loading="lazy" decoding="async"></picture>
         <span class="shot-tag">Invented household</span>
       </a>
-      <figcaption id="ph-cap" class="muted small">The real Plus dashboard, filled with an invented household (Alex and Sam) on real fund prices. Tap to try it.</figcaption>
+      <figcaption id="ph-cap" class="muted small">The real Plus dashboard. Tap to try it.</figcaption>
     </figure>
     <div class="plus-copy reveal">
-      <ol class="benefits3">
-        <li><span class="b-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="16" rx="2"/><rect x="14" y="4" width="7" height="16" rx="2"/></svg></span><div><b>See every account side by side</b><span>401(k), IRA, brokerage, HSA: return, risk and Sharpe on one screen, against one benchmark.</span></div></li>
-        <li><span class="b-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/><path d="M8.5 12.5l2-2 1.5 1.5 2-2.5"/></svg></span><div><b>Find what drags your returns</b><span>Spot the account that takes risk without being paid for it.</span></div></li>
-        <li><span class="b-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M4 17h6"/><circle cx="17" cy="7" r="2.5"/><circle cx="13" cy="17" r="2.5"/><path d="M19.5 7H20M15.5 17H20"/></svg></span><div><b>Test changes before you make them</b><span>See how a what-if moves risk and return, before any money moves.</span></div></li>
-      </ol>
-      <div class="hero-actions"><a class="btn big" href="plus-demo/">See Plus with a sample household <span class="arr" aria-hidden="true">→</span></a><a class="btn big ghost" href="signup/?plan=plus">Join the Plus list</a></div>
-      <p class="muted small"><a href="pricing/">See pricing</a></p>
-      <p class="muted small plus-note">Joining the list is free and is not a purchase. Information, not investment advice.</p>
+      <div class="hero-actions"><a class="btn big" href="signup/?plan=plus">Join Plus early access <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </div>
 </section>
@@ -107,33 +92,12 @@
 <section class="section" aria-labelledby="priv-h">
   <div class="wrap">
     <div class="promise reveal">
-      <span class="eyebrow">Our privacy promise</span>
       <h2 id="priv-h">Your numbers never leave your device</h2>
-      <p>The maths runs in your browser. There is no account to create and no server that could receive your portfolio.</p>
-      <div class="promise-grid">
-        <div class="reveal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Worked out in your browser</b><span>Mixes, amounts and files you load stay on your device.</span></div>
-        <div class="reveal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.9 9.9 0 0 1 12 5c5 0 8.5 4.5 9.5 7a13 13 0 0 1-2.6 3.8M6.6 6.6C4.4 8 3 10.2 2.5 12c1 2.5 4.5 7 9.5 7 1.6 0 3.1-.4 4.4-1.1"/></svg><b>No trackers, no cookies</b><span>No analytics and no third-party scripts, fonts or images.</span></div>
-        <div class="reveal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><b>You decide what to share</b><span>A shared link holds percentages only. <a href="privacy/">Read the privacy page</a>.</span></div>
-      </div>
-      <a class="founder-line" href="about/#founder"><img src="img/founder.jpg" alt="" width="44" height="44"><span><b>Built by Simmy Hundal</b>, who wanted to know if his own investments were really doing well. <u>Why I built this</u></span></a>
+      <p><a href="privacy/">How privacy works →</a></p>
     </div>
   </div>
 </section>
 
-<section class="section teach-line-wrap" style="padding-top:0" aria-label="For instructors">
-  <div class="wrap"><p class="teach-line reveal"><span class="tag">Instructors</span> A ready 45-minute class on risk and return, browser only. <a href="teach/">See the session plan →</a></p></div>
-</section>
-
-<section class="section" style="padding-top:0" aria-labelledby="cta-h">
-  <div class="wrap">
-    <div class="final-cta mesh card-surface reveal">
-      <img src="img/logo.svg" alt="" width="64" height="64">
-      <h2 id="cta-h">Is your mix keeping up?</h2>
-      <p>Type a few funds or drop your brokerage’s positions file. It takes a minute, and nothing leaves your device.</p>
-      <div class="hero-actions"><a class="btn big" href="try/?own=1">Check your own mix <span class="arr" aria-hidden="true">→</span></a><a class="btn big ghost" href="try/?sample=1">See the sample household</a></div>
-    </div>
-  </div>
-</section>
 </main>
 <footer class="site-foot"><div class="wrap foot-grid">
   <div class="foot-brand"><a class="brand" href=""><img class="brand-mark" src="img/logo.svg" alt="" width="32" height="32"><span class="brand-word"><b>U</b>r <b>F</b>amily <b>O</b>ffice</span></a>

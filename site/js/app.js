@@ -1,7 +1,7 @@
 // The page. All data stays in the browser: no network calls except loading the bundled demo prices.
 import { compare, parsePricesCsv, completedMonths, localToday } from "./calc.mjs";
 import { $, el, svg, money, pct, spct, monthYear, revealOnScroll, saveMix } from "./util.mjs";
-import { runResult, sampleConfig, defaultBenchmark, headline, nextStep, SAMPLES, sampleId } from "./result.mjs";
+import { runResult, sampleConfig, defaultBenchmark, headline, SAMPLES, sampleId } from "./result.mjs";
 import { loadPrices } from "./data.mjs";
 import { savePortfolio, listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
 import { parsePositions, TEMPLATE_CSV } from "./positions.mjs";
@@ -17,7 +17,7 @@ const TIPS = {
 };
 const tip = (label, key) => el("span", { class: "tip", tabindex: "0", "data-tip": TIPS[key], "aria-description": TIPS[key] }, label);
 
-const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: [], presets: [], mixName: "Your mix", sample: "", own: false };
+const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: [], presets: [], mixName: "Your mix", sample: "" };
 
 async function load() {
   const p = await loadPrices();
@@ -32,10 +32,7 @@ async function load() {
   const shared = decodeShare(location.search);
   if (shared) applyConfig({ ...shared, name: "Shared mix" }, { fromLink: true });
   else if (new URLSearchParams(location.search).has("sample")) loadSample(sampleId(new URLSearchParams(location.search).get("sample")));
-  if (new URLSearchParams(location.search).has("own")) { // "Check your own mix" from Home: go straight to the two paths
-    state.own = true; drawOwn();
-    setTimeout(() => $("own").scrollIntoView({ block: "start", behavior: "instant" }), 80);
-  }
+  if (new URLSearchParams(location.search).has("own")) setTimeout(startTyping, 80); // "Check your own mix" from Home: open the mix editor
   renderSaved();
 }
 
@@ -49,7 +46,7 @@ function setup() {
   // Demo data and a visitor's own file get a banner; the built-in real prices get a small plain date line (issue 225).
   const note = state.demo ? "Demo data: invented funds, not real prices." : state.source ? "" : `Your file: ${symbols().length} funds.`;
   $("data-banner").textContent = note; $("data-banner").hidden = !note;
-  $("data-date").textContent = state.source ? `${state.source} Month-end adjusted closes, completed months only.` : "";
+  $("data-date").textContent = state.source ? `${state.source} Month-end adjusted closes, completed months only. Cash rate: 3-month Treasury bills from FRED.` : "";
   drawSampleNote();
   $("reset-data").hidden = state.demo && !$("csv").value;
   $("tickers").replaceChildren(...symbols().map((s) => el("option", { value: s }, state.labels[s] || "")));
@@ -125,12 +122,7 @@ function drawSummary(h) {
     $("headline-sub").textContent = (h.diff === 0 ? "The same result." : `${h.name} finished ${money(Math.abs(h.diff))} ${h.diff > 0 ? "ahead of" : "behind"} ${h.bench}.`) +
       ` ${monthYear(h.from)} through ${monthYear(h.to)}, before taxes and costs.`;
   }
-  const n = nextStep(h);
-  $("next-step").dataset.tone = n.tone;
-  $("ns-title").textContent = n.title; $("ns-body").textContent = n.body; $("ns-ask").textContent = n.ask;
-  $("ns-own").textContent = state.sample ? "Try your own mix" : "Change the mix";
-  drawOwn();
-  $("next-step").hidden = false;
+  $("next-step").hidden = false; // one invitation after a result: "Want this for all your accounts? Join Plus early access" (issue 239)
 }
 function statPair(label, mv, bv, h, key) {
   return el("div", { class: "hl-stat" }, el("span", { class: "k" }, tip(label, key)),
@@ -359,25 +351,17 @@ $("clear-all").addEventListener("click", () => {
   $("save-status").textContent = n ? "Cleared everything saved on this device." : "Nothing was saved on this device.";
 });
 
-// ---------- "Now check your own mix" (issue 184): shown after a sample, or when asked for with ?own=1 ----------
-function drawOwn() { $("own").hidden = !(state.sample || state.own); }
+// ---------- "Check your own mix" (Home's button, ?own=1): open the mix editor on the first fund ----------
 function startTyping() {
-  state.own = true;
   const d = $("settings"); d.open = true;
   d.scrollIntoView({ behavior: "smooth", block: "start" });
   const first = $("rows").querySelector("input");
   if (first) setTimeout(() => first.focus({ preventScroll: true }), 300);
 }
-$("own-type").addEventListener("click", (e) => { e.preventDefault(); startTyping(); });
-$("own-file").addEventListener("change", (e) => { if (e.target.files[0]) { state.own = true; loadPositions(e.target.files[0]); } });
-const ownDrop = $("own-drop");
-for (const ev of ["dragenter", "dragover"]) ownDrop.addEventListener(ev, (e) => { e.preventDefault(); ownDrop.classList.add("over"); });
-for (const ev of ["dragleave", "drop"]) ownDrop.addEventListener(ev, (e) => { e.preventDefault(); ownDrop.classList.remove("over"); });
-ownDrop.addEventListener("drop", (e) => { const f = e.dataTransfer?.files?.[0]; if (f) { state.own = true; loadPositions(f); } });
 
 // ---------- positions CSV -> mix ----------
 async function loadPositions(file) {
-  const msg = { set textContent(t) { $("positions-msg").textContent = t; $("own-msg").textContent = t; } };
+  const msg = $("positions-msg");
   try {
     const res = parsePositions(await file.text(), symbols());
     applyConfig({ weights: res.weights, name: "My holdings" });
@@ -398,7 +382,6 @@ function downloadTemplate(e) {
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 $("template-dl").addEventListener("click", downloadTemplate);
-$("own-template").addEventListener("click", downloadTemplate);
 
 // ---------- share link and card (percentages only) ----------
 function shareConfig() {
@@ -499,10 +482,6 @@ $("csv").addEventListener("change", async (e) => {
 });
 $("sample").addEventListener("click", () => loadSample("household"));
 $("sample-student").addEventListener("click", () => loadSample("student"));
-$("ns-own").addEventListener("click", () => {
-  if (!$("own").hidden) $("own").scrollIntoView({ behavior: "smooth", block: "start" });
-  else { const d = $("settings"); d.open = true; d.scrollIntoView({ behavior: "smooth", block: "start" }); }
-});
 $("reset-data").addEventListener("click", () => { $("csv").value = ""; load(); });
 
 revealOnScroll();

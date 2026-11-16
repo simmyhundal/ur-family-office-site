@@ -79,37 +79,13 @@
           <button type="button" id="share-copy" class="secondary">Copy link</button>
           <button type="button" id="share-png" class="secondary">Download card (PNG)</button>
         </div>
-        <p class="muted small">Nothing is uploaded. The link and the card are made in your browser; you decide where to paste them.</p>
       </div>
     </div>
   </section>
   <div id="sample-note" class="banner sample-note" role="status" hidden></div>
-  <section id="own" class="own-panel" hidden aria-labelledby="own-h">
-    <span class="eyebrow">Your turn</span>
-    <h2 id="own-h">Now check your own mix</h2>
-    <p class="muted">Two ways. Both stay on this device: nothing you type or drop is uploaded.</p>
-    <div class="own-grid">
-      <a href="#settings" id="own-type" class="own-path"><span class="own-ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span><b>Type a few funds</b>
-        <span class="muted small">Tickers and percentages, like VTI 60 and BND 40. About a minute.</span><span class="own-go">Start typing →</span></a>
-      <div id="own-drop" class="own-path"><span class="own-ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 18v-6M9.5 14.5L12 12l2.5 2.5"/></svg></span><b>Drop your positions file</b>
-        <span class="muted small"><b>Fidelity:</b> Accounts › Positions › Download. <b>Any other brokerage:</b> fill in <a href="#" id="own-template">the template</a> (symbol, value).</span>
-        <label class="own-file">Choose a file<input id="own-file" type="file" accept=".csv,text/csv"></label></div>
-    </div>
-    <p id="own-msg" class="muted small" role="status"></p>
-  </section>
-  <aside id="next-step" class="next-step" hidden aria-labelledby="ns-title">
-    <div class="ns-copy">
-      <span class="eyebrow">What next</span>
-      <h2 id="ns-title"></h2>
-      <p id="ns-body" class="muted"></p>
-      <p id="ns-ask" class="ns-ask"></p>
-      <div class="ns-actions">
-        <a class="btn" href="../signup/?plan=plus">Join the Plus list</a>
-        <a class="btn ghost" href="../plus-demo/">See Plus with a sample household</a>
-        <button type="button" id="ns-own" class="link">Try your own mix</button>
-      </div>
-    </div>
-    <a class="ns-learn" href="../learn/sharpe/"><span class="tag">Lesson</span><b>What is a Sharpe ratio?</b><span class="muted small">The number beside the return, in five short steps.</span></a>
+  <aside id="next-step" class="next-step ns-one" hidden aria-label="Plus early access">
+    <p class="ns-ask">Want this for all your accounts?</p>
+    <a class="btn" href="../signup/?plan=plus">Join Plus early access <span class="arr" aria-hidden="true">→</span></a>
   </aside>
 
   <details class="details">
@@ -147,15 +123,14 @@
         <label><span class="tip" tabindex="0" data-tip="Money added at the end of every month, split by your weights.">Add monthly ($)</span><input id="monthly" type="number" min="0" step="50" value="0" inputmode="decimal"></label>
       </div>
       <h3 style="margin-top:28px">My portfolios</h3>
-      <p class="muted small">Saved in this browser only. Nothing is sent anywhere.</p>
+      <p class="muted small">Saved in this browser only.</p>
       <ul id="saved-list" class="saved-list"></ul>
       <p id="saved-empty" class="muted small">None yet. Use “Save this mix” under the chart.</p>
       <button type="button" id="clear-all" class="link">Clear everything saved on this device</button>
       <h3 style="margin-top:28px">Start from your holdings</h3>
-      <p class="muted small">Drop a positions file and it becomes a mix, by weight. Dollar amounts are used to work out the percentages and then forgotten; they are not saved or shared. Parsed in your browser.</p>
+      <p class="muted small">Drop a positions file (from Fidelity: Accounts › Positions › Download, or <a href="#" id="template-dl">the template</a>) and it becomes a mix by weight. Nothing is uploaded.</p>
       <div id="drop" class="drop" tabindex="-1"><label class="file">Positions CSV<input id="positions" type="file" accept=".csv,text/csv"></label>
         <span class="muted small">or drop it here</span></div>
-      <p class="muted small"><a href="#" id="template-dl">Download the template</a> (symbol, value). From Fidelity: Accounts &gt; Positions &gt; Download.</p>
       <p id="positions-msg" class="muted small" role="status"></p>
     </div>
   </details>
@@ -163,7 +138,7 @@
   <details class="details">
     <summary>Advanced: use your own price history (CSV)</summary>
     <div class="inner">
-      <p class="muted small"><code>date,SPY,VTI</code> or <code>date,symbol,price</code>, adjusted prices. Stays in your browser; nothing is uploaded.</p>
+      <p class="muted small"><code>date,SPY,VTI</code> or <code>date,symbol,price</code>, adjusted prices.</p>
       <div class="controls">
         <label class="file">File<input id="csv" type="file" accept=".csv,text/csv"></label>
         <button type="button" id="reset-data" class="secondary" hidden>Back to built-in prices</button>

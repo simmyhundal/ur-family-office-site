@@ -17,10 +17,6 @@ async function preview() {
   $("pv-m").textContent = spct(m.mixAnnual); $("pv-b").textContent = spct(m.benchAnnual); $("pv-bench2").textContent = m.bench;
   $("pv-chip").textContent = `${m.years} years · through ${throughLabel(m.to)}`;
   $("pv-sub").textContent = `${ans.gap} ${money(SAMPLE.initial)} across a 401(k), an IRA and a brokerage account, then ${money(SAMPLE.monthly)} a month. Before taxes and costs.`;
-  if (m.mixSharpe != null) {
-    $("pv-sharpe").textContent = `Sharpe ${m.mixSharpe.toFixed(2)}`;
-    $("pv-sharpe-sub").textContent = m.benchSharpe != null ? `${m.bench}: ${m.benchSharpe.toFixed(2)}` : "Return per unit of risk";
-  }
   const [mix, bench, put] = linePaths([m.mixValues, m.benchValues, m.putValues], 480, 190);
   $("pv-mline").setAttribute("d", mix); $("pv-bline").setAttribute("d", bench); $("pv-put").setAttribute("d", put);
   $("pv-fill").setAttribute("d", `${mix}L480,190L0,190Z`);
