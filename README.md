@@ -1,59 +1,84 @@
 # Ur Family Office
 
-**Understand what your investments earned—and what the same money could have earned elsewhere.**
+**Understand your investments before deciding what to change.**
 
-Built by [Simmy Hundal](https://github.com/simmyhundal). A working product and an ongoing exercise in turning complicated financial data into an approachable experience.
+A personal finance product I designed and built, from brokerage-file imports and financial calculations to an interactive React dashboard and a public website.
 
-[Try the calculator](https://simmyhundal.github.io/ur-family-office-site/try/) · [Explore a sample household](https://simmyhundal.github.io/ur-family-office-site/plus-demo/) · [Learn how Sharpe works](https://simmyhundal.github.io/ur-family-office-site/learn/sharpe/)
+[Explore the Plus household](https://simmyhundal.github.io/ur-family-office-site/plus-demo/) · [Try the free tool](https://simmyhundal.github.io/ur-family-office-site/try/) · [Website](https://simmyhundal.github.io/ur-family-office-site/)
 
-## For investors
+<a href="https://simmyhundal.github.io/ur-family-office-site/plus-demo/"><img src="site/img/plus-demo-dark.png" width="280" alt="Plus Overview with an invented household"></a>
 
-- Compare an investment mix against a benchmark using public fund prices.
-- Understand return and risk through short, interactive lessons.
-- Explore Plus with an **invented household**, without providing account files.
+## The problem
 
-The public calculator processes your inputs in your browser. Its calculations do not require uploading a portfolio. The optional early-access form separately submits the contact information and consent you provide; see [Privacy](https://simmyhundal.github.io/ur-family-office-site/privacy/).
+A balance going up does not tell you whether your investments performed well. Deposits, withdrawals, different account types and incomplete statements make comparisons harder. UFO brings those accounts into one view and compares them with the same money invested in a benchmark.
 
-<a href="https://simmyhundal.github.io/ur-family-office-site/plus-demo/"><img src="site/img/plus-demo-light.png" width="240" alt="The public Plus demo showing an invented household's investments on a phone"></a>
+The public Plus experience uses **invented accounts and public fund prices**. It is the same React interface as the local Plus pilot, with a small website adapter. It does not accept personal uploads, connect to a brokerage, move money or place orders. Personal file imports belong to Plus; commercial access remains early access.
 
-*Public demo screenshot. Invented account data; real fund prices.*
+## What you can explore
 
-## What this project demonstrates
+| Screen | What it helps answer |
+| --- | --- |
+| Overview | How much do I have? How did my cash-flow return compare with a benchmark? Where did the money come from? |
+| Details | Which accounts contributed, and how do return, volatility and Sharpe compare? |
+| Next steps | How did a Sharpe strategy behave across historical periods? What did it choose at past decisions, and what would a different allocation mean for an account? |
 
-I’m building the product across its user experience, implementation, data pipeline and deployment. A few decisions show how I approach that work:
+Choose benchmarks and time periods, inspect account histories, and walk through a strategy decision. Risk charts use time-weighted returns; Overview uses cash-flow IRR. They answer different questions. Historical strategy evidence, today's allocation replay and personal cash-flow illustrations are kept separate.
 
-| Challenge | Approach | Public evidence |
-|---|---|---|
-| Make a technical comparison understandable | Searchable fund names, persistent descriptions and a benchmark users can identify | [Fund picker](site/js/fund-picker.mjs) |
-| Explain the numbers | A guided lesson with one idea per step, worked examples and progressive disclosure | [Lesson components](site/js/lesson.mjs) |
-| Keep interactive finance usable | Separate calculation logic from presentation and keep calculations in the browser | [Calculation module](site/js/calc.mjs) |
-| Ship a small, maintainable product | Static pages, native JavaScript modules and SVG rather than requiring a server for every interaction | [Website source](site/) |
-| Keep published data and assets current | Scheduled price updates, guarded publication and asset versioning | [Price pipeline](scripts/fetch_site_prices.py), [deployment workflow](.github/workflows/site.yml) |
+## Engineering choices
 
-**Product judgment and iteration.** Phone reviews and screenshot feedback drive concrete changes: clearer comparisons, less copy, meaningful missing-data states and a consistent visual language. I keep estimates and limitations explicit instead of presenting incomplete information as certainty.
+- **One product UI:** Overview, Details and Next steps compose shared React controls, charts, legends, disclosures and formatting. Portfolio and benchmark colours use semantic roles; estimation affects line style separately. The public household is data plus a wrapper, rather than a second dashboard implementation.
+- **Python owns the financial calculations:** the local pipeline normalizes imported events, reconciles accounts and produces a typed report payload. React presents precomputed results. The public sample is generated from an invented registry through that pipeline.
+- **Useful with imperfect data:** estimated history is labelled. Unknown holdings do not become invented portfolio weights. Independent public-fund research can continue when positions are missing; current-risk matching needs defensible inputs.
+- **Inspect the evidence:** the walk-forward strategy chooses allocations using earlier prices, with matched-date benchmarks, dated decisions, drawdowns and rolling windows. Fund selection and historical substitutes still introduce limitations; a backtest is not a forecast.
+- **Offline report, static hosting:** the generated Plus page contains its data and JavaScript. Opening and interacting with it requires no data requests. The free tool uses same-origin public price files; sign-up submits only explicitly provided contact information.
+- **Incremental migration with recovery:** the Plus renderer has a legacy recovery path. React migration preserves the analytical payload rather than rewriting the financial engine.
 
-**AI-assisted building with verification.** I use coding agents to accelerate implementation, then review the output against explicit acceptance criteria and automated checks. The companion Plus work includes legacy fallbacks and rollback checks so a migration can be evaluated before it replaces an established experience.
+**How I build:** I use AI coding agents for implementation, then verify their work against explicit UX agreements, invented-data regression checks and product review.
 
-## Architecture and current scope
+## Source map
 
-This repository contains the **public static website**: HTML, CSS, JavaScript modules and SVG, hosted on GitHub Pages. Python scripts fetch public price data during publishing. GitHub Actions publishes on changes and refreshes prices on weekdays.
+This is the public frontend repository. Personal data, credentials and the private Python import/research implementation are excluded.
 
-The companion **Plus Mission Control** product handles local account imports and Python financial calculations in a separate private codebase. Its interactive frontend is being migrated incrementally to **React and TypeScript**, starting with Overview and Details while preserving the existing data contract and recovery path. That migration is not yet the frontend shipped by this public repository.
+| Path | Responsibility |
+| --- | --- |
+| `frontend/plus/src/` | Shared React product views, analytical types and UI primitives |
+| `frontend/plus/tests/` | Formatting, financial display contracts, component consistency and public household interactions |
+| `site/plus-demo/index.html` | Generated, self-contained household report with invented accounts |
+| `site/js/` | Free comparison tool, financial calculations, fund picker and approachable lessons |
+| `tests/site/` | Free-tool calculations, privacy boundaries, configuration and website checks |
+| `scripts/` | Public price fetching and deployment asset versioning |
+| `.github/workflows/site.yml` | Checks, public-price refresh and GitHub Pages deployment |
 
-Personal account exports, credentials and private portfolio reports do not belong here. Public examples use invented accounts. Plus availability and installation remain early-access work; the sample is an exploration, not a public self-serve installer.
+**Stack:** Python for the local financial pipeline; React and TypeScript for Plus; esbuild for the embedded bundle; HTML/CSS and browser JavaScript for the website and Free tool; Node tests, JSDOM and GitHub Actions for frontend verification and delivery.
 
-## Run the public site locally
+## Run locally
 
-From a clone of this repository:
+Serve the website using Python's standard library:
 
 ```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install 'pydantic>=2.7'
-python scripts/fetch_site_prices.py
-python -m http.server 8000
+python3 -m http.server 8765 --directory site
 ```
 
-Open [localhost:8000/site/](http://localhost:8000/site/). Price generation requires internet access. There is no frontend package-install or build step for the current public site.
+Open `http://localhost:8765/plus-demo/` to explore the saved household. The Free tool needs `site/data/prices.json`, fetched by the public script below, or the bundled illustrative-price option.
 
-**Information, not investment advice.** Results are before taxes and trading costs; historical performance does not predict future results.
+```sh
+python3 -m pip install 'pydantic>=2.7'
+python3 scripts/fetch_site_prices.py
+```
+
+Build and check the shared Plus frontend (Node 22 or newer):
+
+```sh
+npm ci --prefix frontend/plus
+npm run build --prefix frontend/plus
+npm test --prefix frontend/plus
+node --test tests/site/*.test.mjs
+```
+
+The Plus build creates a verified bundle under `src/ufo/performance/react-assets/`. It does not regenerate the financial report: that requires the private Python pipeline. The public household check catches a stale embedded bundle. Frontend changes and the corresponding regenerated household ship together through an allowlisted sync.
+
+## Status and limitations
+
+This is a working product under active development, not a finished investment adviser. The local Plus installer remains a pilot. Historical substitutes and reconstructed statement gaps can affect risk estimates. Strategy research excludes taxes, trading costs and surrender charges. Historical performance does not predict future results.
+
+Built by [Simmy Hundal](https://simmyhundal.github.io/ur-family-office-site/about/). Information, not investment advice.

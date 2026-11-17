@@ -1,0 +1,12 @@
+import {build} from 'esbuild';
+import {mkdirSync,writeFileSync,renameSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const dir=new URL('../../src/ufo/performance/react-assets/',import.meta.url);
+const result=await build({entryPoints:['src/entry.tsx'],bundle:true,minify:true,format:'iife',target:['es2020'],jsx:'automatic',define:{'process.env.NODE_ENV':'"production"'},write:false,loader:{'.css':'text'},legalComments:'inline'});
+const code=result.outputFiles[0].contents;
+mkdirSync(dir,{recursive:true});
+writeFileSync(new URL('overview.js.tmp',dir),code);
+writeFileSync(new URL('manifest.json.tmp',dir),JSON.stringify({schema_version:1,sha256:createHash('sha256').update(code).digest('hex')})+'\n');
+renameSync(new URL('overview.js.tmp',dir),new URL('overview.js',dir));
+renameSync(new URL('manifest.json.tmp',dir),new URL('manifest.json',dir));
+console.log(`Built self-contained React Overview (${Math.round(code.length/1024)} KiB).`);
