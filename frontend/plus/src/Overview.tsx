@@ -1,0 +1,24 @@
+import {useMemo} from 'react';
+import {deriveView} from './model';
+import type {DashboardData} from './types';
+import {Card,CardStack,Disclosure,SelectField,tupleOptions,PeriodSelector,MetricPair,StatusMessage} from './ui/components';
+import {TimeSeriesChart} from './ui/charts';
+import {money,percent,formatDate} from './ui/format';
+type Props={data:DashboardData;benchmark:string;period:string;onBenchmark(symbol:string):void;onPeriod(key:string):void;onNavigate(tab:string):void};
+export function Overview({data,benchmark,period,onBenchmark,onPeriod}:Props){
+ const view=useMemo(()=>deriveView(data,benchmark,period),[data,benchmark,period]);const o=data.overview;
+ if(!o||view.empty)return <Card><h1>Your investments</h1><StatusMessage kind="missing">Add an account to get started.</StatusMessage></Card>;
+ return <CardStack className="overview">
+ <Card><div className="ui-headline-controls"><h1>Your investments</h1><SelectField label="Benchmark" tone="benchmark" hideLabel value={benchmark} options={tupleOptions(data.benchmarks)} onChange={onBenchmark}/></div>
+ <MetricPair left={{label:'Your investments',hideLabel:true,value:money(view.value),detail:<span className="portfolio-irr" aria-label={`${view.annualized?'Annual':'Period'} IRR ${percent(view.irr,true)}`}>{percent(view.irr,true)}</span>}} right={{label:benchmark,hideLabel:true,tone:'benchmark',value:money(view.comparison?.value),detail:<span aria-label={`${view.annualized?'Annual':'Period'} IRR ${percent(view.comparison?.irr,true)}`}>{percent(view.comparison?.irr,true)}</span>}}/>
+ <PeriodSelector value={period} onChange={onPeriod}/>
+ <TimeSeriesChart label="Portfolio and benchmark value over the selected period" resetKey={period+'/'+benchmark} dates={view.months} zeroBaseline={period==='inception'||period==='all'} series={view.series.map((s,i)=>({key:s.key,label:i?s.key:'Your portfolio',role:i?'benchmark':'portfolio',values:s.values,estimated:i?undefined:view.estimated}))}/>
+ </Card>
+ {view.sources&&<Card aria-labelledby="overview-sources-heading"><h2 id="overview-sources-heading">Where your money came from</h2>{(()=>{
+ const s=view.sources!,rows:[string,number,string][]=[['Starting balance',s.opening,'var(--k5)'],['Deposits',s.deposits,'var(--accent)'],['Withdrawals',-s.withdrawals,'var(--k3)'],[s.gain>=0?'Investment gain':'Investment loss',s.gain,s.gain>=0?'var(--up)':'var(--down)']],max=Math.max(...rows.map(([,v])=>Math.abs(v)),1);
+ return <>{rows.map(([label,value,color])=><div className="ui-source-row" key={label}><span>{label}</span><strong className="own-value">{money(value)}</strong><span className="ui-source-track"><i style={{width:`${Math.abs(value)/max*100}%`,background:color}}/></span></div>)}<div className="ui-source-total"><span>Current value</span><span className="own-value">{money(s.value)}</span></div></>;
+ })()}</Card>}
+ <Disclosure variant="card" title="Figures & estimates"><p>Returns follow the selected period. Short periods are cumulative; IRRs are annualized for periods of at least one year. The benchmark uses the same opening balance and later payments.</p><p>Dashed purple segments use reconstructed history. The orange dashed line is the comparison. Missing history can change results.</p><p>{o.accounts} accounts · updated {formatDate(o.as_of,'day')}.</p>{o.missing.length>0&&<StatusMessage kind="estimated">Missing history: {o.missing.join(', ')}</StatusMessage>}{!!data.pendingAccounts?.length&&<StatusMessage kind="missing">Waiting for a balance: {data.pendingAccounts.join(', ')}. These accounts are not included in totals yet.</StatusMessage>}<ul>{o.statements.map(s=><li key={s.label+s.as_of}>{s.label} · {formatDate(s.as_of,'day')}</li>)}</ul>{view.comparison?.note&&<StatusMessage>{view.comparison.note}</StatusMessage>}<p>Historical returns are information, not investment advice.</p></Disclosure>
+ </CardStack>;
+}
+export default Overview;

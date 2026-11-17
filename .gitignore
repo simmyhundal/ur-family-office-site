@@ -1,0 +1,5 @@
+node_modules
+src/ufo/performance/react-assets/
+site/data/prices.json
+.env
+.data/
