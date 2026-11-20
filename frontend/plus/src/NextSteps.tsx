@@ -1,4 +1,7 @@
 import {useState} from 'react';
+import {ResearchNextSteps} from './ResearchNextSteps';
+import {AdoptionTracking as SavedHoldingsTracking} from './AdoptionTracking';
+import type {ResearchProposal,AdoptionTracking} from './research-types';
 import {Card,CardStack,SelectField,tupleOptions,Disclosure,MetricPair,StatusMessage,DataTable,AllocationBreakdown,DataQualityBadge,DataCoverage,ComparisonSummary} from './ui/components';
 import {TimeSeriesChart} from './ui/charts';
 import {money as usd,percent as pct,decimal as num,formatDate as fmt,duration as years} from './ui/format';
@@ -13,7 +16,7 @@ type Decision={date:string;input_from:string;input_to:string;held_to:string;weig
 type Row={name:string;kind:string;desc:string;ret:number|null;sharpe:number|null;worst:number|null;evidence?:Record<string,Evidence>;decisions?:Decision[]};
 type Account={id:string;label:string;irr?:number|null};
 type Mix={key:string;name:string;weights:Record<string,number>;desc:string;error?:string;rule?:string;evidence?:Record<string,Evidence>;history?:{from:string;to:string;standins?:Proxy[]}};
-export type NextData=DashboardData&{nextSteps?:{error?:string;estimated?:boolean;accounts_included?:number;history_note?:string;estimate_notes?:{account:string;method:string}[];accounts?:Account[];mixes?:Mix[];moves?:Record<string,Move>;assumptions?:string[];research_benchmarks?:[string,string][];candidates?:{research_only?:boolean;matched_risk_available?:boolean;max_weight?:number;funds?:string[];universe?:{name:string;declared:string;rationale:string;class_caps:Record<string,number>};error?:string;from?:string;to?:string;lookback?:number;rebalance?:number;scope_note?:string;selection_note?:string;left_out?:{symbol:string;why:string}[];standins?:Proxy[];rows?:Row[]}}};
+export type NextData=DashboardData&{nextSteps?:{proposals?:ResearchProposal[];adoptionTracking?:AdoptionTracking;error?:string;estimated?:boolean;accounts_included?:number;history_note?:string;estimate_notes?:{account:string;method:string}[];accounts?:Account[];mixes?:Mix[];moves?:Record<string,Move>;assumptions?:string[];research_benchmarks?:[string,string][];candidates?:{research_only?:boolean;matched_risk_available?:boolean;max_weight?:number;funds?:string[];universe?:{name:string;declared:string;rationale:string;class_caps:Record<string,number>};error?:string;from?:string;to?:string;lookback?:number;rebalance?:number;scope_note?:string;selection_note?:string;left_out?:{symbol:string;why:string}[];standins?:Proxy[];rows?:Row[]}}};
 const friendly=(name:string)=>name.includes('at your mix')?'Keep similar risk':name.includes('max-Sharpe')?'Sharpe strategy':name==='VTI'?'US stocks (VTI)':name==='QQQ'?'Nasdaq-100 (QQQ)':name;
 function Weights({weights}:{weights:Record<string,number>}){return <AllocationBreakdown weights={weights}/>;}
 function EvidenceChart({e,label}:{e:Evidence;label:string}){return <TimeSeriesChart label={`${label} and ${e.benchmark}: growth of $100 over the same dates`} zeroBaseline dates={e.chart.months} series={[{key:label,label,role:'portfolio',values:e.chart.own,quality:'modeled'},{key:e.benchmark,label:e.benchmark,role:'benchmark',values:e.chart.benchmark,quality:'modeled'}]}/>;}
@@ -37,6 +40,7 @@ export function NextSteps({data,onNavigate,benchmark,onBenchmark}:{data:NextData
  const delta=a?a.new_value-a.actual_value:null;
  const proxies=[...(choice?.rule?C?.standins??[]:choice?.history?.standins??[]),...(evidence?.reference_standins??[])];
  if(!N)return null;
+ if(N.proposals?.length)return <ResearchNextSteps proposals={N.proposals} tracking={N.adoptionTracking} accounts={accounts} moves={N.moves} estimated={N.estimated}/>;
  return <CardStack className="next-steps">
  <Card><h1>1. Compare investment approaches</h1><p className="small">Understand the evidence before applying a change to your accounts.</p>
  <div className="ui-controls"><SelectField label="Investment mix" tone="portfolio" value={choice?.key??''} onChange={setMix} options={[...mixes.map(x=>({value:x.key,label:friendly(x.rule??x.name)})),...(C?.error?[{value:'sharpe-unavailable',label:'Sharpe strategy — unavailable',disabled:true}]:[]),...(C?.research_only?[{value:'risk-unavailable',label:'Match my current risk — needs holdings',disabled:true}]:[])]}/><SelectField label="Benchmark" tone="benchmark" value={reference} onChange={value=>{setLocalBenchmark(value);onBenchmark?.(value);}} options={tupleOptions(N.research_benchmarks??data.benchmarks)}/></div>
@@ -62,6 +66,7 @@ export function NextSteps({data,onNavigate,benchmark,onBenchmark}:{data:NextData
  {household&&<><h3>Effect on your whole portfolio</h3><p className="small">{N.accounts_included??data.overview?.accounts} accounts · only {selected?.label} changes</p><MetricPair left={{label:"Current",value:usd(household.as_is.value),detail:pct(household.as_is.irr,true)+"/year"}} right={{label:"With the change",tone:"benchmark",value:usd(household.moved.value),detail:pct(household.moved.irr,true)+"/year"}}/><p className="small">Sharpe: {num(household.as_is.sharpe)} → {num(household.moved.sharpe)} · history through {fmt(household.as_of)}</p></>}
  {!household&&scenario?.household_note&&<StatusMessage kind="missing">Household comparison is unavailable for this selection.</StatusMessage>}<CostChecks key={choice?.key}/>
  </Card>
+ {N.adoptionTracking&&<SavedHoldingsTracking tracking={N.adoptionTracking}/>}
  <Disclosure variant="card" title="Figures & estimates">
  <p>{C?.scope_note??'Fund-history research and personal account replays are separate.'}</p><p>{C?.selection_note}</p><p>Today's weights held fixed are a hypothetical reference, not your historical portfolio. The common-period tests compare all rules over the same dates; fixed allocations may also have longer histories.</p>
  {!!C?.left_out?.length&&<Disclosure title='Funds outside this research'><ul>{C.left_out.map(x=><li key={x.symbol}>{x.symbol}: {x.why}</li>)}</ul></Disclosure>}
