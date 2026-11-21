@@ -43,6 +43,5 @@ export function Details({data,benchmark,period,onBenchmark,onPeriod}:Props){
  </>}</>}
  </Card>
  <Disclosure title="Fine print" variant="card"><p>Excess IRR: the account’s IRR minus the benchmark’s, with the same payments. Periods under a year are cumulative. Short purple dashes: estimated history.</p></Disclosure>
- <p className="small ui-disclaimer">Information, not advice.</p>
  </CardStack>;
 }

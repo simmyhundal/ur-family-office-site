@@ -54,7 +54,10 @@ test('public household runs all three shared tabs and changes benchmark, period 
   await until(()=>[...next.querySelectorAll('#evidence tr[data-tone="proposal"] th')].some(th=>th.textContent==='Growth 80/20 · SPY'));
   assert.ok(next.querySelector('[data-series="moved"]'),'Sharpe over time compares the checked account');
   for(const id of ['react-overview','react-details','react-next']){const t=w.document.getElementById(id)!.textContent!;
-   assert.doesNotMatch(t,/\bmix(es)?\b/i,id);assert.equal(t.split('Information, not advice').length-1,1,id);}
+   assert.doesNotMatch(t,/\bmix(es)?\b/i,id);assert.doesNotMatch(t,/Information, not (investment )?advice/,id);}
+  const foot=w.document.querySelector('footer.foot')!.textContent!;assert.equal(foot.split('Information, not advice').length-1,1,'one disclaimer line, shown under every tab');
+  assert.doesNotMatch(foot,/not investment advice/);
+  const join=w.document.querySelector('header a.demo-join')!;assert.equal(join.textContent,'Pre-order Plus');assert.equal(join.getAttribute('href'),'../pricing/');
   assert.equal(w.document.querySelector('div.demo'),null,'one invented-household label, in the header');
   assert.equal(w.document.querySelector('header [data-act="opts"]'),null,'no options panel button');
   assert.match(w.document.querySelector('header')!.textContent!,/invented household/);

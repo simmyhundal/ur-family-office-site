@@ -99,7 +99,6 @@ export function NextSteps({data}:{data:NextData;onNavigate?(tab:string):void;ben
   {standins.length?<p>Stand-ins before a fund existed: {standins.map(s=>`${s.standin} for ${s.fund} before ${formatDate(s.before)}`).join('; ')}.</p>:null}
   {mix?.compare?.current_left_out?.length?<p>Left out of your portfolio (no prices): {mix.compare.current_left_out.join(', ')}. Cash and accounts without fund holdings are left out too.</p>:<p>Your portfolio here is your priced funds at today’s weights; cash and accounts without fund holdings are left out.</p>}
   {n.history_note&&<p>{n.history_note}</p>}{n.assumptions?.length?<ul>{n.assumptions.map((x,i)=><li key={i}>{x}</li>)}</ul>:null}
- </Disclosure>
- <p className="small ui-disclaimer">Information, not advice.</p></>}
+ </Disclosure></>}
  </CardStack>;
 }

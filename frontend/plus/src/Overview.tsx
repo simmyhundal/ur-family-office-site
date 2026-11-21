@@ -20,7 +20,6 @@ export function Overview({data,benchmark,period,onBenchmark,onPeriod}:Props){
  return <>{rows.map(([label,value,color])=><div className="ui-source-row" key={label}><span>{label}</span><strong className="own-value">{money(value)}</strong><span className="ui-source-track"><i style={{width:`${Math.abs(value)/max*100}%`,background:color}}/></span></div>)}<div className="ui-source-total"><span>Current value</span><span className="own-value">{money(s.value)}</span></div></>;
  })()}</Card>}
  <Disclosure variant="card" title="Fine print"><p>Periods under a year are cumulative; longer ones are annualized. The benchmark gets the same opening balance and payments. Dashed purple: reconstructed history.</p>{o.missing.length>0&&<StatusMessage kind="estimated">Missing history: {o.missing.join(', ')}</StatusMessage>}{!!data.pendingAccounts?.length&&<StatusMessage kind="missing">Waiting for a balance: {data.pendingAccounts.join(', ')}. Not in totals yet.</StatusMessage>}<ul>{o.statements.map(s=><li key={s.label+s.as_of}>{s.label} · {formatDate(s.as_of,'day')}</li>)}</ul>{view.comparison?.note&&<StatusMessage>{view.comparison.note}</StatusMessage>}</Disclosure>
- <p className="small ui-disclaimer">Information, not advice.</p>
  </CardStack>;
 }
 export default Overview;
