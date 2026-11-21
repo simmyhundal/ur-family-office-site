@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {ResearchNextSteps} from './ResearchNextSteps';
+import {HoldoutTest,type Holdout} from './HoldoutTest';
 import {AdoptionTracking as SavedHoldingsTracking} from './AdoptionTracking';
 import type {ResearchProposal,AdoptionTracking} from './research-types';
 import {Card,CardStack,SelectField,tupleOptions,Disclosure,MetricPair,StatusMessage,DataTable,AllocationBreakdown,DataQualityBadge,DataCoverage,ComparisonSummary} from './ui/components';
@@ -16,7 +17,7 @@ type Decision={date:string;input_from:string;input_to:string;held_to:string;weig
 type Row={name:string;kind:string;desc:string;ret:number|null;sharpe:number|null;worst:number|null;evidence?:Record<string,Evidence>;decisions?:Decision[]};
 type Account={id:string;label:string;irr?:number|null};
 type Mix={key:string;name:string;weights:Record<string,number>;desc:string;error?:string;rule?:string;evidence?:Record<string,Evidence>;history?:{from:string;to:string;standins?:Proxy[]}};
-export type NextData=DashboardData&{nextSteps?:{proposals?:ResearchProposal[];adoptionTracking?:AdoptionTracking;error?:string;estimated?:boolean;accounts_included?:number;history_note?:string;estimate_notes?:{account:string;method:string}[];accounts?:Account[];mixes?:Mix[];moves?:Record<string,Move>;assumptions?:string[];research_benchmarks?:[string,string][];candidates?:{research_only?:boolean;matched_risk_available?:boolean;max_weight?:number;funds?:string[];universe?:{name:string;declared:string;rationale:string;class_caps:Record<string,number>};error?:string;from?:string;to?:string;lookback?:number;rebalance?:number;scope_note?:string;selection_note?:string;left_out?:{symbol:string;why:string}[];standins?:Proxy[];rows?:Row[]}}};
+export type NextData=DashboardData&{nextSteps?:{holdout?:Holdout;proposals?:ResearchProposal[];adoptionTracking?:AdoptionTracking;error?:string;estimated?:boolean;accounts_included?:number;history_note?:string;estimate_notes?:{account:string;method:string}[];accounts?:Account[];mixes?:Mix[];moves?:Record<string,Move>;assumptions?:string[];research_benchmarks?:[string,string][];candidates?:{research_only?:boolean;matched_risk_available?:boolean;max_weight?:number;funds?:string[];universe?:{name:string;declared:string;rationale:string;class_caps:Record<string,number>};error?:string;from?:string;to?:string;lookback?:number;rebalance?:number;scope_note?:string;selection_note?:string;left_out?:{symbol:string;why:string}[];standins?:Proxy[];rows?:Row[]}}};
 const friendly=(name:string)=>name.includes('at your mix')?'Keep similar risk':name.includes('max-Sharpe')?'Sharpe strategy':name==='VTI'?'US stocks (VTI)':name==='QQQ'?'Nasdaq-100 (QQQ)':name;
 function Weights({weights}:{weights:Record<string,number>}){return <AllocationBreakdown weights={weights}/>;}
 function EvidenceChart({e,label}:{e:Evidence;label:string}){return <TimeSeriesChart label={`${label} and ${e.benchmark}: growth of $100 over the same dates`} zeroBaseline dates={e.chart.months} series={[{key:label,label,role:'portfolio',values:e.chart.own,quality:'modeled'},{key:e.benchmark,label:e.benchmark,role:'benchmark',values:e.chart.benchmark,quality:'modeled'}]}/>;}
@@ -40,8 +41,9 @@ export function NextSteps({data,onNavigate,benchmark,onBenchmark}:{data:NextData
  const delta=a?a.new_value-a.actual_value:null;
  const proxies=[...(choice?.rule?C?.standins??[]:choice?.history?.standins??[]),...(evidence?.reference_standins??[])];
  if(!N)return null;
- if(N.proposals?.length)return <ResearchNextSteps proposals={N.proposals} tracking={N.adoptionTracking} accounts={accounts} moves={N.moves} estimated={N.estimated}/>;
+ if(N.proposals?.length)return <CardStack><HoldoutTest data={N.holdout}/><ResearchNextSteps proposals={N.proposals} tracking={N.adoptionTracking} accounts={accounts} moves={N.moves} estimated={N.estimated}/></CardStack>;
  return <CardStack className="next-steps">
+ <HoldoutTest data={N.holdout}/>
  <Card><h1>1. Compare investment approaches</h1><p className="small">Understand the evidence before applying a change to your accounts.</p>
  <div className="ui-controls"><SelectField label="Investment mix" tone="portfolio" value={choice?.key??''} onChange={setMix} options={[...mixes.map(x=>({value:x.key,label:friendly(x.rule??x.name)})),...(C?.error?[{value:'sharpe-unavailable',label:'Sharpe strategy — unavailable',disabled:true}]:[]),...(C?.research_only?[{value:'risk-unavailable',label:'Match my current risk — needs holdings',disabled:true}]:[])]}/><SelectField label="Benchmark" tone="benchmark" value={reference} onChange={value=>{setLocalBenchmark(value);onBenchmark?.(value);}} options={tupleOptions(N.research_benchmarks??data.benchmarks)}/></div>
  <p>{choice?.rule?(choice.rule.includes('at your mix')?'Each year, look for a higher-return mix within roughly the risk estimated for your current eligible funds.':'Each year, look for a mix balancing return and volatility.'):choice?.desc}</p>
