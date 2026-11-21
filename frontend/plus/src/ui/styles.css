@@ -42,7 +42,7 @@
 .plus-ui{--proposal:#0b6fb8}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .plus-ui{--proposal:#62b9f2}}:root[data-theme="dark"] .plus-ui{--proposal:#62b9f2}
 .plus-ui [data-tone=proposal]{--ui-tone:var(--proposal)}.plus-ui .proposal-value{color:var(--proposal)}
 /* Page masthead, shared by every tab */
-.plus-ui .ui-page-header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:4px 0 4px}.plus-ui .ui-kicker{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:750;color:var(--accent);margin:0 0 4px}.plus-ui .ui-page-header h1{font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.03em}.plus-ui .ui-pill{font-size:12px;color:var(--ink-2);background:var(--surface-2);padding:5px 10px;border-radius:20px;white-space:nowrap}
+.plus-ui .ui-page-header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:14px 0 4px}.plus-ui .ui-kicker{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:750;color:var(--accent);margin:0 0 4px}.plus-ui .ui-page-header h1{font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.03em}.plus-ui .ui-pill{font-size:12px;color:var(--ink-2);background:var(--surface-2);padding:5px 10px;border-radius:20px;white-space:nowrap}
 /* Two-column research layout */
 .plus-ui .ui-split{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--ui-gap);align-items:start}.plus-ui .ui-split>div{display:grid;gap:var(--ui-gap);min-width:0}
 @media(min-width:860px){.plus-ui .ui-split{grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr)}}
@@ -57,3 +57,4 @@
 .plus-ui .ui-subsection{border-top:1px solid var(--line);padding-top:16px}
 .plus-ui .ui-range{display:block;font-size:12px;font-weight:450;color:var(--ink-3);white-space:nowrap}.plus-ui .next-steps .ui-table th,.plus-ui .next-steps .ui-table td{padding:10px 6px}.plus-ui .next-steps .ui-table th:first-child{min-width:96px}
 @media(max-width:440px){.plus-ui .next-steps .ui-table{font-size:13px}.plus-ui .next-steps .ui-table th,.plus-ui .next-steps .ui-table td{padding:8px 4px}.plus-ui .next-steps .ui-table th:first-child{min-width:72px}}
+.plus-ui .ui-headline-controls h2{font-size:15px;line-height:1.4;color:var(--ink-2);font-weight:650}

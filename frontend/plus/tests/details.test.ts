@@ -32,3 +32,22 @@ test('whole-portfolio risk estimate takes priority and keeps the matched benchma
  const data={benchmark:'IDX',risk:{'1y':{points:[],left_off:[],bm:{}}},estimatedPortfolioRisk:{'1y':{point,benchmarks:{IDX:{...point,label:'IDX',kind:'benchmark',sharpe:.6}}}}} as unknown as DetailsData;
  const selected=selectedRisk(data,'1y','IDX');assert.equal(selected.portfolio!.accounts,9);assert.equal(selected.portfolio!.sharpe,.4);assert.equal(selected.benchmark!.sharpe,.6);
 });
+// PR 2 (issues 256, 263, 264): every tab opens with the same masthead, says why figures are missing, and empty states name the fix.
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {Details} from '../src/Details';
+import {Overview} from '../src/Overview';
+const base={schema_version:1,benchmark:'IDX',benchmarks:[['IDX','Index']],windows:[],overview:null} as const;
+const noop=()=>{};
+test('tabs share the masthead and empty states say what to do',()=>{
+ const o=renderToStaticMarkup(React.createElement(Overview,{data:base as never,benchmark:'IDX',period:'1y',onBenchmark:noop,onPeriod:noop,onNavigate:noop}));
+ assert.match(o,/ui-page-header/);assert.match(o,/No accounts yet/);assert.match(o,/Add accounts/);
+ const d=renderToStaticMarkup(React.createElement(Details,{data:{...base,entities:[]} as never,benchmark:'IDX',period:'1y',onBenchmark:noop,onPeriod:noop,onNavigate:noop}));
+ assert.match(d,/ui-page-header/);assert.match(d,/No accounts yet/);
+});
+test('an account whose statements do not reconcile says so instead of showing bare dashes',()=>{
+ const odd={...entity,label:'Example odd account',unreconciled:'Does not reconcile'};
+ const d=renderToStaticMarkup(React.createElement(Details,{data:{...base,entities:[entity,odd]} as never,benchmark:'IDX',period:'1y',onBenchmark:noop,onPeriod:noop,onNavigate:noop}));
+ assert.match(d,/Statements don’t match the history/);
+ assert.equal((d.match(/Statements don’t match/g)??[]).length,1);
+});
