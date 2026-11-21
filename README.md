@@ -6,7 +6,7 @@ A personal finance product I designed and built, from brokerage-file imports and
 
 [Explore the Plus household](https://simmyhundal.github.io/ur-family-office-site/plus-demo/) · [Try the free tool](https://simmyhundal.github.io/ur-family-office-site/try/) · [Website](https://simmyhundal.github.io/ur-family-office-site/)
 
-<a href="https://simmyhundal.github.io/ur-family-office-site/plus-demo/"><img src="site/img/plus-demo-dark.png" width="280" alt="Plus Overview with an invented household"></a>
+<a href="https://simmyhundal.github.io/ur-family-office-site/plus-demo/"><img src="site/img/plus-mac-dark.png" width="640" alt="Plus Overview on a Mac with an invented household"></a>
 
 ## The problem
 

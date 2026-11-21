@@ -421,19 +421,27 @@ a.preview:hover { transform: translateY(-3px); box-shadow: var(--shadow-up); }
 .benefits3 svg { width: 22px; height: 22px; }
 .benefits3 b { display: block; font-size: 1.05rem; } .benefits3 span { color: var(--ink-2); }
 .plus-note { margin: 16px 0 0; }
-.phone-wrap { margin: 0; display: grid; justify-items: center; gap: 14px; }
-.phone-wrap figcaption { font-weight: 500; text-align: center; max-width: 34ch; }
-/* The real Plus demo, as a screenshot in a phone frame; it opens the demo (issue 234). */
-.phone-shot { display: block; position: relative; text-decoration: none; transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
-.phone-shot img { display: block; width: 100%; height: auto; border-radius: 38px; }
-.phone-shot:hover { transform: translateY(-4px); }
+/* The real Plus demo, as a screenshot on a MacBook drawn in CSS (Plus is a Mac app, decision 0014); it opens the demo.
+   The base is the full width and the lid 88% of it, so nothing pokes past the container on a 375px phone. */
+.mac-wrap { margin: 0; width: 100%; display: grid; justify-items: center; gap: 16px; }
+.mac-wrap figcaption { font-weight: 500; text-align: center; max-width: 34ch; }
+.mac { display: block; position: relative; width: min(620px, 100%); padding-top: 14px; text-decoration: none; transition: transform .35s var(--ease); }
+.mac:hover { transform: translateY(-4px); }
+.mac-lid { display: block; width: 88%; margin: 0 auto; padding: 2.4% 2.4% 3%; border-radius: 16px 16px 3px 3px;
+  background: linear-gradient(150deg, #2b2d4a, #0d0e1f 60%);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .08) inset, 0 40px 80px -30px rgba(30, 20, 90, .45); }
+.mac-screen { display: block; overflow: hidden; border-radius: 4px; background: #0a0b1c; }
+.mac-screen img { display: block; width: 100%; height: auto; }
+.mac-base { display: block; position: relative; height: clamp(10px, 2.6vw, 16px); border-radius: 2px 2px 16px 16px / 2px 2px 10px 10px;
+  background: linear-gradient(#e3e4ef, #a7aac2); box-shadow: 0 18px 30px -14px rgba(10, 10, 40, .45); }
+.mac-base::before { content: ""; position: absolute; left: 50%; top: 0; width: 16%; height: 42%; transform: translateX(-50%);
+  border-radius: 0 0 8px 8px; background: rgba(20, 20, 50, .16); }
+.mac .shot-tag { top: 0; bottom: auto; }
 .shot-tag { position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%); white-space: nowrap; font-size: .78rem; font-weight: 750; letter-spacing: .04em; text-transform: uppercase;
   padding: 6px 14px; border-radius: var(--r-pill); background: #ffe7a8; color: #6b4500; box-shadow: var(--shadow); }
-.phone { width: min(320px, 86vw); border-radius: 48px; padding: 11px; background: linear-gradient(150deg, #2b2d4a, #0d0e1f 60%);
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .08) inset, 0 40px 80px -24px rgba(30, 20, 90, .45), 0 18px 36px -18px rgba(0, 0, 0, .5); }
 @media (prefers-reduced-motion: no-preference) {
-  .phone { animation: hover-phone 7s ease-in-out infinite; }
-  @keyframes hover-phone { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .mac { animation: hover-mac 7s ease-in-out infinite; }
+  @keyframes hover-mac { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 }
 
 /* founder line (Home) and instructors line */
@@ -521,10 +529,13 @@ mark, .hl { background: linear-gradient(104deg, transparent 0.4em, color-mix(in 
 .plus-grid { row-gap: 28px; }
 .plus-copy .benefits3 { margin-top: 0; }
 @media (min-width: 940px) {
-  .plus-grid { grid-template-columns: 1fr 1fr; grid-template-areas: "head phone" "copy phone"; row-gap: 0; }
-  .plus-head { grid-area: head; align-self: end; } .plus-copy { grid-area: copy; align-self: start; padding-top: 26px; } .phone-wrap { grid-area: phone; }
+  .plus-grid { grid-template-columns: 1fr 1fr; grid-template-areas: "head shot" "copy shot"; row-gap: 0; }
+  .plus-head { grid-area: head; align-self: end; } .plus-copy { grid-area: copy; align-self: start; padding-top: 26px; } .mac-wrap { grid-area: shot; }
 }
-@media (prefers-color-scheme: dark) { .phone { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .14) inset, 0 0 0 1px rgba(165, 148, 255, .25), 0 40px 90px -24px rgba(122, 92, 255, .35); } }
+@media (prefers-color-scheme: dark) {
+  .mac-lid { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .14) inset, 0 0 0 1px rgba(165, 148, 255, .25), 0 40px 90px -30px rgba(122, 92, 255, .35); }
+  .mac-base { background: linear-gradient(#6a6d8a, #34364f); }
+}
 .step-nav button, .step-nav .btn { white-space: nowrap; }
 @media (max-width: 520px) { .step-nav { flex-wrap: wrap; } .end-actions { flex: 1 1 auto; } .end-actions .btn, .end-actions button { flex: 1 1 auto; } }
 mark, .hl { padding: 0 .12em; }
@@ -534,3 +545,23 @@ mark, .hl { padding: 0 .12em; }
 .promise-shot .installer-shot img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 18px 40px rgba(0, 0, 0, .35); }
 .promise-shot .installer-shot figcaption { margin-top: 10px; color: #c6c8e4; }
 @media (min-width: 860px) { .promise-shot { grid-template-columns: 1fr 1.1fr; } }
+
+/* Plus at $67/year (issue 227): an "Area 67" clearance tag on the Plus card, a one-line wink, one tax note under the plans.
+   The tag is an ID badge, not a coupon: no monospace, no dashed border. */
+.clearance { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; margin: -4px 0 10px; padding: 5px 12px 5px 9px;
+  border-radius: 8px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-size: .78rem; line-height: 1.2; }
+.clearance svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+.clearance span { text-transform: uppercase; letter-spacing: .09em; font-weight: 650; color: var(--ink-2); font-size: .7rem; }
+.clearance b { font-weight: 780; letter-spacing: .01em; }
+.plan .wink { margin: 14px 0 0; text-align: center; font-size: var(--t-sm); font-style: italic; color: var(--ink-2); }
+.tax-note { margin: 22px 0 0; text-align: center; }
+
+/* "Have a code?": shown only with a checkout link; the code goes to Stripe's page, which checks it. */
+.promo { margin-top: 12px; text-align: center; }
+.promo-toggle { font-size: var(--t-sm); font-weight: 650; text-underline-offset: 3px; }
+.promo-form { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
+.promo-form[hidden] { display: none; }
+.promo-form input { flex: 1 1 140px; max-width: 220px; min-height: 44px; font-size: 16px; text-transform: uppercase; }
+.promo-form .field-error { flex-basis: 100%; margin: 0; text-align: center; }
+.plus-copy .promo { text-align: left; }
+.plus-copy .promo-form { justify-content: flex-start; }

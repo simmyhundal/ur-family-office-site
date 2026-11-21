@@ -11,12 +11,13 @@
         "Return, risk and Sharpe ratio",
         "Lessons and samples"
       ],
-      "checkout_url": ""
+      "checkout_url": "",
+      "tax_included": true
     },
     {
       "id": "plus",
       "name": "Plus",
-      "price": "$4/month",
+      "price": "$67/year",
       "status": "preorder",
       "blurb": "A Mac app for all your accounts.",
       "features": [
@@ -26,7 +27,10 @@
         "Everything in Free"
       ],
       "checkout_url": "",
-      "teaser": "#plus"
+      "teaser": "#plus",
+      "tax_included": true,
+      "clearance": "Area 67",
+      "wink": "Your accounts, declassified."
     }
   ]
 }

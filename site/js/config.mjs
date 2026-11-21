@@ -97,7 +97,7 @@ export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", 
 // Header and footer markup. `root` is the site root as a URL prefix ("../" etc.); `current` is a nav key.
 // Header and footer show the logo and the name, with the wordmark's letters picked out in the accent colour
 // ("Ur Family Office" with U, F and O marked). On narrow phones the header shows the logo and the wordmark only (CSS).
-export const NAV = [["try", "Try it"], ["learn", "Learn"], ["pricing", "Pricing"], ["about", "About"]];
+export const NAV = [["try", "Try it"], ["pricing", "Pricing"], ["about", "About"]];
 // The name with each word's first letter marked when those letters spell the wordmark; else the plain name.
 export function nameHtml(cfg) {
   const words = cfg.name.split(/\s+/);

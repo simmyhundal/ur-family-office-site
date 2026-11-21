@@ -32,7 +32,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-head"><div class="wrap head-row">
   <a class="brand" href="../" aria-label="Ur Family Office, home"><img class="brand-mark" src="../img/logo.svg" alt="" width="36" height="36"><span class="brand-word" aria-hidden="true"><span class="brand-full"><b>U</b>r <b>F</b>amily <b>O</b>ffice</span><span class="brand-short">UFO</span></span></a>
-  <nav class="main-nav" aria-label="Main"><a href="../try/">Try it</a><a href="../learn/">Learn</a><a href="../pricing/" aria-current="page">Pricing</a><a href="../about/">About</a></nav>
+  <nav class="main-nav" aria-label="Main"><a href="../try/">Try it</a><a href="../pricing/" aria-current="page">Pricing</a><a href="../about/">About</a></nav>
   <a class="nav-cta" href="../signup/">Sign up</a>
 </div></header>
 <main id="main">
@@ -40,6 +40,7 @@
   <div class="wrap">
     <div class="page-head center"><span class="eyebrow">Pricing</span><h1>Simple pricing</h1></div>
     <div class="plans" id="plans" aria-live="polite"><p class="muted">Loading plans…</p></div>
+    <p class="tax-note muted small center" id="tax-note" hidden>Prices include tax.</p>
   </div>
 </div>
 <section class="section" style="padding-bottom:16px" aria-labelledby="faq-h">
@@ -65,7 +66,7 @@
 <script type="module">
 import { cfg } from "../js/chrome.mjs";
 import { loadJson, esc } from "../js/config.mjs";
-import { planAction, priceLabel } from "../js/plans.mjs";
+import { planAction, priceLabel, mountPromo, clearanceHtml } from "../js/plans.mjs";
 const box = document.getElementById("plans");
 try {
   const { plans } = await loadJson(new URL("../data/plans.json", import.meta.url).href);
@@ -81,11 +82,13 @@ try {
     const [st, on] = STATUS[p.status] || [p.status, ""];
     const featured = p.status === "available";
     return `<article class="plan reveal in${featured ? " featured" : ""}" aria-label="${esc(p.name)}: ${esc(priceLabel(p))}">${featured ? '<span class="plan-badge">Start here</span>' : ""}
-      <span class="plan-status${on}">${esc(st)}</span><h2>${esc(p.name)}</h2>
+      <span class="plan-status${on}">${esc(st)}</span>${clearanceHtml(p)}<h2>${esc(p.name)}</h2>
       ${bigPrice(p)}<p class="blurb">${esc(p.blurb)}${/^#[a-z-]+$/.test(p.teaser || "") ? ` <a class="teaser" href="../${p.teaser}">See what ${esc(p.name)} looks like →</a>` : ""}</p>
       <ul>${p.features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
-      <a class="btn${featured ? "" : " ghost"}" href="${esc(a.href)}"${ext}>${esc(a.label)}</a></article>`;
+      <a class="btn${featured ? "" : " ghost"}" href="${esc(a.href)}"${ext}>${esc(a.label)}</a>${a.mode === "checkout" ? `<div class="promo" data-checkout="${esc(a.href)}" hidden></div>` : ""}${p.wink ? `<p class="wink">${esc(p.wink)}</p>` : ""}</article>`;
   }).join("");
+  for (const el of box.querySelectorAll(".promo[data-checkout]")) mountPromo(el, el.dataset.checkout);
+  document.getElementById("tax-note").hidden = !plans.some((p) => p.tax_included);
 } catch { box.innerHTML = '<p class="error">Could not load the plans. Reload the page, or <a href="../signup/">sign up</a>.</p>'; }
 </script>
 </body>

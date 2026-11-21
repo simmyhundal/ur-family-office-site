@@ -77,14 +77,56 @@ test("the owner is not described as an MBA student (About, site.json)", async ()
   for (const rel of PAGES) assert.ok(!/(Hundal|founder|I am|I'm)[^.<]{0,60}MBA student/i.test(await read(rel)), rel || "home");
 });
 
-test("Home shows the real Plus demo (not a drawn mock-up) and links it as 'See Plus with a sample household'", async () => {
+test("Home shows the real Plus demo on a MacBook (not a phone) and links it as 'See Plus with a sample household'", async () => {
   const home = await read("");
   assert.match(home, /<a class="btn big[^"]*" href="plus-demo\/">See Plus with a sample household/);
-  assert.match(home, /<img src="img\/plus-demo-light\.png"/); assert.match(home, /srcset="img\/plus-demo-dark\.png"/);
-  assert.ok(!/id="whatif"|class="phone-screen"/.test(home), "the drawn mock-up is gone");
-  assert.match(home, /Invented household/);
-  for (const f of ["img/plus-demo-light.png", "img/plus-demo-dark.png", "plus-demo/index.html"]) await stat(new URL(f, site));
+  const fig = home.match(/<figure class="mac-wrap[\s\S]*?<\/figure>/)[0];
+  assert.match(fig, /<a class="mac" href="plus-demo\/"/); assert.match(fig, /class="mac-lid"/); assert.match(fig, /class="mac-base"/);
+  assert.match(fig, /<img src="img\/plus-mac-light\.png"[^>]*width="1280" height="800"/); assert.match(fig, /srcset="img\/plus-mac-dark\.png"/);
+  assert.match(fig, /on a Mac/); assert.match(fig, /Invented household/);
+  assert.doesNotMatch(home.match(/<section class="section plus-band"[\s\S]*?<\/section>/)[0], /phone/i, "no phone preview of Plus (decision 0014: a Mac app)");
+  assert.doesNotMatch(home, /plus-demo-(light|dark)|class="phone/);
+  const css = await readFile(new URL("style.css", site), "utf8");
+  assert.doesNotMatch(css, /\.phone\b|hover-phone/, "the phone frame CSS is gone");
+  for (const f of ["img/plus-mac-light.png", "img/plus-mac-dark.png", "plus-demo/index.html"]) await stat(new URL(f, site));
   assert.equal(home.split("See Plus with a sample household").length - 1, 1, "said once on Home (issue 239)");
+});
+
+test("Learn is not in the top navigation; the lessons stay reachable from the footer", async () => {
+  const { NAV } = await import("../../site/js/config.mjs");
+  assert.ok(!NAV.some(([k, label]) => k === "learn" || /learn/i.test(label)));
+  for (const rel of PAGES) {
+    const nav = (await read(rel)).match(/<nav class="main-nav"[\s\S]*?<\/nav>/)[0];
+    assert.ok(!/learn/i.test(nav), `${rel || "home"}: Learn in the nav`);
+  }
+  assert.match(await read(""), /<nav class="foot-col"[^>]*>[\s\S]*?href="learn\/">Learn</);
+  assert.match(await read("try/"), /<nav class="foot-col"[^>]*>[\s\S]*?href="\.\.\/learn\/">Learn</);
+  assert.match(await read("learn/sharpe/"), /<nav class="foot-col"[^>]*>[\s\S]*?href="\.\.\/\.\.\/learn\/">Learn</);
+});
+
+test("Plus is $67/year, tax included, with an 'Area 67' clearance tag that never reads as a code (issue 227)", async () => {
+  const { plans } = JSON.parse(await readFile(new URL("data/plans.json", site), "utf8"));
+  const plus = plans.find((p) => p.id === "plus");
+  assert.equal(plus.price, "$67/year"); assert.equal(plus.tax_included, true); assert.equal(plus.clearance, "Area 67");
+  assert.ok(plans.every((p) => p.tax_included === true));
+  assert.doesNotMatch(JSON.stringify(plans), /month|AREA67|area-?67\b(?! )/i, "annual only; the theme is never written like a code");
+  const pricing = await read("pricing/");
+  assert.equal(pricing.split("Prices include tax.").length - 1, 1, "said once");
+  const { clearanceHtml } = await import("../../site/js/plans.mjs");
+  assert.match(clearanceHtml(plus), /<span>Clearance<\/span> <b>Area 67<\/b>/);
+  assert.equal(clearanceHtml({ id: "free" }), "");
+  for (const rel of PAGES) assert.doesNotMatch(await read(rel), /\$4\b|\/month|6\.70/, `${rel || "home"}: old price`);
+  const css = await readFile(new URL("style.css", site), "utf8");
+  const tag = css.match(/\.clearance \{[^}]*\}/)[0];
+  assert.doesNotMatch(tag, /monospace|dashed/, "an ID tag, not a coupon");
+});
+
+test("'Have a code?' ships hidden and empty on Home and Pricing; no list of codes anywhere on the site", async () => {
+  const home = await read("");
+  assert.match(home, /<div class="promo" data-promo hidden><\/div>/);
+  assert.match(await read("pricing/"), /a\.mode === "checkout" \? `<div class="promo" data-checkout=/);
+  const json = (await Promise.all(["data/plans.json", "data/site.json"].map((f) => readFile(new URL(f, site), "utf8")))).join("");
+  assert.doesNotMatch(json, /promo|coupon|codes?"/i);
 });
 
 test("Try: manual entry after the sample, clear investment choices, and Plus-only imports (issues 184, 245)", async () => {

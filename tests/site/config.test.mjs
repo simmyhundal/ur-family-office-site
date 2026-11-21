@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mergeConfig, loadSiteConfig, DEFAULTS, headerHtml, footerHtml, nameHtml } from "../../site/js/config.mjs";
-import { planAction, priceLabel, upgradePlanLinks } from "../../site/js/plans.mjs";
+import { planAction, priceLabel, upgradePlanLinks, cleanPromoCode, promoCheckoutUrl, promoHtml, mountPromo, PROMO_MAX } from "../../site/js/plans.mjs";
 import { buildSignupPayload, validateSignup, submitSignup, parseParams } from "../../site/js/signup.mjs";
 
 test("config: defaults when empty or invalid", () => {
@@ -61,9 +61,9 @@ test("plan button: checkout_url (plan or site config) goes to the payment link",
 });
 test("plan: free goes to the sample; price label marks planned", () => {
   assert.equal(planAction({ id: "free", name: "Free" }, {}, "../").mode, "try");
-  assert.equal(priceLabel({ price: "$4/month", status: "planned" }), "$4/month, planned");
+  assert.equal(priceLabel({ price: "$67/year", status: "planned" }), "$67/year, planned");
   assert.equal(priceLabel({ price: "$0", status: "available" }), "$0");
-  assert.equal(priceLabel({ price: "$4/month", status: "preorder" }), "$4/month, pre-order");
+  assert.equal(priceLabel({ price: "$67/year", status: "preorder" }), "$67/year, pre-order");
 });
 
 // Pre-order (issue 279): with a Stripe Payment Link the Plus button says "Pre-order Plus" and opens it; without one,
@@ -99,6 +99,59 @@ test("static Plus buttons: upgraded to 'Pre-order Plus' only when a checkout lin
   }
   upgradePlanLinks([a], plus, { plus: "javascript:alert(1)" }, "../");
   assert.equal(a.attrs.href, "../signup/?plan=plus", "only https links count");
+});
+
+// ---------- "Have a code?" (redemption and coupon codes). Codes here are invented; Stripe checks real ones. ----------
+test("promo code: trimmed and upper-cased; up to 32 of A-Z, 0-9, - and _; anything else refused, never stripped", () => {
+  assert.equal(PROMO_MAX, 32);
+  assert.equal(cleanPromoCode("  testcode1 "), "TESTCODE1");
+  assert.equal(cleanPromoCode("Launch_2026-x"), "LAUNCH_2026-X");
+  assert.equal(cleanPromoCode("A".repeat(32)), "A".repeat(32));
+  assert.equal(cleanPromoCode("A".repeat(33)), "", "33 characters is too long");
+  for (const bad of ["", "   ", "TEST CODE", "A&B", "A?B", "A=B", "A/B", "A.B", "A#B", "A%20B", "CAFÉ", "ＡＢＣ", "A\nB", "<b>", null, undefined])
+    assert.equal(cleanPromoCode(bad), "", JSON.stringify(bad));
+});
+test("promo checkout URL: Stripe's prefilled_promo_code on the https payment link, other query parameters kept", () => {
+  assert.equal(promoCheckoutUrl("https://buy.stripe.example/test_abc", "testcode1"), "https://buy.stripe.example/test_abc?prefilled_promo_code=TESTCODE1");
+  assert.equal(promoCheckoutUrl("https://buy.stripe.example/test_abc?locale=en", "X-1"), "https://buy.stripe.example/test_abc?locale=en&prefilled_promo_code=X-1");
+  assert.equal(promoCheckoutUrl("https://buy.stripe.example/a?prefilled_promo_code=OLD", "NEW"), "https://buy.stripe.example/a?prefilled_promo_code=NEW", "one code, the visitor's");
+  assert.equal(promoCheckoutUrl("https://buy.stripe.example/a", "A&prefilled_email=x"), "", "no parameter injection");
+  assert.equal(promoCheckoutUrl("http://buy.stripe.example/a", "OK"), "", "https only");
+  assert.equal(promoCheckoutUrl("", "OK"), "", "no link, no code box");
+});
+// A minimal fake of the elements mountPromo touches.
+function fakePromoBox() {
+  const listeners = {}, mk = (extra = {}) => ({ hidden: false, attrs: {}, textContent: "", value: "", setAttribute(k, v) { this.attrs[k] = v; }, removeAttribute(k) { delete this.attrs[k]; },
+    addEventListener(t, f) { listeners[t] = f; }, focus() {}, ...extra });
+  const input = mk(), err = mk(), form = mk({ hidden: true, querySelector: (s) => (s === "input" ? input : err) }), toggle = mk();
+  const box = { hidden: true, innerHTML: "", querySelector: (s) => (s === ".promo-toggle" ? toggle : form) };
+  return { box, input, err, form, toggle, listeners };
+}
+test("'Have a code?': hidden and empty with no checkout link; with one, a valid code goes to Stripe and a bad one stays", () => {
+  const plus = { id: "plus", name: "Plus", status: "preorder", checkout_url: "" };
+  const off = fakePromoBox(); off.box.hidden = false; off.box.innerHTML = "stale";
+  upgradePlanLinks([fakeLink()], plus, {}, "../", [], [off.box]);
+  assert.equal(off.box.hidden, true); assert.equal(off.box.innerHTML, "", "no code box while the button says 'Get notified'");
+  const on = fakePromoBox(), went = [];
+  mountPromo(on.box, "https://buy.stripe.example/test_abc", (u) => went.push(u));
+  assert.equal(on.box.hidden, false); assert.match(on.box.innerHTML, /Have a code\?/);
+  assert.equal(on.form.hidden, true, "the input opens on click");
+  on.listeners.click(); assert.equal(on.form.hidden, false); assert.equal(on.toggle.attrs["aria-expanded"], "true");
+  on.input.value = "bad code!"; on.listeners.submit({ preventDefault() {} });
+  assert.deepEqual(went, []); assert.match(on.err.textContent, /letters, numbers/); assert.equal(on.input.attrs["aria-invalid"], "true");
+  on.input.value = " testcode1 "; on.listeners.submit({ preventDefault() {} });
+  assert.deepEqual(went, ["https://buy.stripe.example/test_abc?prefilled_promo_code=TESTCODE1"]); assert.equal(on.err.textContent, "");
+  const html = promoHtml("p1");
+  assert.match(html, /maxlength="32"/); assert.match(html, /<button type="button" class="link promo-toggle" aria-expanded="false" aria-controls="p1">Have a code\?<\/button>/);
+  assert.match(html, /autocomplete="off"/); assert.match(html, /role="alert"/);
+});
+test("upgradePlanLinks shows the code box only with a checkout link", () => {
+  const plus = { id: "plus", name: "Plus", status: "preorder", checkout_url: "" };
+  const box = fakePromoBox();
+  upgradePlanLinks([fakeLink()], plus, { plus: "https://buy.stripe.example/x" }, "../", [], [box.box]);
+  assert.equal(box.box.hidden, false);
+  upgradePlanLinks([fakeLink()], plus, { plus: "javascript:alert(1)" }, "../", [], [box.box]);
+  assert.equal(box.box.hidden, true);
 });
 
 test("signup payload holds only the five fields", () => {
