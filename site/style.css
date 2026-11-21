@@ -346,7 +346,8 @@ th:last-child .tip::after, th:nth-last-child(2) .tip::after { left: auto; right:
 
 /* ---------- pricing ---------- */
 .plans { display: grid; gap: 20px; grid-template-columns: 1fr; padding: 8px 0 24px; align-items: stretch; }
-@media (min-width: 860px) { .plans { grid-template-columns: repeat(3, 1fr); } }
+/* Columns as wide as a card, collapsed when empty, so two plans sit centred as a pair. */
+@media (min-width: 860px) { .plans { grid-template-columns: repeat(auto-fit, minmax(300px, 360px)); justify-content: center; } }
 .plan { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); padding: 30px 26px 26px; display: flex; flex-direction: column; transition: transform .35s var(--ease), box-shadow .35s; }
 .plan:hover { transform: translateY(-4px); box-shadow: var(--shadow-up); }
 .plan.featured { border: 1.5px solid transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(140deg, #7a5cff, #c04ad8 55%, #38bdf8) border-box; box-shadow: var(--shadow-up); }
@@ -550,7 +551,14 @@ mark, .hl { padding: 0 .12em; }
    The tag is an ID badge, not a coupon: no monospace, no dashed border. */
 .clearance { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; margin: -4px 0 10px; padding: 5px 12px 5px 9px;
   border-radius: 8px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-size: .78rem; line-height: 1.2; }
-.clearance svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+.clearance svg { width: 18px; height: 18px; color: var(--accent); flex: none; overflow: visible; }
+.clearance .beam { fill: var(--accent); opacity: .12; transition: opacity .4s var(--ease); }
+.plan:hover .clearance .beam, .plan:focus-within .clearance .beam { opacity: .4; }
+@media (prefers-reduced-motion: no-preference) {
+  .clearance .ship { transition: transform .5s var(--ease); }
+  .plan:hover .clearance .ship, .plan:focus-within .clearance .ship { transform: translateY(-1.5px); animation: saucer-bob 2.4s ease-in-out .5s infinite; }
+  @keyframes saucer-bob { 0%, 100% { transform: translateY(-1.5px); } 50% { transform: translateY(.5px); } }
+}
 .clearance span { text-transform: uppercase; letter-spacing: .09em; font-weight: 650; color: var(--ink-2); font-size: .7rem; }
 .clearance b { font-weight: 780; letter-spacing: .01em; }
 .plan .wink { margin: 14px 0 0; text-align: center; font-size: var(--t-sm); font-style: italic; color: var(--ink-2); }

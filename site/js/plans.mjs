@@ -38,10 +38,12 @@ export function upgradePlanLinks(links, plan, checkoutUrls = {}, root = "", note
 
 // The Plus card's clearance badge ("Clearance: Area 67", a wink at Area 51 for a UFO brand). An ID tag, not a code:
 // no monospace, no dashed coupon border, and it never reads "AREA67".
-const SAUCER = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9a4 4 0 0 1 8 0"/><ellipse cx="12" cy="11" rx="9" ry="3"/><path d="M9 17l-1 3M15 17l1 3M12 17v3"/></svg>';
+// The saucer hovers and its beam lights up when the card is hovered or focused (still under reduced motion).
+const SAUCER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="beam" d="M9 13.5 6 23h12l-3-9.5z"/><g class="ship" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 9a3.5 3.5 0 0 1 7 0"/><ellipse cx="12" cy="11" rx="9" ry="2.8"/></g></svg>';
+export const CLEARANCE_WINK = "Cleared for a higher view.";
 export function clearanceHtml(plan) {
   const area = typeof plan.clearance === "string" ? plan.clearance.trim() : "";
-  return area ? `<span class="clearance">${SAUCER}<span>Clearance</span> <b>${esc(area)}</b></span>` : "";
+  return area ? `<span class="clearance" title="${CLEARANCE_WINK}">${SAUCER}<span>Clearance</span> <b>${esc(area)}</b></span>` : "";
 }
 
 // ---------- Redemption and coupon codes ----------

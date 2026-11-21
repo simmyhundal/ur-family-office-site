@@ -115,10 +115,14 @@ test("Plus is $67/year, tax included, with an 'Area 67' clearance tag that never
   const { clearanceHtml } = await import("../../site/js/plans.mjs");
   assert.match(clearanceHtml(plus), /<span>Clearance<\/span> <b>Area 67<\/b>/);
   assert.equal(clearanceHtml({ id: "free" }), "");
+  assert.match(clearanceHtml(plus), /title="Cleared for a higher view\."/, "the hover wink");
+  assert.match(clearanceHtml(plus), /class="beam"/, "the saucer's beam");
   for (const rel of PAGES) assert.doesNotMatch(await read(rel), /\$4\b|\/month|6\.70/, `${rel || "home"}: old price`);
   const css = await readFile(new URL("style.css", site), "utf8");
   const tag = css.match(/\.clearance \{[^}]*\}/)[0];
   assert.doesNotMatch(tag, /monospace|dashed/, "an ID tag, not a coupon");
+  assert.match(css, /prefers-reduced-motion: no-preference\) \{\s*\.clearance \.ship/, "the saucer only moves when motion is welcome");
+  assert.match(css, /\.plans \{ grid-template-columns: repeat\(auto-fit, [^)]*\)\); justify-content: center;/, "plan cards centred as a group");
 });
 
 test("'Have a code?' ships hidden and empty on Home and Pricing; no list of codes anywhere on the site", async () => {
