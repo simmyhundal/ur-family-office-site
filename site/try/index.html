@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Try it · Ur Family Office</title>
-<meta name="description" content="Enter a mix of funds and compare it with a benchmark like SPY. Runs in your browser.">
+<meta name="description" content="Compare a portfolio of funds with a benchmark like SPY, in your browser.">
 <meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0b1c" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ur Family Office">
 <meta property="og:title" content="Try it · Ur Family Office">
-<meta property="og:description" content="Enter a mix of funds and compare it with a benchmark like SPY. Runs in your browser.">
+<meta property="og:description" content="Compare a portfolio of funds with a benchmark like SPY, in your browser.">
 <meta property="og:url" content="https://simmyhundal.github.io/ur-family-office-site/try/">
 <meta property="og:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
 <meta property="og:image:alt" content="Ur Family Office: a higher view of your money">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Try it · Ur Family Office">
-<meta name="twitter:description" content="Enter a mix of funds and compare it with a benchmark like SPY. Runs in your browser.">
+<meta name="twitter:description" content="Compare a portfolio of funds with a benchmark like SPY, in your browser.">
 <meta name="twitter:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <!-- /link preview -->
 <link rel="stylesheet" href="../style.css">
@@ -62,9 +62,9 @@
 </div>
 </div>
 <div class="wrap">
-  <p id="link-note" class="banner" role="status" hidden><b>Opened from a shared link.</b> It carried only percentages, a benchmark and a time window. Deposits are yours to set under “Your mix and settings”.</p>
+  <p id="link-note" class="banner" role="status" hidden><b>From a shared link:</b> percentages, benchmark and time window only. Set deposits under “Your portfolio and settings”.</p>
   <div class="tool-bar">
-    <button type="button" id="save-mix" class="secondary">Save this mix</button>
+    <button type="button" id="save-mix" class="secondary">Save this portfolio</button>
     <button type="button" id="share-open" class="secondary" aria-expanded="false" aria-controls="share-panel">Share…</button>
     <span id="save-status" class="muted small" role="status"></span>
   </div>
@@ -85,15 +85,15 @@
   <div id="sample-note" class="banner sample-note" role="status" hidden></div>
   <aside id="try-own" class="own-action" hidden aria-label="Try your own investments">
     <button id="try-own-button" class="btn" type="button">Try your own investments <span aria-hidden="true">→</span></button>
-    <p class="muted small">Choose investments by name or ticker, then set your percentages.</p>
+    <p class="muted small">Search by name or ticker, then set percentages.</p>
   </aside>
-  <aside id="next-step" class="next-step ns-one" hidden aria-label="Plus early access">
+  <aside id="next-step" class="next-step ns-one" hidden aria-label="Plus">
     <p class="ns-ask">Want this for all your accounts?</p>
-    <a class="btn" href="../signup/?plan=plus">Join Plus early access <span class="arr" aria-hidden="true">→</span></a>
+    <a class="btn" href="../signup/?plan=plus" data-plus-cta><span data-cta-label>Get notified</span> <span class="arr" aria-hidden="true">→</span></a>
   </aside>
 
   <details class="details">
-    <summary>Show details: full results</summary>
+    <summary>Full results</summary>
     <div class="inner">
       <p id="period-line" class="muted"></p>
       <div class="cards" id="cards"></div>
@@ -105,9 +105,9 @@
   </details>
 
   <details class="details" id="settings">
-    <summary>Your mix and settings</summary>
+    <summary>Your portfolio and settings</summary>
     <div class="inner">
-      <div class="mix-head"><h3 id="mix-h" style="margin:0">Mix</h3><label class="inline">Start from <select id="preset"></select></label>
+      <div class="mix-head"><h3 id="mix-h" style="margin:0">Portfolio</h3><label class="inline">Start from <select id="preset"></select></label>
         <button type="button" id="sample" class="secondary">Sample household</button>
         <button type="button" id="sample-student" class="secondary">Sample student</button></div>
       <div id="rows"></div>
@@ -120,23 +120,22 @@
             <button type="button" data-years="1">1y</button><button type="button" data-years="3">3y</button>
             <button type="button" data-years="5" aria-pressed="true">5y</button><button type="button" data-years="10">10y</button>
             <button type="button" data-years="99">Max</button></div></div>
-        <label><span class="tip" tabindex="0" data-tip="Buy and hold never trades. Rebalancing sells what grew and buys what lagged, to get back to your weights, every year or month.">Style</span><select id="strategy">
+        <label><span class="tip" tabindex="0" data-tip="Buy and hold never trades. Rebalancing resets to your weights every year or month.">Style</span><select id="strategy">
           <option value="hold">Buy and hold</option><option value="annual">Rebalance yearly</option><option value="monthly">Rebalance monthly</option></select></label>
         <label><span class="tip" tabindex="0" data-tip="The amount invested on the first day.">Start ($)</span><input id="initial" type="number" min="1" step="100" value="10000" inputmode="decimal"></label>
         <label><span class="tip" tabindex="0" data-tip="Money added at the end of every month, split by your weights.">Add monthly ($)</span><input id="monthly" type="number" min="0" step="50" value="0" inputmode="decimal"></label>
       </div>
-      <h3 style="margin-top:28px">My portfolios</h3>
+      <h3 style="margin-top:28px">Saved portfolios</h3>
       <p class="muted small">Saved in this browser only.</p>
       <ul id="saved-list" class="saved-list"></ul>
-      <p id="saved-empty" class="muted small">None yet. Use “Save this mix” under the chart.</p>
+      <p id="saved-empty" class="muted small">None yet.</p>
       <button type="button" id="clear-all" class="link">Clear everything saved on this device</button>
     </div>
   </details>
 
   <aside class="plus-imports" aria-label="Plus file imports">
     <h2>File imports are a Plus feature</h2>
-    <p>Brokerage holdings and price-history CSV imports require Plus. Coming with Plus; joining the list does not unlock imports.</p>
-    <a href="../signup/?plan=plus">Join Plus early access →</a>
+    <a href="../signup/?plan=plus" data-plus-cta><span data-cta-label>Get notified</span> →</a>
   </aside>
 </div>
 </main>

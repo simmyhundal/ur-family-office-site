@@ -114,7 +114,7 @@ test("the Home hero leads with the question, not a loss", async () => {
   const { readFile } = await import("node:fs/promises");
   const home = await readFile(new URL("../../site/index.html", import.meta.url), "utf8");
   const hero = home.match(/<section class="home-hero[\s\S]*?<\/section>/)[0];
-  assert.match(hero, /<h1>Is your mix <span class="grad-text">keeping up\?<\/span><\/h1>/);
+  assert.match(hero, /<h1>Is your portfolio <span class="grad-text">keeping up\?<\/span><\/h1>/);
   assert.ok(hero.indexOf('id="pv-q"') < hero.indexOf('id="pv-headline"'), "question before the answer");
   assert.match(hero, /401\(k\), IRA or brokerage/);
   assert.match(hero, /Would yours\?/);

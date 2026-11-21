@@ -9,7 +9,7 @@ export const OTHER = ["SPY", "VTI", "QQQ", "IWM", "AGG"]; // Try's "other benchm
 export const SAMPLES = {
   household: {
     id: "household", name: "Sample household",
-    who: "An invented couple with a 401(k), an IRA and a brokerage account",
+    who: "An invented couple with three accounts",
     // Each account's starting value and funds. The mix below is these added up by value (a test checks it);
     // monthly deposits are split by that combined mix.
     accounts: [
@@ -23,7 +23,7 @@ export const SAMPLES = {
   },
   student: {
     id: "student", name: "Sample student",
-    who: "An invented student putting $500 a month into a few funds",
+    who: "An invented student",
     real: { weights: { VTI: 50, VXUS: 20, BND: 20, QQQ: 10 } },
     demo: { weights: { DEMOUS: 60, DEMOBD: 30, DEMOGD: 10 } },
     initial: 2000, monthly: 500, years: 5,

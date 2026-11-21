@@ -17,7 +17,7 @@ const TIPS = {
 };
 const tip = (label, key) => el("span", { class: "tip", tabindex: "0", "data-tip": TIPS[key], "aria-description": TIPS[key] }, label);
 
-const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: [], presets: [], mixName: "Your mix", sample: "" };
+const state = { years: 5, data: null, labels: {}, demo: true, source: "", rows: [], presets: [], mixName: "Your portfolio", sample: "" };
 
 async function load() {
   const p = await loadPrices();
@@ -25,11 +25,11 @@ async function load() {
   state.presets = p.presets;
   state.rows = p.demo ? [{ sym: "DEMOUS", w: 60 }, { sym: "DEMOBD", w: 30 }, { sym: "DEMOGD", w: 10 }]
     : state.presets.length ? rowsOf(state.presets[0]) : starter();
-  state.mixName = state.presets.length && !p.demo ? state.presets[0].name : "Your mix";
+  state.mixName = state.presets.length && !p.demo ? state.presets[0].name : "Your portfolio";
   $("benchmark").value = defaultBenchmark(p.data.series);
   setup();
   const shared = decodeShare(location.search);
-  if (shared) applyConfig({ ...shared, name: "Shared mix" }, { fromLink: true });
+  if (shared) applyConfig({ ...shared, name: "Shared portfolio" }, { fromLink: true });
   else if (new URLSearchParams(location.search).has("sample")) loadSample(sampleId(new URLSearchParams(location.search).get("sample")));
   if (new URLSearchParams(location.search).has("own")) setTimeout(startTyping, 80); // "Check your own mix" from Home: open the mix editor
   renderSaved();
@@ -41,13 +41,13 @@ let firstFundPicker;
 const rowsOf = (p) => Object.entries(p.weights).map(([sym, w]) => ({ sym, w }));
 const starter = () => (["VTI", "BND"].every((x) => x in state.data.series) ? [{ sym: "VTI", w: 60 }, { sym: "BND", w: 40 }]
   : symbols().slice(0, 2).map((sym, i) => ({ sym, w: i ? 40 : 60 })));
-function markCustom() { state.sample = ""; state.mixName = "Your mix"; $("preset").value = "custom"; }
+function markCustom() { state.sample = ""; state.mixName = "Your portfolio"; $("preset").value = "custom"; }
 
 function setup() {
   // Demo data and a visitor's own file get a banner; the built-in real prices get a small plain date line (issue 225).
   const note = state.demo ? "Demo data: invented funds, not real prices." : state.source ? "" : `Your file: ${symbols().length} funds.`;
   $("data-banner").textContent = note; $("data-banner").hidden = !note;
-  $("data-date").textContent = state.source ? `${state.source} Month-end adjusted closes, completed months only. Cash rate: 3-month Treasury bills from FRED.` : "";
+  $("data-date").textContent = state.source ? `${state.source} Month-end closes. Cash rate: 3-month Treasury bills from FRED.` : "";
   drawSampleNote();
   const benchmarkPicker = createFundPicker({ id: "benchmark-choice", label: "Benchmark", symbol: $("benchmark").value, choices: choices(),
     onChange: (symbol) => { $("benchmark").value = symbol; render(); } });
@@ -56,7 +56,7 @@ function setup() {
   if (!state.rows.length) state.rows = [{ sym: symbols()[0], w: 100 }];
   const pre = $("preset");
   pre.replaceChildren(...state.presets.map((p, i) => el("option", { value: String(i) }, p.name)), el("option", { value: "custom" }, "Your own"));
-  pre.value = state.mixName === "Your mix" ? "custom" : String(state.presets.findIndex((p) => p.name === state.mixName));
+  pre.value = state.mixName === "Your portfolio" ? "custom" : String(state.presets.findIndex((p) => p.name === state.mixName));
   pre.closest("label").hidden = !state.presets.length;
   renderRows();
   render();
@@ -125,14 +125,13 @@ function drawSummary(h) {
   } else {
     $("headline").textContent = `${h.name} vs ${h.bench}: ${spct(a)} vs ${spct(b)} a year`;
     $("headline-sub").textContent = (h.diff === 0 ? "The same result." : `${h.name} finished ${money(Math.abs(h.diff))} ${h.diff > 0 ? "ahead of" : "behind"} ${h.bench}.`) +
-      ` ${monthYear(h.from)} through ${monthYear(h.to)}, before taxes and costs.`;
+      ` ${monthYear(h.from)} through ${monthYear(h.to)}.`;
   }
-  $("next-step").hidden = false; // one invitation after a result: "Want this for all your accounts? Join Plus early access" (issue 239)
+  $("next-step").hidden = false; // one invitation after a result: "Want this for all your accounts?" (issue 239)
 }
 function statPair(label, mv, bv, h, key) {
   return el("div", { class: "hl-stat" }, el("span", { class: "k" }, tip(label, key)),
-    el("span", { class: "v" }, el("b", { class: "m" }, mv), el("span", { class: "sep" }, " vs "), el("b", { class: "b" }, bv)),
-    el("span", { class: "who" }, `${h.name} vs ${h.bench}`));
+    el("span", { class: "v" }, el("b", { class: "m" }, mv), el("span", { class: "sep" }, " vs "), el("b", { class: "b" }, bv)));
 }
 
 function card(kind, title, m) {
@@ -277,11 +276,11 @@ function drawSampleNote() {
   const note = $("sample-note"), S = SAMPLES[state.sample];
   note.hidden = !S;
   if (!S) return;
-  const head = el("p", {}, el("b", {}, `${S.name}.`), ` ${S.who}: ${money(S.initial)} to start, then ${money(S.monthly)} a month. Invented people, real prices.`);
+  const head = el("p", {}, el("b", {}, `${S.name}.`), ` ${S.who}: ${money(S.initial)} to start, then ${money(S.monthly)} a month.`);
   const parts = [head];
   if (S.accounts) parts.push(el("ul", { class: "sample-accts" }, ...S.accounts.map((a) =>
     el("li", {}, el("b", {}, a.label), ` ${money(a.start)} · ${a.funds}`))),
-    el("p", { class: "muted small" }, "The three accounts are added up into one mix, and deposits are split the same way."));
+    el("p", { class: "muted small" }, "The three accounts are added up into one portfolio."));
   note.replaceChildren(...parts);
 }
 function loadSample(id = "household") {
@@ -301,7 +300,7 @@ function applyConfig(c, { fromLink = false } = {}) {
   const rows = Object.entries(c.weights).filter(([sym]) => have.includes(sym)).map(([sym, w]) => ({ sym, w }));
   const missing = Object.keys(c.weights).filter((x) => !have.includes(x));
   if (!rows.length) { $("error").textContent = "None of those funds have prices in the current data."; return; }
-  state.rows = rows; state.mixName = c.name || "Your mix"; state.sample = "";
+  state.rows = rows; state.mixName = c.name || "Your portfolio"; state.sample = "";
   if (c.benchmark && have.includes(c.benchmark)) $("benchmark").value = c.benchmark;
   if (c.strategy) $("strategy").value = c.strategy;
   if (c.initial > 0) $("initial").value = c.initial;
@@ -318,7 +317,7 @@ function applyConfig(c, { fromLink = false } = {}) {
 // ---------- save / my portfolios (this browser only) ----------
 const store = () => { try { return localStorage; } catch { return null; } };
 function currentConfig() {
-  return { name: state.mixName === "Your mix" ? "My mix" : state.mixName, weights: mixWeights(), benchmark: $("benchmark").value.trim().toUpperCase(),
+  return { name: state.mixName === "Your portfolio" ? "My portfolio" : state.mixName, weights: mixWeights(), benchmark: $("benchmark").value.trim().toUpperCase(),
     years: state.years, strategy: $("strategy").value, initial: Number($("initial").value), monthly: Number($("monthly").value) || 0 };
 }
 function renderSaved() {
@@ -329,7 +328,7 @@ function renderSaved() {
     const open = el("button", { type: "button", class: "secondary" }, "Open");
     open.addEventListener("click", () => { applyConfig(p); $("save-status").textContent = `Opened “${p.name}”.`; });
     const ren = el("button", { type: "button", class: "secondary", "aria-label": `Rename ${p.name}` }, "Rename");
-    ren.addEventListener("click", () => { const n = prompt("Name for this mix", p.name); if (n) { renamePortfolio(st, p.id, n); renderSaved(); } });
+    ren.addEventListener("click", () => { const n = prompt("Name for this portfolio", p.name); if (n) { renamePortfolio(st, p.id, n); renderSaved(); } });
     const del = el("button", { type: "button", class: "secondary", "aria-label": `Delete ${p.name}` }, "Delete");
     del.addEventListener("click", () => { deletePortfolio(st, p.id); renderSaved(); });
     const n = Object.keys(p.weights).length;
@@ -341,15 +340,15 @@ $("save-mix").addEventListener("click", () => {
   if (!st) { $("save-status").textContent = "This browser isn't allowing saving."; return; }
   try {
     const cfg = currentConfig();
-    const name = prompt("Name for this mix", cfg.name);
+    const name = prompt("Name for this portfolio", cfg.name);
     if (name === null) return;
     savePortfolio(st, { ...cfg, name });
     renderSaved();
-    $("save-status").textContent = "Saved on this device. Find it under “Your mix and settings”, My portfolios.";
+    $("save-status").textContent = "Saved on this device, under “Your portfolio and settings”.";
   } catch (e) { $("save-status").textContent = e.message; }
 });
 $("clear-all").addEventListener("click", () => {
-  if (!confirm("Remove every saved mix and setting from this device? This can't be undone.")) return;
+  if (!confirm("Remove every saved portfolio and setting from this device? This can't be undone.")) return;
   let n = 0;
   try { n = clearEverything(localStorage, sessionStorage).length; } catch { /* storage blocked: nothing saved */ }
   renderSaved();
@@ -382,7 +381,7 @@ function drawSharePanel() {
   const link = `${location.origin}${location.pathname}?${encodeShare(cfg)}`;
   $("share-link").value = link;
   const n = Object.keys(cfg.weights).length;
-  $("share-what").textContent = `The link carries ${n} holding${n === 1 ? "" : "s"} as percentages, the benchmark (${cfg.benchmark}), the time window and the style. It does not carry dollar amounts, deposits or your mix's name. The card below is exactly what the image will show.`;
+  $("share-what").textContent = `Shares ${n} holding${n === 1 ? "" : "s"} as percentages, the benchmark (${cfg.benchmark}), time window and style. No dollar amounts, deposits or name.`;
   const m = lastR.r.mix.m, b = lastR.r.bench.m;
   const c = cardContent({ ...cfg, mixAnnual: m.annualReturn, benchAnnual: b.annualReturn, mixSharpe: m.sharpe, benchSharpe: b.sharpe });
   paintCard($("share-card"), c);
@@ -416,7 +415,7 @@ $("share-copy").addEventListener("click", async () => {
 $("share-png").addEventListener("click", () => {
   $("share-card").toBlob((blob) => {
     const url = URL.createObjectURL(blob);
-    const a = el("a", { href: url, download: "my-mix-vs-benchmark.png" });
+    const a = el("a", { href: url, download: "my-portfolio-vs-benchmark.png" });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 });
@@ -434,7 +433,7 @@ $("preset").addEventListener("change", () => {
   const p = state.presets[Number($("preset").value)];
   state.rows = p ? rowsOf(p) : starter();
   state.sample = "";
-  state.mixName = p ? p.name : "Your mix";
+  state.mixName = p ? p.name : "Your portfolio";
   renderRows(); render();
 });
 $("add-row").addEventListener("click", () => {

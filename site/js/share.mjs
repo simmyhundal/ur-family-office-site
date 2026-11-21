@@ -6,7 +6,7 @@ const STYLES = ["hold", "annual", "monthly"];
 /** -> query string like "mix=VTI-60.VXUS-40&b=SPY&y=5&s=hold" (no leading ?). Weights are rounded to 0.1. */
 export function encodeShare({ weights, benchmark, years = 5, strategy = "hold" }) {
   const total = Object.values(weights).filter((w) => w > 0).reduce((a, b) => a + b, 0);
-  if (!(total > 0)) throw new Error("Nothing to share: the mix has no holdings.");
+  if (!(total > 0)) throw new Error("Nothing to share: the portfolio has no holdings.");
   const parts = Object.entries(weights).filter(([, w]) => w > 0).map(([s, w]) => `${s.toUpperCase()}~${Math.round((w / total) * 1000) / 10}`);
   const p = new URLSearchParams({ mix: parts.join("_"), b: String(benchmark).toUpperCase(), y: String(years), s: strategy });
   return p.toString();
@@ -41,7 +41,7 @@ export function cardContent({ weights, benchmark, years, mixAnnual, benchAnnual,
   const pc = (x) => (x == null ? "n/a" : `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1)}%`);
   const sh = (x) => (x == null ? "n/a" : x.toFixed(2));
   return {
-    title: "My mix vs " + benchmark,
+    title: "My portfolio vs " + benchmark,
     mixLine: `${pc(mixAnnual)} a year`, benchLine: `${benchmark}: ${pc(benchAnnual)} a year`,
     sharpeLine: `Sharpe ${sh(mixSharpe)} vs ${sh(benchSharpe)}`,
     mixText: top.join("  ·  "), window: win(years),

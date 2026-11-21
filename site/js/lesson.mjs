@@ -35,12 +35,12 @@ export function lessonSteps({ r, data, mix, bench, monthly, name }) {
   const steps = [];
 
   // 0. The two numbers, and the question.
-  steps.push({ title: "Two numbers from the Try page", tag: "Start here", body: [
+  steps.push({ title: "Two numbers", tag: "Start here", body: [
     el("div", { class: "big-two" },
       el("div", { class: "m" }, el("span", { class: "lab" }, name), el("b", {}, ratio(sM)), el("span", { class: "muted small" }, "Sharpe ratio")),
       el("div", { class: "b" }, el("span", { class: "lab" }, bench), el("b", {}, ratio(sB)), el("span", { class: "muted small" }, "Sharpe ratio"))),
     el("p", { class: "huh" }, "What in the world is that?"),
-    P("A score for ", mark("how much return you got for the bumps you sat through"), ". Higher is better. Five steps and you can work it out yourself."),
+    P("A score for ", mark("how much return you got for the bumps you sat through"), ". Higher is better."),
   ] });
 
   // 1. One month's return.
@@ -93,7 +93,6 @@ export function lessonSteps({ r, data, mix, bench, monthly, name }) {
   steps.push({ title: "So what?", tag: "The point", end: true, body: [
     el("p", { class: "sowhat" }, soWhat(name, bench, sM, sB)),
     P("Return alone hides the ride. Sharpe puts the ride back in."),
-    el("p", { class: "muted small" }, "Information, not investment advice. Before taxes and costs; past results don’t predict future ones."),
   ] });
 
   // Going further (optional): portfolio theory, on the same mix.
@@ -101,7 +100,7 @@ export function lessonSteps({ r, data, mix, bench, monthly, name }) {
   const extra = [];
   if (w.length === 2) {
     const [fa, fb] = w.map(([s]) => s), m = blend5050(priceReturns(data.series[fa]), priceReturns(data.series[fb]));
-    extra.push({ title: "Mixing lowers the bumps", tag: "Going further", body: [
+    extra.push({ title: "Blending lowers the bumps", tag: "Going further", body: [
       P(`${fa} alone bumps ${pm(m.volA, 1)} a year; ${fb} ${pm(m.volB, 1)}. Half and half:`),
       focus(pm(m.volMix, 1), "Volatility of a 50/50 blend"),
       note(m.volMix < m.volAvg - 1e-9 ? `less than the ${pm(m.volAvg, 1)} average, because they don’t move in lockstep` : "about the average: these two move almost together"),
@@ -110,10 +109,9 @@ export function lessonSteps({ r, data, mix, bench, monthly, name }) {
   }
   if (S && sM != null) extra.push({ title: "Sharpe is a slope", tag: "Going further", body: [
     P("Draw a line from cash to each portfolio. ", mark("Steeper line, higher Sharpe"), "."), slopeChart(S, B, name, bench)] });
-  extra.push({ title: "The best mix is an estimate", tag: "Going further", body: [
-    P("Try every mix of some funds and plot risk against return. The steepest line from cash that still touches that cloud marks the ", mark("maximum-Sharpe mix"), "."),
+  extra.push({ title: "The best portfolio is an estimate", tag: "Going further", body: [
+    P("Plot risk against return for every blend of some funds. The steepest line from cash that touches that cloud marks the ", mark("maximum-Sharpe portfolio"), "."),
     note("drawn from past returns, which shift: an estimate, not a promise"),
-    el("p", { class: "muted small" }, "Information, not investment advice."),
   ] });
   return { steps, extra };
 }

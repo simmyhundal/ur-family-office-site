@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign up · Ur Family Office</title>
-<meta name="description" content="Join the list for early access.">
+<meta name="description" content="Hear when Plus is ready and what’s new.">
 <meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0b1c" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ur Family Office">
 <meta property="og:title" content="Sign up · Ur Family Office">
-<meta property="og:description" content="Join the list for early access.">
+<meta property="og:description" content="Hear when Plus is ready and what’s new.">
 <meta property="og:url" content="https://simmyhundal.github.io/ur-family-office-site/signup/">
 <meta property="og:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
 <meta property="og:image:alt" content="Ur Family Office: a higher view of your money">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sign up · Ur Family Office">
-<meta name="twitter:description" content="Join the list for early access.">
+<meta name="twitter:description" content="Hear when Plus is ready and what’s new.">
 <meta name="twitter:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <!-- /link preview -->
 <link rel="stylesheet" href="../style.css">
@@ -39,22 +39,22 @@
 <div class="page-top mesh">
 <div class="wrap signup-layout">
   <div class="signup-side">
-    <div class="page-head"><span class="eyebrow">Early access</span><h1>Be first to see what’s next</h1><p class="sub">We’ll email you when new features open. Nothing is charged.</p></div>
+    <div class="page-head"><span class="eyebrow">Sign up</span><h1>Stay in the loop</h1><p class="sub">Hear when Plus is ready. Nothing is charged.</p></div>
   </div>
   <div>
   <form id="signup" class="form form-card glass" novalidate>
-    <h2>Join the list</h2>
+    <h2>Get notified</h2>
     <label>Email<input id="f-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" required></label><p class="field-error" id="e-email" role="alert"></p>
     <label>I am a<select id="f-role" name="role" required><option value="">Choose…</option><option value="investor">Investor (my own money)</option><option value="student">Student</option><option value="instructor">Instructor</option><option value="other">Something else</option></select></label><p class="field-error" id="e-role" role="alert"></p>
     <label id="school-field" hidden><span>School <span class="optional">(optional)</span></span><input id="f-school" name="school" type="text" maxlength="120" autocomplete="organization"></label>
-    <label>Plan I am interested in<select id="f-plan" name="plan"><option value="">Choose…</option><option value="free">Free</option><option value="plus">Plus (planned)</option></select></label><p class="field-error" id="e-plan" role="alert"></p>
-    <label class="inline check"><input id="f-consent" name="consent" type="checkbox"> <span>I agree to be emailed about early access, and I have read the <a href="../privacy/">privacy page</a>.</span></label><p class="field-error" id="e-consent" role="alert"></p>
+    <label>Plan I am interested in<select id="f-plan" name="plan"><option value="">Choose…</option><option value="free">Free</option><option value="plus">Plus</option></select></label><p class="field-error" id="e-plan" role="alert"></p>
+    <label class="inline check"><input id="f-consent" name="consent" type="checkbox"> <span>Email me about UFO. I have read the <a href="../privacy/">privacy page</a>.</span></label><p class="field-error" id="e-consent" role="alert"></p>
     <div class="hp" aria-hidden="true"><label>Leave this empty<input id="f-gotcha" name="_gotcha" type="text" tabindex="-1" autocomplete="off"></label></div>
-    <button type="submit" id="go">Join the list</button>
+    <button type="submit" id="go">Get notified</button>
     <p id="status" class="muted small" role="status" style="margin:0"></p>
-    <p class="fine"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Only your email, role, school (if given), plan interest and consent go to Formspree. No portfolio data.</p>
+    <p class="fine"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Only these answers go to Formspree. No portfolio data.</p>
   </form>
-  <div id="thanks" class="form-card glass" hidden tabindex="-1"><h2>Thanks, you’re on the list</h2><p>We will only email you about early access. Nothing has been charged.</p><p><a class="btn" href="../try/?sample=1">Try the sample portfolio</a></p></div>
+  <div id="thanks" class="form-card glass" hidden tabindex="-1"><h2>Thanks, you’re on the list</h2><p>We’ll only email you about UFO.</p><p><a class="btn" href="../try/?sample=1">Try the sample portfolio</a></p></div>
   </div>
 </div>
 </div>
@@ -83,7 +83,7 @@ $("f-role").addEventListener("change", school); school();
 if (!cfg.signup_endpoint) {
   $("go").disabled = true;
   const href = mailtoJoin(cfg.contact_email, pre.plan);
-  if (href) { $("status").textContent = "The form is paused for a moment. Meanwhile: "; const a = document.createElement("a"); a.href = href; a.textContent = "email us to join the list"; $("status").append(a, "."); }
+  if (href) { $("status").textContent = "The form is paused for a moment. Meanwhile: "; const a = document.createElement("a"); a.href = href; a.textContent = "email us to sign up"; $("status").append(a, "."); }
   else $("status").textContent = signupOutcome({ sent: false, reason: "no-endpoint" }).text;
 }
 $("signup").addEventListener("submit", async (ev) => {

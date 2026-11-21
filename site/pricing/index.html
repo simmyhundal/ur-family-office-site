@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricing · Ur Family Office</title>
-<meta name="description" content="What is free today and what is planned.">
+<meta name="description" content="Free in your browser; Plus is a Mac app you can pre-order.">
 <meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0b1c" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ur Family Office">
 <meta property="og:title" content="Pricing · Ur Family Office">
-<meta property="og:description" content="What is free today and what is planned.">
+<meta property="og:description" content="Free in your browser; Plus is a Mac app you can pre-order.">
 <meta property="og:url" content="https://simmyhundal.github.io/ur-family-office-site/pricing/">
 <meta property="og:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
 <meta property="og:image:alt" content="Ur Family Office: a higher view of your money">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Pricing · Ur Family Office">
-<meta name="twitter:description" content="What is free today and what is planned.">
+<meta name="twitter:description" content="Free in your browser; Plus is a Mac app you can pre-order.">
 <meta name="twitter:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <!-- /link preview -->
 <link rel="stylesheet" href="../style.css">
@@ -38,16 +38,15 @@
 <main id="main">
 <div class="page-top mesh">
   <div class="wrap">
-    <div class="page-head center"><span class="eyebrow">Pricing</span><h1>Simple, and free today</h1><p class="sub">Everything here is free today. Plus is planned.</p></div>
+    <div class="page-head center"><span class="eyebrow">Pricing</span><h1>Simple pricing</h1></div>
     <div class="plans" id="plans" aria-live="polite"><p class="muted">Loading plans…</p></div>
   </div>
 </div>
 <section class="section" style="padding-bottom:16px" aria-labelledby="faq-h">
   <div class="wrap">
-    <div class="section-head center reveal"><span class="eyebrow">Questions</span><h2 id="faq-h">Good to know</h2></div>
+    <div class="section-head center reveal"><h2 id="faq-h">Good to know</h2></div>
     <div class="faq">
-      <div class="reveal"><h3>What’s free?</h3><p>Everything on this site today: comparing a mix with a benchmark, the lessons and the sample portfolio.</p></div>
-      <div class="reveal"><h3>Am I charged?</h3><p>No. “Planned” means we haven’t started selling it, and joining the list isn’t a purchase.</p></div>
+      <div class="reveal"><h3>Am I charged?</h3><p>Only if you pre-order Plus. You pay on Stripe’s page, and we email your download link when the signed Mac app is ready.</p></div>
     </div>
   </div>
 </section>
@@ -70,7 +69,7 @@ import { planAction, priceLabel } from "../js/plans.mjs";
 const box = document.getElementById("plans");
 try {
   const { plans } = await loadJson(new URL("../data/plans.json", import.meta.url).href);
-  const STATUS = { available: ["Available now", " on"], planned: ["Planned", ""], later: ["Coming later", ""] };
+  const STATUS = { available: ["Available now", " on"], preorder: ["Pre-order", ""], planned: ["Planned", ""], later: ["Coming later", ""] };
   const bigPrice = (p) => {
     if (p.status === "later") return '<p class="price word">Later</p>';
     const m = /^(\$[\d.,]+)(\/.+)?$/.exec(p.price);
@@ -87,7 +86,7 @@ try {
       <ul>${p.features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
       <a class="btn${featured ? "" : " ghost"}" href="${esc(a.href)}"${ext}>${esc(a.label)}</a></article>`;
   }).join("");
-} catch { box.innerHTML = '<p class="error">Could not load the plans. Reload the page, or <a href="../signup/">join the list</a>.</p>'; }
+} catch { box.innerHTML = '<p class="error">Could not load the plans. Reload the page, or <a href="../signup/">sign up</a>.</p>'; }
 </script>
 </body>
 </html>

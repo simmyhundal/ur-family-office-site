@@ -5,12 +5,11 @@
       "name": "Free",
       "price": "$0",
       "status": "available",
-      "blurb": "Everything on the site today.",
+      "blurb": "Everything on this site.",
       "features": [
-        "Compare a mix of funds with a benchmark",
-        "Sharpe, return and risk in plain language",
-        "The step-by-step lessons",
-        "A sample portfolio to try"
+        "Your portfolio vs a benchmark",
+        "Return, risk and Sharpe ratio",
+        "Lessons and samples"
       ],
       "checkout_url": ""
     },
@@ -18,12 +17,12 @@
       "id": "plus",
       "name": "Plus",
       "price": "$4/month",
-      "status": "planned",
-      "blurb": "Your whole portfolio from above: every account side by side.",
+      "status": "preorder",
+      "blurb": "A Mac app for all your accounts.",
       "features": [
-        "Every account side by side, against one benchmark",
-        "Cash-flow returns and risk comparisons",
-        "Explore Sharpe strategies and what-if tests",
+        "Every account side by side",
+        "Compare simple portfolios: Conservative, Balanced, Growth, All stocks; world or US-only",
+        "Your numbers never leave your computer",
         "Everything in Free"
       ],
       "checkout_url": "",

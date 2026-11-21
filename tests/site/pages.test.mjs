@@ -92,20 +92,18 @@ test("Try: manual entry after the sample, clear investment choices, and Plus-onl
   const ns = t.match(/<aside id="next-step"[\s\S]*?<\/aside>/)[0];
   assert.match(ns, /Want this for all your accounts\?/);
   assert.equal([...ns.matchAll(/<a /g)].length, 1, "one link");
-  assert.match(ns, /<a class="btn" href="\.\.\/signup\/\?plan=plus">Join Plus early access/);
+  assert.match(ns, /<a class="btn" href="\.\.\/signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(t, /id="try-own-button"[^>]*>Try your own investments/);
   assert.match(t, /File imports are a Plus feature/);
-  assert.match(t, /Brokerage holdings and price-history CSV imports require Plus/);
-  assert.match(t, /joining the list does not unlock imports/);
   assert.doesNotMatch(t, /type="file"|id="(?:positions|csv|drop|template-dl)"/);
   assert.match(t, /id="benchmark-picker"/);
   const app = await readFile(new URL("js/app.js", site), "utf8");
-  assert.match(app, /has\("own"\)\) setTimeout\(startTyping/, "?own=1 opens the mix editor (Home's 'Check your own mix')");
+  assert.match(app, /has\("own"\)\) setTimeout\(startTyping/, "?own=1 opens the editor (Home's 'Check your own portfolio')");
   assert.doesNotMatch(app, /loadPositions|parsePositions|parsePricesCsv|file\.text\(|dataTransfer\??\.files/);
   assert.match(app, /createFundPicker/);
   assert.match(app, /Cash rate: 3-month Treasury bills from FRED/, "the price source line lives on Try");
   for (const id of new Set([...app.matchAll(/\$\("([\w-]+)"\)/g)].map((m) => m[1]))) assert.ok(t.includes(`id="${id}"`), `app.js uses #${id}, missing on Try`);
-  assert.match(await read(""), /href="try\/\?own=1">Check your own mix/);
+  assert.match(await read(""), /href="try\/\?own=1">Check your own portfolio/);
 });
 
 // Issue 238: nothing above the fold waits on a fade-in. The hero and every page head must not be in the scroll-reveal set,
@@ -137,7 +135,7 @@ test("Home says each thing once (issue 239)", async () => {
   for (const gone of ['class="trust-row"', 'class="hero-lesson"', 'class="float-card', 'class="benefits3"', 'class="founder-line"',
     'class="teach-line', 'class="final-cta', "See pricing", "is not a purchase", "Opens the sample household"]) assert.ok(!home.includes(gone), gone);
   assert.match(home, /<h2 id="priv-h">Your numbers never leave your computer<\/h2>\s*<p><a href="privacy\/">/);
-  assert.match(home, /<a class="btn big" href="signup\/\?plan=plus">Join Plus early access/);
+  assert.match(home, /<a class="btn big" href="signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(home, /Would yours\?<\/b> <span>Try your own →/);
   const js = await readFile(new URL("js/home.mjs", site), "utf8");
   for (const id of js.matchAll(/\$\("([\w-]+)"\)/g)) assert.ok(home.includes(`id="${id[1]}"`), `home.mjs uses #${id[1]}, missing on Home`);
@@ -171,17 +169,17 @@ test("word budget: Home ≤ 220, Sign up ≤ 100, Try ≤ 240 (issue 239)", asyn
 });
 
 // Trim part 2 (issue 239): Pricing stays short, and its plans are only the ones on sale or planned.
-test("Pricing: at most 140 visible words (page text plus the plan cards), two FAQ questions, no Scheduler plan", async () => {
+test("Pricing: at most 140 visible words (page text plus the plan cards), one FAQ question, no Scheduler plan", async () => {
   const html = await read("pricing/");
   const { plans } = JSON.parse(await readFile(new URL("data/plans.json", site), "utf8"));
   assert.deepEqual(plans.map((p) => p.id), ["free", "plus"]);
   const main = html.match(/<main[\s\S]*<\/main>/)[0].replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<svg[\s\S]*?<\/svg>/g, " ");
   const text = main.replace(/<[^>]+>/g, " ").replace("Loading plans…", " ");
-  const cards = plans.map((p) => [p.status, p.name, p.price, p.blurb, ...p.features, p.teaser ? `See what ${p.name} looks like →` : "", "Join the list"].join(" ")).join(" ");
+  const cards = plans.map((p) => [p.status, p.name, p.price, p.blurb, ...p.features, p.teaser ? `See what ${p.name} looks like →` : "", p.id === "free" ? "Try it free" : "Pre-order Plus"].join(" ")).join(" ");
   const words = (text + " " + cards).split(/\s+/).filter(Boolean).length;
   assert.ok(words <= 140, `Pricing has ${words} words`);
-  assert.equal((html.match(/<h3>/g) || []).length, 2);
-  assert.match(html, /<h3>What’s free\?<\/h3>/); assert.match(html, /<h3>Am I charged\?<\/h3>/);
+  assert.equal((html.match(/<h3>/g) || []).length, 1);
+  assert.match(html, /<h3>Am I charged\?<\/h3>/);
   for (const gone of ["No card needed", "not a purchase</li>", "never uploaded", "Scheduler", 'class="assure"']) assert.ok(!html.includes(gone), gone);
 });
 
@@ -193,4 +191,33 @@ test("footer: no repeated tagline sentence; the Prices/FRED note shows only on T
     assert.ok(foot.includes("Information, not investment advice.") && foot.includes("© 2026"), `${rel || "home"}: disclaimer and legal line stay`);
     assert.equal(foot.includes("Cash rate: 3-month Treasury bills from FRED."), rel === "try/", `${rel || "home"}: Prices note only on Try`);
   }
+});
+
+// Issue 279: every Plus button on a page is marked so chrome.mjs can turn it into "Pre-order Plus" once a checkout link is
+// set; the old waitlist wording is gone; visible text says "portfolio", not "mix"; Plus copy promises no optimizer.
+test("Plus buttons are marked for pre-order; no waitlist wording; 'portfolio' not 'mix'; no optimizer promises", async () => {
+  const { visibleText } = await import("./wordcount.mjs");
+  let marked = 0;
+  for (const rel of PAGES) {
+    const html = await read(rel);
+    for (const m of html.matchAll(/<a\b[^>]*href="(?:\.\.\/)*signup\/\?plan=plus"[^>]*>/g)) { assert.match(m[0], /\bdata-plus-cta\b/, `${rel || "home"}: ${m[0]}`); marked++; }
+    assert.ok(!/early access|Join the list|waitlist/i.test(html), `${rel || "home"}: waitlist wording`);
+    const title = html.match(/<title>([^<]*)<\/title>/)[1], desc = meta(html, "name", "description");
+    for (const text of [visibleText(html), title, desc]) assert.ok(!/\bmix(es)?\b/i.test(text), `${rel || "home"}: says "mix": ${text.match(/.{0,40}\bmix\b.{0,20}/i)?.[0]}`);
+  }
+  assert.ok(marked >= 3, "Home, Try's next step and Try's imports note");
+  assert.match(await read(""), /<p class="lead" data-preorder-note hidden>Pre-order now/, "Home's pay-now line starts hidden");
+  for (const f of ["app.js", "share.mjs", "portfolios.mjs", "lesson.mjs", "result.mjs", "home.mjs"]) {
+    const js = (await readFile(new URL("js/" + f, site), "utf8")).replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, "");
+    for (const m of js.matchAll(/(["`])((?:(?!\1).)*)\1/g)) assert.ok(m[2] === "mix" || !/(?<![-#.])\b[Mm]ix(es)?\b(?![-=(])/.test(m[2].replace(/\$\{[^}]*\}/g, "")), `${f}: "${m[2]}"`);
+  }
+  const plans = await readFile(new URL("data/plans.json", site), "utf8");
+  const home = await read("");
+  for (const text of [plans, visibleText(home)]) assert.ok(!/\bmix\b|optimi[sz]|walk-forward|what-if|strateg/i.test(text), "Plus copy matches the product");
+  const plus = JSON.parse(plans).plans.find((p) => p.id === "plus");
+  assert.equal(plus.status, "preorder");
+  assert.ok(plus.features.some((f) => /Conservative, Balanced, Growth, All stocks/.test(f) && /world or US-only/.test(f)));
+  assert.ok(plus.features.includes("Your numbers never leave your computer"));
+  const chrome = await readFile(new URL("js/chrome.mjs", site), "utf8");
+  assert.match(chrome, /querySelectorAll\("\[data-plus-cta\]"\)/); assert.match(chrome, /upgradePlanLinks\(/);
 });

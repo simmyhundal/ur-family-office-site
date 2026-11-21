@@ -31,7 +31,7 @@ export function validateSignup(p) {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) e.email = "That email address looks incomplete. Check for a missing @ or domain.";
   if (!ROLES.includes(p.role)) e.role = "Choose the role that fits you best.";
   if (!PLANS.includes(p.plan)) e.plan = "Choose a plan you are interested in.";
-  if (!p.consent) e.consent = "Tick the box to agree, so we can email you about early access.";
+  if (!p.consent) e.consent = "Tick the box so we can email you.";
   return e;
 }
 

@@ -28,10 +28,10 @@ function write(store, data) {
 export function makePortfolio({ name, weights, benchmark, years, strategy, initial, monthly }, now = new Date()) {
   const w = {};
   for (const [s, v] of Object.entries(weights || {})) if (Number.isFinite(v) && v > 0) w[String(s).toUpperCase()] = v;
-  if (!Object.keys(w).length) throw new Error("Nothing to save: the mix has no holdings.");
+  if (!Object.keys(w).length) throw new Error("Nothing to save: the portfolio has no holdings.");
   return {
     id: `p${now.getTime().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-    name: clean(name) || "My mix", weights: w, benchmark: String(benchmark || "").toUpperCase(),
+    name: clean(name) || "My portfolio", weights: w, benchmark: String(benchmark || "").toUpperCase(),
     years: Number(years) || 5, strategy: strategy || "hold", initial: Number(initial) || 0, monthly: Number(monthly) || 0,
     savedAt: now.toISOString(),
   };
@@ -41,7 +41,7 @@ export const listPortfolios = (store) => read(store).portfolios.sort((a, b) => b
 
 export function savePortfolio(store, input, now = new Date()) {
   const data = read(store);
-  if (data.portfolios.length >= MAX_ITEMS) throw new Error(`You can keep up to ${MAX_ITEMS} saved mixes. Delete one first.`);
+  if (data.portfolios.length >= MAX_ITEMS) throw new Error(`You can keep up to ${MAX_ITEMS} saved portfolios. Delete one first.`);
   const p = makePortfolio(input, now);
   data.portfolios.push(p);
   write(store, data);
