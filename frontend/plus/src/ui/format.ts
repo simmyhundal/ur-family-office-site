@@ -2,6 +2,7 @@ export type Numeric=number|null|undefined;
 const valid=(v:Numeric):v is number=>typeof v==='number'&&Number.isFinite(v);
 export const money=(v:Numeric)=>valid(v)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Math.round(v)||0):'—';
 export const percent=(v:Numeric,signed=false)=>valid(v)?`${signed&&+(v*100).toFixed(1)>0?'+':''}${(+(v*100).toFixed(1)||0).toFixed(1)}%`:'—';
+export const ratio=(v:Numeric)=>valid(v)?(+(v.toFixed(2))||0).toFixed(2):'—';
 export const decimal=(v:Numeric)=>valid(v)?(+(v.toFixed(1))||0).toFixed(1):'—';
 export const duration=(months:Numeric)=>valid(months)?`${(months/12).toFixed(1)} years`:'—';
 export function formatDate(day:string|null|undefined,precision:'month'|'day'='month'){

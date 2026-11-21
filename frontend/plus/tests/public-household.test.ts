@@ -15,9 +15,11 @@ test('published household embeds the current shared bundle and only invented acc
  assert.match(data.demo,/invented household/);
  assert.equal(data.overview.accounts,5);
  assert.deepEqual(data.nextSteps.accounts.map((a:{id:string})=>a.id).sort(),[...expected].sort());
- assert.ok(data.nextSteps.holdout.rows.some((r:{kind:string})=>r.kind==='fitted'));
- assert.ok(data.nextSteps.holdout.verdict.status);
- assert.ok(Object.keys(data.nextSteps.holdout.today.weights).includes('Max Sharpe'));
+ assert.equal(data.benchmark,'SPY');
+ assert.deepEqual(data.nextSteps.mixes.map((m:{key:string})=>m.key),['VT','SPY'].flatMap(s=>[30,60,80,100].map(p=>`fixed:${s}-${p}`)));
+ assert.equal(data.nextSteps.holdout,undefined,'the holdout test is shelved (M22)');
+ assert.ok(data.nextSteps.grid.months.length>36);
+ assert.ok(data.benchmarks.every(([s,label]:[string,string])=>label.endsWith('ETF')&&label.includes(s)));
  assert.doesNotMatch(page,/github\.com|\/Users\/|XMLHttpRequest|WebSocket|sendBeacon|\bfetch\(/);
 });
 
@@ -46,10 +48,15 @@ test('public household runs all three shared tabs and changes benchmark, period 
   await until(()=>details.textContent!.includes(account.selectedOptions[0].textContent!));
   w.UFOBridge.navigate('next');const next=w.document.getElementById('react-next')!;
   await until(()=>!next.hidden);
-  assert.match(next.textContent!,/How did it hold up/);
+  assert.match(next.textContent!,/How it did in the past/);
   const rule=next.querySelector('select[aria-label="Proposed portfolio"]') as HTMLSelectElement;
-  rule.value='Minimum variance';rule.dispatchEvent(new w.Event('change',{bubbles:true}));
-  await until(()=>!!next.querySelector('[data-series="Minimum variance"]'));
+  rule.value='fixed:SPY-80';rule.dispatchEvent(new w.Event('change',{bubbles:true}));
+  await until(()=>[...next.querySelectorAll('#evidence tr[data-tone="proposal"] th')].some(th=>th.textContent==='Growth 80/20 · SPY'));
+  assert.ok(next.querySelector('[data-series="moved"]'),'Sharpe over time compares the checked account');
+  for(const id of ['react-overview','react-details','react-next']){const t=w.document.getElementById(id)!.textContent!;
+   assert.doesNotMatch(t,/\bmix(es)?\b/i,id);assert.equal(t.split('Information, not advice').length-1,1,id);}
+  assert.equal(w.document.querySelector('div.demo'),null,'one invented-household label, in the header');
+  assert.equal(w.document.querySelector('header [data-act="opts"]'),null,'no options panel button');
   assert.match(w.document.querySelector('header')!.textContent!,/invented household/);
   assert.doesNotMatch(w.document.getElementById('tabs')!.textContent!,/Learn/);
   assert.deepEqual(errors,[]);
