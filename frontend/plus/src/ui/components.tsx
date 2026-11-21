@@ -1,15 +1,28 @@
 import {useId,type ReactNode,type HTMLAttributes} from 'react';
 import {PERIODS,percent,money,formatDate,comparisonTone} from './format';
-export type Tone='portfolio'|'benchmark'|'neutral';
+export type Tone='portfolio'|'benchmark'|'proposal'|'neutral';
 export type Quality='observed'|'estimated'|'modeled';
-export type Role='portfolio'|'benchmark';
-export const seriesStyle=(role:Role,quality:Quality='observed')=>({color:role==='benchmark'?'var(--bench)':'var(--accent)',dash:role==='benchmark'?'8 4':quality==='estimated'?'3 4':undefined});
+/** One colour per series everywhere (issue 264): your portfolio purple, the benchmark orange (dashed), a proposed mix blue, other references gray (dotted). */
+export type Role='portfolio'|'benchmark'|'proposal'|'reference';
+const ROLE_COLOR:Record<Role,string>={portfolio:'var(--accent)',benchmark:'var(--bench)',proposal:'var(--proposal)',reference:'var(--ink-3)'};
+export const seriesStyle=(role:Role,quality:Quality='observed')=>({color:ROLE_COLOR[role],dash:role==='benchmark'?'8 4':role==='reference'?'2 4':quality==='estimated'?'3 4':undefined});
 export function Card({children,className='',...props}:HTMLAttributes<HTMLElement>){return <section {...props} className={`card ui-card ${className}`}>{children}</section>;}
 export function CardStack({children,className=''}:{children:ReactNode;className?:string}){return <div className={`ui-stack ${className}`}>{children}</div>;}
+/** The masthead every tab opens with: a small kicker, the tab title and an optional note on the right (data date, demo label). */
+export function PageHeader({kicker,title,note}:{kicker:string;title:string;note?:ReactNode}){return <div className="ui-page-header"><div><p className="ui-kicker">{kicker}</p><h1>{title}</h1></div>{note&&<span className="ui-pill">{note}</span>}</div>;}
+/** A labelled checkbox row with a value on the right (accounts to change). */
+export function CheckRow({checked,onChange,title,detail,value,tone='portfolio'}:{checked:boolean;onChange(checked:boolean):void;title:ReactNode;detail?:ReactNode;value?:ReactNode;tone?:Tone}){return <label className="ui-check-row" data-tone={tone}><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><span><b>{title}</b>{detail&&<small>{detail}</small>}</span>{value!=null&&<strong>{value}</strong>}</label>;}
+/** Two-column layout: controls on the left, evidence on the right; one column on phones. */
+export function SplitLayout({side,children}:{side:ReactNode;children:ReactNode}){return <div className="ui-split"><div className="ui-split-side">{side}</div><div className="ui-split-main">{children}</div></div>;}
 export function CardHeader({title,caption,action,level=2}:{title:string;caption?:ReactNode;action?:ReactNode;level?:1|2}){const Heading=level===1?'h1':'h2';return <div className="ui-card-header"><div><Heading>{title}</Heading>{caption&&<p className="ui-caption">{caption}</p>}</div>{action}</div>;}
-export type Option={value:string;label:string;disabled?:boolean};
+export type Option={value:string;label:string;disabled?:boolean;group?:string};
+function renderOptions(options:Option[]){
+ const groups=[...new Set(options.map(o=>o.group))];
+ const one=(o:Option)=><option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>;
+ return groups.length>1||groups[0]?groups.map(g=>g?<optgroup key={g} label={g}>{options.filter(o=>o.group===g).map(one)}</optgroup>:options.filter(o=>!o.group).map(one)):options.map(one);
+}
 export function SelectField({label,value,options,onChange,tone='neutral',hideLabel=false,disabled=false}:{label:string;value:string;options:Option[];onChange(value:string):void;tone?:Tone;hideLabel?:boolean;disabled?:boolean}){
- const id=useId();return <label htmlFor={id} className="ui-select-field" data-tone={tone}><span className={hideLabel?'ui-sr':'ui-label'}>{label}</span><span className="ui-select-wrap"><select id={id} aria-label={label} value={value} onChange={e=>onChange(e.target.value)} disabled={disabled||!options.length}>{options.length?options.map(o=><option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>):<option value="">Unavailable</option>}</select><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></span></label>;
+ const id=useId();return <label htmlFor={id} className="ui-select-field" data-tone={tone}><span className={hideLabel?'ui-sr':'ui-label'}>{label}</span><span className="ui-select-wrap"><select id={id} aria-label={label} value={value} onChange={e=>onChange(e.target.value)} disabled={disabled||!options.length}>{options.length?renderOptions(options):<option value="">Unavailable</option>}</select><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></span></label>;
 }
 export const tupleOptions=(items:readonly (readonly [string,string])[])=>items.map(([value,label])=>({value,label}));
 export function PeriodSelector({value,onChange}:{value:string;onChange(value:string):void}){return <div className="ui-periods pills" role="group" aria-label="Period">{PERIODS.map(([key,label])=><button key={key} type="button" aria-pressed={value===key||(key==='inception'&&value==='all')} onClick={()=>onChange(key)}>{label}</button>)}</div>;}

@@ -15,8 +15,9 @@ test('published household embeds the current shared bundle and only invented acc
  assert.match(data.demo,/invented household/);
  assert.equal(data.overview.accounts,5);
  assert.deepEqual(data.nextSteps.accounts.map((a:{id:string})=>a.id).sort(),[...expected].sort());
- assert.ok(data.nextSteps.mixes.some((m:{rule?:string})=>m.rule?.includes('max-Sharpe')));
- assert.ok(data.nextSteps.candidates.rows.some((r:{decisions?:unknown[]})=>r.decisions?.length));
+ assert.ok(data.nextSteps.holdout.rows.some((r:{kind:string})=>r.kind==='fitted'));
+ assert.ok(data.nextSteps.holdout.verdict.status);
+ assert.ok(Object.keys(data.nextSteps.holdout.today.weights).includes('Max Sharpe'));
  assert.doesNotMatch(page,/github\.com|\/Users\/|XMLHttpRequest|WebSocket|sendBeacon|\bfetch\(/);
 });
 
@@ -45,12 +46,10 @@ test('public household runs all three shared tabs and changes benchmark, period 
   await until(()=>details.textContent!.includes(account.selectedOptions[0].textContent!));
   w.UFOBridge.navigate('next');const next=w.document.getElementById('react-next')!;
   await until(()=>!next.hidden);
-  assert.match(next.textContent!,/How the allocation is chosen/);
-  assert.match(next.textContent!,/Inspect the annual decisions|Compare the evidence/);
-  const objective=next.querySelector('select[aria-label="Portfolio objective"]') as HTMLSelectElement;
-  const other=[...objective.options].find(o=>o.value!==objective.value)!;
-  assert.ok(other);objective.value=other.value;objective.dispatchEvent(new w.Event('change',{bubbles:true}));
-  await until(()=>(next.querySelector('select[aria-label="Portfolio objective"]') as HTMLSelectElement).value===other.value);
+  assert.match(next.textContent!,/How did it hold up/);
+  const rule=next.querySelector('select[aria-label="Proposed portfolio"]') as HTMLSelectElement;
+  rule.value='Minimum variance';rule.dispatchEvent(new w.Event('change',{bubbles:true}));
+  await until(()=>!!next.querySelector('[data-series="Minimum variance"]'));
   assert.match(w.document.querySelector('header')!.textContent!,/invented household/);
   assert.doesNotMatch(w.document.getElementById('tabs')!.textContent!,/Learn/);
   assert.deepEqual(errors,[]);

@@ -1,81 +1,108 @@
+// Next steps (issue 273): the proposed portfolio and accounts on the left, the holdout evidence on the right.
+// Information, not advice. Nothing here places orders or moves money; draft trades are read-only.
 import {useState} from 'react';
-import {ResearchNextSteps} from './ResearchNextSteps';
-import {HoldoutTest,type Holdout} from './HoldoutTest';
-import {AdoptionTracking as SavedHoldingsTracking} from './AdoptionTracking';
-import type {ResearchProposal,AdoptionTracking} from './research-types';
-import {Card,CardStack,SelectField,tupleOptions,Disclosure,MetricPair,StatusMessage,DataTable,AllocationBreakdown,DataQualityBadge,DataCoverage,ComparisonSummary} from './ui/components';
-import {TimeSeriesChart} from './ui/charts';
-import {money as usd,percent as pct,decimal as num,formatDate as fmt,duration as years} from './ui/format';
-import type {DashboardData} from './types';
+import {AdoptionTracking} from './AdoptionTracking';
+import {Card,CardHeader,CardStack,PageHeader,SplitLayout,SelectField,CheckRow,Disclosure,StatusMessage,DataTable,AllocationBreakdown,MetricPair,ComparisonSummary,DataCoverage} from './ui/components';
+import {TimeSeriesChart,type Series} from './ui/charts';
+import {money,percent,decimal,formatDate} from './ui/format';
+import {BASE,CURRENT,FUND_NAMES,rules,defaultRule,draftTrades,verdictTitle,edgeText,type NextData,type NextPayload,type Rule,type Holdout,type HoldoutRow,type Account,type Move} from './next-model';
+export type {NextData} from './next-model';
 
-type Facts={value:number;irr:number|null;sharpe:number|null;ret?:number|null;vol?:number|null;worst?:number|null};
-type Move={error?:string;account?:{actual_value:number;actual_irr:number|null;new_value:number;new_irr:number|null;as_of:string;first:string;months:string[];actual:number[];new:number[]};household?:{as_is:Facts;moved:Facts;as_of:string}|null;household_note?:string};
-type Proxy={fund:string;standin:string;before:string};
-type Stress={worst:number;peak:string;trough:string;recovered:string|null;recovery_months:number|null;underwater_months:number};
-type Evidence=Stress&{from:string;to:string;months:number;benchmark:string;return:number|null;vol:number|null;sharpe:number|null;behind_months:number;reference_standins?:Proxy[];reference:Stress&{return:number|null;vol:number|null;sharpe:number|null};windows:{months:number;n:number;ahead:number|null;worst:number|null;median:number|null;best:number|null}[];chart:{months:string[];own:number[];benchmark:number[]}};
-type Decision={date:string;input_from:string;input_to:string;held_to:string;weights:Record<string,number>;outcome:number|null};
-type Row={name:string;kind:string;desc:string;ret:number|null;sharpe:number|null;worst:number|null;evidence?:Record<string,Evidence>;decisions?:Decision[]};
-type Account={id:string;label:string;irr?:number|null};
-type Mix={key:string;name:string;weights:Record<string,number>;desc:string;error?:string;rule?:string;evidence?:Record<string,Evidence>;history?:{from:string;to:string;standins?:Proxy[]}};
-export type NextData=DashboardData&{nextSteps?:{holdout?:Holdout;proposals?:ResearchProposal[];adoptionTracking?:AdoptionTracking;error?:string;estimated?:boolean;accounts_included?:number;history_note?:string;estimate_notes?:{account:string;method:string}[];accounts?:Account[];mixes?:Mix[];moves?:Record<string,Move>;assumptions?:string[];research_benchmarks?:[string,string][];candidates?:{research_only?:boolean;matched_risk_available?:boolean;max_weight?:number;funds?:string[];universe?:{name:string;declared:string;rationale:string;class_caps:Record<string,number>};error?:string;from?:string;to?:string;lookback?:number;rebalance?:number;scope_note?:string;selection_note?:string;left_out?:{symbol:string;why:string}[];standins?:Proxy[];rows?:Row[]}}};
-const friendly=(name:string)=>name.includes('at your mix')?'Keep similar risk':name.includes('max-Sharpe')?'Sharpe strategy':name==='VTI'?'US stocks (VTI)':name==='QQQ'?'Nasdaq-100 (QQQ)':name;
-function Weights({weights}:{weights:Record<string,number>}){return <AllocationBreakdown weights={weights}/>;}
-function EvidenceChart({e,label}:{e:Evidence;label:string}){return <TimeSeriesChart label={`${label} and ${e.benchmark}: growth of $100 over the same dates`} zeroBaseline dates={e.chart.months} series={[{key:label,label,role:'portfolio',values:e.chart.own,quality:'modeled'},{key:e.benchmark,label:e.benchmark,role:'benchmark',values:e.chart.benchmark,quality:'modeled'}]}/>;}
-function DecisionWalkthrough({rows}:{rows:Decision[]}){
- const [date,setDate]=useState('');const d=rows.find(x=>x.date===date)??rows[0];if(!d)return null;
- return <Disclosure title='Walk through a past decision'><SelectField label="Decision date" value={d.date} onChange={setDate} options={rows.map(x=>({value:x.date,label:fmt(x.date)}))}/>
- <p>1. Look back: {fmt(d.input_from)} – {fmt(d.input_to)}. Later prices were unavailable to the rule.</p><p>2. Choose the allocation for {fmt(d.date)}:</p><Weights weights={d.weights}/><p>3. What followed through {fmt(d.held_to)}: <strong className="own-value">{pct(d.outcome,true)}</strong>. This is the holding-period return.</p></Disclosure>;
+const WRAPPER:Record<string,string>={taxable:'Taxable',roth_ira:'Roth IRA',traditional_ira:'Traditional IRA',hsa:'HSA','401k':'401(k)'};
+const tradeName=(s:string)=>FUND_NAMES[s]??s;
+
+function ProposalCard({list,rule,onRule,n,chosen,onChosen}:{list:Rule[];rule?:Rule;onRule(v:string):void;n:NextPayload;chosen:string[];onChosen(ids:string[]):void}){
+ const accounts=n.accounts??[],today=n.today,picked=accounts.filter(a=>chosen.includes(a.id));
+ const h=n.holdout;
+ return <Card><SelectField label="Proposed portfolio" tone="proposal" value={rule?.name??''} onChange={onRule} options={list.map(r=>({value:r.name,label:r.label,group:r.group}))}/>
+ {rule&&<p>{rule.desc}</p>}
+ {rule?.weights?<><h3>If started today</h3><AllocationBreakdown weights={rule.weights} names={FUND_NAMES} tone="proposal"/>
+  {h?.today?.from&&<p className="small">{rule.row?.kind==='fitted'?`Fitted on ${formatDate(h.today.from)} – ${formatDate(h.today.to)}, the same way as at every test start.`:'Fixed weights.'} Today’s weights are not tested themselves; the test is the evidence.</p>}</>
+  :<StatusMessage kind="missing">{h?.today?.error??'Today’s weights are unavailable for this rule.'}</StatusMessage>}
+ <div className="ui-current"><Disclosure title="Your current portfolio">{today&&today.total>0?<><p><b className="own-value">{money(today.total)}</b> across your accounts</p>
+  <AllocationBreakdown weights={Object.fromEntries([...today.funds.slice(0,8).map(f=>[f.symbol,f.weight]),...today.lines.map(l=>[l.label,l.weight])])} names={FUND_NAMES}/>
+  {today.funds.length>8&&<p className="small">Plus {today.funds.length-8} smaller holdings.</p>}</>:<StatusMessage kind="missing">Current holdings are unavailable.</StatusMessage>}</Disclosure></div>
+ {accounts.length?<fieldset className="ui-fieldset"><legend>Accounts to change</legend>
+  {accounts.map(a=><CheckRow key={a.id} tone="proposal" checked={chosen.includes(a.id)} onChange={on=>onChosen(on?[...chosen,a.id]:chosen.filter(x=>x!==a.id))} title={a.label}
+   detail={`${WRAPPER[a.wrapper??'']??'Account'} · ${chosen.includes(a.id)?'would change':'stays as is'}`} value={money(a.value)}/>)}
+  <p className="small">{picked.length?<><b className="proposal-value">{money(picked.reduce((s,a)=>s+(a.value??0),0))}</b> in {picked.length} of {accounts.length} accounts</>:'No accounts selected. Nothing changes.'}</p>
+ </fieldset>:null}
+ {picked.length&&rule?.weights?<Disclosure title="Draft buys and sells (read-only)"><p className="small">Moves each selected account from its holdings to today’s weights, using its latest balance. For review only: UFO never places orders. Check taxes, fees and surrender charges first.</p>
+  {picked.map(a=>{const t=draftTrades(a,rule.weights!);return <div className="ui-draft" key={a.id}><h3>{a.label}</h3>{t==null?<StatusMessage kind="missing">Draft trades are unavailable: this account has no fund holdings to trade.</StatusMessage>:t.length?t.map(x=><div className="ui-draft-row" key={x.symbol}><span>{tradeName(x.symbol)}</span><strong>{x.amount<0?'Sell':'Buy'} {money(Math.abs(x.amount))}</strong></div>):<p className="small">Already at these weights.</p>}</div>;})}
+ </Disclosure>:null}
+ </Card>;
 }
-function CostChecks(){return <Disclosure title='Before considering a change'><p>Would this fit your spending needs and ability to stay invested?</p>{['Review taxes on sales in taxable accounts.','Check surrender charges, transfer fees and account restrictions.','Allow for trading costs and the work of rebalancing.','Consider whether you could tolerate the falls and recovery periods above.'].map(x=><label key={x} className="ui-check"><input type="checkbox"/> {x}</label>)}<p className="small">For review only. Nothing places orders or moves money.</p></Disclosure>;}
-function HistoryChart({move,label}:{move:NonNullable<Move['account']>;label:string}){return <TimeSeriesChart label={`Account value compared with ${label}, using the same payments`} zeroBaseline dates={move.months} series={[{key:'actual',label:'Your account',role:'portfolio',values:move.actual,quality:'estimated'},{key:label,label,role:'benchmark',values:move.new,quality:'modeled'}]}/>;}
-export function NextSteps({data,onNavigate,benchmark,onBenchmark}:{data:NextData;onNavigate(tab:string):void;benchmark?:string;onBenchmark?(symbol:string):void}){
- const N=data.nextSteps,accounts=N?.accounts??[],mixes=(N?.mixes??[]).filter(m=>!m.error),C=N?.candidates;
- const [account,setAccount]=useState(''),[mix,setMix]=useState(''),[localBenchmark,setLocalBenchmark]=useState(data.benchmark);
- const selected=accounts.find(a=>a.id===account)??accounts[0];
- const choice=mixes.find(m=>m.key===mix)??mixes.find(m=>m.rule?.includes('at your mix'))??mixes.find(m=>m.rule?.includes('max-Sharpe'))??mixes.find(m=>m.name==='60/40 (VTI/BND)')??mixes[0];
- const reference=benchmark??localBenchmark;
- const row=choice?.rule?C?.rows?.find(r=>r.name===choice.rule):null;
- const evidence=(choice?.rule?row?.evidence:choice?.evidence)?.[reference];
- const staticEvidence=choice?.evidence?.[reference];
- const scenario=selected&&choice?N?.moves?.[`${selected.id}|${choice.key}`]:null,a=scenario?.account,household=scenario?.household;
- const delta=a?a.new_value-a.actual_value:null;
- const proxies=[...(choice?.rule?C?.standins??[]:choice?.history?.standins??[]),...(evidence?.reference_standins??[])];
- if(!N)return null;
- if(N.proposals?.length)return <CardStack><HoldoutTest data={N.holdout}/><ResearchNextSteps proposals={N.proposals} tracking={N.adoptionTracking} accounts={accounts} moves={N.moves} estimated={N.estimated}/></CardStack>;
+
+function ResultRow({r,tone,label}:{r:HoldoutRow;tone:'proposal'|'benchmark'|'portfolio';label:string}){
+ return <tr data-tone={tone}><th>{label}<small>{r.kind==='fitted'?'fitted':r.kind==='reference'?'reference':'fixed'}</small></th><td>{percent(r.median,true)}<small className="ui-range">{percent(r.p10,true)} to {percent(r.p90,true)}</small></td><td>{percent(r.vol)}</td><td>{decimal(r.sharpe)}</td><td>{percent(r.worst,true)}</td></tr>;
+}
+
+function Evidence({h,rule}:{h?:Holdout;rule?:Rule}){
+ if(!h)return <Card><CardHeader title="How did it hold up?"/><StatusMessage kind="missing">The holdout test did not run for this report. Refresh the report to run it.</StatusMessage></Card>;
+ if(h.error||!h.rows?.length)return <Card><CardHeader title="How did it hold up?"/><StatusMessage kind="missing">The holdout test could not run: {h.error??'no result'}.</StatusMessage></Card>;
+ const row=rule?.row,base=h.rows.find(r=>r.name===BASE),mine=h.rows.find(r=>r.name===CURRENT),neff=h.n_eff??0,status=h.verdict?.status;
+ const shown:[HoldoutRow,'proposal'|'benchmark'|'portfolio',string][]=[...(row&&row.name!==BASE?[[row,'proposal',rule!.label] as [HoldoutRow,'proposal',string]]:[]),...(base?[[base,'benchmark','60/40'] as [HoldoutRow,'benchmark',string]]:[]),...(mine?[[mine,'portfolio','Your mix'] as [HoldoutRow,'portfolio',string]]:[])];
+ const path=h.path??{},dates=h.path_dates??[];
+ const series:Series[]=shown.filter(([r])=>path[r.name]?.length===dates.length).map(([r,tone,label])=>({key:r.name,label:label+(r.name===CURRENT?' (held fixed)':''),role:tone,values:path[r.name],quality:'modeled'}));
+ return <Card id="evidence"><p className="ui-kicker">Compare the evidence</p><h2>How did it hold up?</h2>
+ <p>At every month from {formatDate(h.first_start)} to {formatDate(h.last_start)}, each rule looked only at the {(h.train??120)/12} years before, chose its mix, then held it untouched for the next {h.hold??12} months. Rules never saw the months they were judged on.</p>
+ <div className="ui-facts"><div><small>Each test</small><b>{(h.train??120)/12} years to choose, {h.hold??12} months held</b></div><div><small>Starting months</small><b>{h.windows}</b></div><div><small>Independent years (effective sample)</small><b>{neff}</b></div></div>
+ <div className="ui-verdict" role="status"><h3>{verdictTitle(status)}</h3><p>{h.verdict?.headline}</p>{row&&row.kind==='fitted'&&edgeText(row)&&<p>{rule!.label}: {edgeText(row)}.</p>}
+ <p>Starts a month apart share 11 of 12 months, so {h.windows} starts count as about {neff} independent years. Differences smaller than about two standard errors are noise.</p></div>
+ <h3>Results over {neff} years of tests</h3>
+ <DataTable label="Holdout results: selected rule, 60/40 and your mix"><thead><tr><th>Portfolio</th><th>Median year<small className="ui-range">middle 80%</small></th><th>Volatility</th><th>Sharpe</th><th>Worst year</th></tr></thead><tbody>{shown.map(([r,tone,label])=><ResultRow key={r.name} r={r} tone={tone} label={label}/>)}</tbody></DataTable>
+ {!mine&&<p className="small">Your mix is left out: your holdings lack prices for enough of the test.</p>}
+ <h3>Growth of $100, one start a year</h3>
+ {dates.length>1&&series.length?<TimeSeriesChart key={rule?.name} label={`Growth of $100: each 12-month hold chained onto the last, ${formatDate(dates[0])} to ${formatDate(dates.at(-1))}`} dates={dates} series={series} zeroBaseline/>:<StatusMessage kind="missing">The chained path is unavailable.</StatusMessage>}
+ <p className="small">No overlap: one 12-month hold a year, each starting where the last ended. Before tax and trading costs.</p>
+ <Disclosure title="Every approach in the test"><DataTable label="All holdout results"><thead><tr><th>Approach</th><th>Median 12 months</th><th>Sharpe</th><th>Worst 12 months</th><th>Beat 60/40</th><th>Years</th></tr></thead>
+  <tbody>{h.rows.map(r=><tr key={r.name}><th>{r.name===BASE?'60/40':r.name}<small>{r.kind}</small></th><td>{percent(r.median,true)}</td><td>{decimal(r.sharpe)}</td><td>{percent(r.worst,true)}</td><td>{r.beat==null?'—':percent(r.beat)}</td><td>{r.n_eff}</td></tr>)}</tbody></DataTable>
+  {!!h.verdict?.details?.length&&<ul className="small">{h.verdict.details.map((x,i)=><li key={i}>{x}</li>)}</ul>}
+  <p className="small">“Beat 60/40” is the share of all starting months a rule did better; neighbouring months overlap, so it is not a count of independent wins.</p></Disclosure>
+ </Card>;
+}
+
+function Replay({n,rule,chosen,accounts}:{n:NextPayload;rule?:Rule;chosen:string[];accounts:Account[]}){
+ const picked=accounts.filter(a=>chosen.includes(a.id)),moves=n.moves??{};
+ const get=(a:Account):Move|undefined=>rule?.mixKey?moves[`${a.id}|${rule.mixKey}`]:undefined;
+ const one=picked.length===1?get(picked[0]):undefined,acct=one?.account,hh=one?.household;
+ return <Card><CardHeader title="With your deposits and withdrawals" caption="Today’s weights replayed through each selected account’s dated deposits and withdrawals. Hindsight, not part of the test."/>
+ {!picked.length?<StatusMessage kind="info">Select an account on the left to see this replay.</StatusMessage>:!rule?.mixKey?<StatusMessage kind="missing">This replay is unavailable for this rule.</StatusMessage>
+ :picked.length===1?(acct?<><MetricPair left={{label:n.estimated?'Recorded · includes estimates':'Recorded',value:money(acct.actual_value),detail:percent(acct.actual_irr,true)+' /yr'}} right={{label:'With today’s weights',tone:'proposal',value:money(acct.new_value),detail:percent(acct.new_irr,true)+' /yr'}}/>
+  <ComparisonSummary difference={acct.new_value-acct.actual_value} tolerance={.5}>{money(Math.abs(acct.new_value-acct.actual_value))} {acct.new_value>=acct.actual_value?'more':'less'} in this replay</ComparisonSummary>
+  <TimeSeriesChart key={rule.name+picked[0].id} label={`${picked[0].label}: recorded value and today’s weights replayed with the same payments`} dates={acct.months} series={[{key:'actual',label:'Recorded',role:'portfolio',values:acct.actual,quality:n.estimated?'estimated':'observed'},{key:'replay',label:'Today’s weights',role:'proposal',values:acct.new,quality:'modeled'}]}/>
+  <DataCoverage from={acct.first} to={acct.as_of}>same deposits and withdrawals</DataCoverage>
+  {hh?<div className="ui-subsection"><h3>Whole household</h3><p className="small">Only {picked[0].label} changes · history through {formatDate(hh.as_of)}</p><MetricPair left={{label:'As is',value:money(hh.as_is.value),detail:percent(hh.as_is.irr,true)+' /yr'}} right={{label:'With the change',tone:'proposal',value:money(hh.moved.value),detail:percent(hh.moved.irr,true)+' /yr'}}/></div>
+   :one?.household_note?<p className="small">{one.household_note}</p>:null}</>
+  :<StatusMessage kind="missing">{one?.error?`This replay is unavailable: ${one.error}`:'This replay is unavailable for this account.'}</StatusMessage>)
+ :<><DataTable label="Replay for each selected account"><thead><tr><th>Account</th><th>Recorded</th><th>With today’s weights</th><th>As of</th></tr></thead><tbody>{picked.map(a=>{const m=get(a)?.account;return <tr key={a.id}><th>{a.label}</th><td className="own-value">{money(m?.actual_value)}</td><td className="proposal-value">{m?money(m.new_value):'Unavailable'}</td><td>{m?formatDate(m.as_of):'—'}</td></tr>;})}</tbody></DataTable>
+  <p className="small">The household total is recomputed for one account at a time. Select a single account to see it.</p></>}
+ </Card>;
+}
+
+export function NextSteps({data}:{data:NextData;onNavigate?(tab:string):void;benchmark?:string;onBenchmark?(symbol:string):void}){
+ const n=data.nextSteps,list=rules(n),accounts=n?.accounts??[];
+ const [pick,setPick]=useState(''),[chosen,setChosen]=useState<string[]|null>(null);
+ if(!n)return null;
+ const rule=list.find(r=>r.name===pick)??list.find(r=>r.name===defaultRule(list));
+ const selected=chosen??(accounts.find(a=>a.holdings?.length)?[accounts.find(a=>a.holdings?.length)!.id]:[]);
+ const h=n.holdout,proposals=(n.proposals??[]).filter(p=>p.status==='available');
  return <CardStack className="next-steps">
- <HoldoutTest data={N.holdout}/>
- <Card><h1>1. Compare investment approaches</h1><p className="small">Understand the evidence before applying a change to your accounts.</p>
- <div className="ui-controls"><SelectField label="Investment mix" tone="portfolio" value={choice?.key??''} onChange={setMix} options={[...mixes.map(x=>({value:x.key,label:friendly(x.rule??x.name)})),...(C?.error?[{value:'sharpe-unavailable',label:'Sharpe strategy — unavailable',disabled:true}]:[]),...(C?.research_only?[{value:'risk-unavailable',label:'Match my current risk — needs holdings',disabled:true}]:[])]}/><SelectField label="Benchmark" tone="benchmark" value={reference} onChange={value=>{setLocalBenchmark(value);onBenchmark?.(value);}} options={tupleOptions(N.research_benchmarks??data.benchmarks)}/></div>
- <p>{choice?.rule?(choice.rule.includes('at your mix')?'Each year, look for a higher-return mix within roughly the risk estimated for your current eligible funds.':'Each year, look for a mix balancing return and volatility.'):choice?.desc}</p>
- {choice?.rule&&<p className="small">Uses the previous {(C?.lookback??60)/12} years, then holds the allocation for {(C?.rebalance??12)/12} year. The chosen holdings can change each year.</p>}
- <Disclosure title={choice?.rule?"Today's allocation":"What is in this mix?"}>{choice&&<Weights weights={choice.weights}/>}<p className="small">{choice?.rule?'Chosen from the latest available training window; an estimate, not a forecast.':'A fixed allocation, rebalanced annually in the long-history test.'}</p></Disclosure>
- {C?.research_only&&<><StatusMessage kind="info">Defined funds · not based on your holdings. You can explore now; matching your current risk needs positions.</StatusMessage>
- <Disclosure title="Research inputs & adding holdings"><p>Using {C.universe?.name}: {C.funds?.join(', ')}. At most {pct(C.max_weight)} per fund.</p><p>{C.universe?.rationale}</p><p>Universe declared {fmt(C.universe?.declared)}. Earlier results are retrospective; fund selection may benefit from hindsight.</p><p>To compare with your current mix: download Fidelity Positions (Portfolio → Positions → Download), refresh the existing account in setup, then refresh the report. Other accounts need priced holdings too. Statement gaps do not block this research.</p></Disclosure></>}
- {C?.error&&<StatusMessage kind="missing">Sharpe research is unavailable: {C.error} Refresh public prices and the report, or add positions during account setup. Fixed-mix histories remain available.</StatusMessage>}
- </Card>
- <Card><h2>2. Has it held up over time?</h2>
- {evidence?<><DataCoverage from={evidence.from} to={evidence.to}>{years(evidence.months)} · {choice?.rule?'decisions use earlier prices':'fixed-mix historical replay'}</DataCoverage>{evidence.months<240&&<p className="small">Less than 20 years of comparable history is available. No earlier results are assumed.</p>}
- <DataTable label="Investment approach comparison"><thead><tr><th>Same dates</th><th className="own-value">This mix</th><th className="benchmark-value">{reference}</th></tr></thead><tbody><tr><th>Return / year</th><td className="own-value">{pct(evidence.return,true)}</td><td className="benchmark-value">{pct(evidence.reference.return,true)}</td></tr><tr><th>Volatility / year</th><td className="own-value">{pct(evidence.vol)}</td><td className="benchmark-value">{pct(evidence.reference.vol)}</td></tr><tr><th>Sharpe</th><td className="own-value">{num(evidence.sharpe)}</td><td className="benchmark-value">{num(evidence.reference.sharpe)}</td></tr></tbody></DataTable>
- <p className="small">Growth of $100 · no deposits or withdrawals</p><EvidenceChart e={evidence} label={choice?.rule?'Yearly strategy':friendly(choice?.name??'Investment mix')}/>
- <Disclosure title='Try different starting dates'><p className="small">Every available five- and ten-year window, shifted one month at a time. These overlapping windows are not independent trials.</p><DataTable label="Investment approach comparison"><thead><tr><th>Hold for</th><th>Worst / year</th><th>Middle / year</th><th>Best / year</th><th>Ahead of {reference}</th></tr></thead><tbody>{evidence.windows.map(w=><tr key={w.months}><th>{w.months/12} years ({w.n} windows)</th><td className="own-value">{pct(w.worst,true)}</td><td className="own-value">{pct(w.median,true)}</td><td className="own-value">{pct(w.best,true)}</td><td>{w.n?pct(w.ahead):'Not enough history'}</td></tr>)}</tbody></DataTable></Disclosure>
- {row?.decisions?.length?<DecisionWalkthrough key={choice?.key} rows={row.decisions}/>:null}
- </>:<StatusMessage kind="missing">Long-history evidence is unavailable for this investment mix and benchmark. Try another selection; personal replays below remain separate.</StatusMessage>}
- </Card>
- <Card><h2>3. Could you live through the bad periods?</h2>{evidence?<><DataTable label="Investment approach comparison"><thead><tr><th>During this test</th><th className="own-value">This mix</th><th className="benchmark-value">{reference}</th></tr></thead><tbody><tr><th>Worst fall</th><td className="own-value">{pct(evidence.worst)}</td><td className="benchmark-value">{pct(evidence.reference.worst)}</td></tr><tr><th>Peak to recovery</th><td className="own-value">{evidence.recovery_months==null?(evidence.worst<0?'Not recovered':'No fall'):years(evidence.recovery_months)}</td><td className="benchmark-value">{evidence.reference.recovery_months==null?(evidence.reference.worst<0?'Not recovered':'No fall'):years(evidence.reference.recovery_months)}</td></tr><tr><th>Longest below a prior high</th><td className="own-value">{years(evidence.underwater_months)}</td><td className="benchmark-value">{years(evidence.reference.underwater_months)}</td></tr></tbody></DataTable><p className="small">Worst fall for this mix: {fmt(evidence.peak)} – {fmt(evidence.trough)}{evidence.recovered?`; recovered ${fmt(evidence.recovered)}`:''}.</p><p>Longest continuous stretch behind {reference}: <strong className="own-value">{years(evidence.behind_months)}</strong>, measured from this test's shared $100 start.</p></>:<StatusMessage kind="missing">Insufficient comparable history for these stress measures.</StatusMessage>}</Card>
- <Card><h2>4. Apply it to your accounts</h2><SelectField label="Account" tone="portfolio" value={selected?.id??''} onChange={setAccount} options={accounts.map(x=>({value:x.id,label:x.label}))}/>
- <p className="small">{choice?.rule?"Replays today's allocation throughout your account history. This is a hindsight illustration, not the allocation rule's tested track record.":'Historical replay using your recorded payments; not a forecast.'}{N.estimated&&<> <DataQualityBadge>Includes estimates</DataQualityBadge></>}</p>
- {a?<><MetricPair left={{label:"Your account",value:usd(a.actual_value),detail:pct(a.actual_irr,true)+"/year"}} right={{label:"With this allocation",tone:"benchmark",value:usd(a.new_value),detail:pct(a.new_irr,true)+"/year"}}/><ComparisonSummary difference={delta} tolerance={.5}>{usd(Math.abs(delta??0))} {delta!=null&&delta>=0?'more':'less'} in this historical replay</ComparisonSummary><HistoryChart move={a} label={friendly(choice?.rule??choice?.name??'Alternative')}/><DataCoverage from={a.first} to={a.as_of}>same deposits and withdrawals · buy and hold after each payment</DataCoverage></>:<StatusMessage kind={scenario?.error?"error":"missing"}>{scenario?.error?'This allocation cannot support the recorded payments. Try another investment mix.':'Personal replay is unavailable for this selection.'}</StatusMessage>}
- {household&&<><h3>Effect on your whole portfolio</h3><p className="small">{N.accounts_included??data.overview?.accounts} accounts · only {selected?.label} changes</p><MetricPair left={{label:"Current",value:usd(household.as_is.value),detail:pct(household.as_is.irr,true)+"/year"}} right={{label:"With the change",tone:"benchmark",value:usd(household.moved.value),detail:pct(household.moved.irr,true)+"/year"}}/><p className="small">Sharpe: {num(household.as_is.sharpe)} → {num(household.moved.sharpe)} · history through {fmt(household.as_of)}</p></>}
- {!household&&scenario?.household_note&&<StatusMessage kind="missing">Household comparison is unavailable for this selection.</StatusMessage>}<CostChecks key={choice?.key}/>
- </Card>
- {N.adoptionTracking&&<SavedHoldingsTracking tracking={N.adoptionTracking}/>}
- <Disclosure variant="card" title="Figures & estimates">
- <p>{C?.scope_note??'Fund-history research and personal account replays are separate.'}</p><p>{C?.selection_note}</p><p>Today's weights held fixed are a hypothetical reference, not your historical portfolio. The common-period tests compare all rules over the same dates; fixed allocations may also have longer histories.</p>
- {!!C?.left_out?.length&&<Disclosure title='Funds outside this research'><ul>{C.left_out.map(x=><li key={x.symbol}>{x.symbol}: {x.why}</li>)}</ul></Disclosure>}
- {!!proxies.length&&<><p>Named historical substitutes:</p><ul>{proxies.map((x,i)=><li key={i}>{x.standin} for {x.fund} before {fmt(x.before)}</li>)}</ul></>}
- {C?.rows?.length?<Disclosure title='All rules on the common test period'><DataTable label="Investment approach comparison"><thead><tr><th>Approach</th><th>Dates</th><th>Return / year</th><th>Worst fall</th></tr></thead><tbody>{C.rows.filter(r=>r.kind!=='hindsight').map(r=>{const e=r.evidence?.[reference];return <tr key={r.name}><th>{friendly(r.name)}</th><td>{e?`${fmt(e.from)} – ${fmt(e.to)}`:'Unavailable'}</td><td className="own-value">{pct(e?.return,true)}</td><td className="own-value">{pct(e?.worst)}</td></tr>;})}</tbody></DataTable></Disclosure>:null}
- {choice?.rule&&staticEvidence&&<Disclosure title="Today's allocation: a separate hindsight replay"><p className="small">These weights were chosen today and then replayed into the past with annual rebalancing. This is not an out-of-sample test of those weights.</p><EvidenceChart e={staticEvidence} label="Today's allocation"/></Disclosure>}
- <p>{N.history_note}</p>{N.estimate_notes?.length?<ul>{N.estimate_notes.map(x=><li key={x.account}>{x.account}: {x.method}</li>)}</ul>:null}<ul>{N.assumptions?.map((x,i)=><li key={i}>{x}</li>)}</ul><p>Before tax and trading or surrender costs. Historical results are not forecasts. Information, not investment advice. Nothing moves money or places orders.</p><button className="ui-button" onClick={()=>onNavigate('details')}>Review account data →</button>
- </Disclosure>
+ <PageHeader kicker="Investment research" title="Next steps" note={n.asof?`Prices to ${formatDate(n.asof)}`:undefined}/>
+ {n.error?<StatusMessage kind="error">{n.error}</StatusMessage>:<>
+ <SplitLayout side={<ProposalCard list={list} rule={rule} onRule={setPick} n={n} chosen={selected} onChosen={setChosen}/>}>
+  <Evidence h={h} rule={rule}/>
+  <Replay n={n} rule={rule} chosen={selected} accounts={accounts}/>
+ </SplitLayout>
+ {n.adoptionTracking&&<AdoptionTracking tracking={n.adoptionTracking}/>}
+ {proposals.length?<Disclosure variant="card" title="Other research · hindsight, not part of this test"><p className="small">These portfolios were chosen with today’s data and an older five-year method. They have not been through the holdout test, so they carry no evidence here. Shown for reference only.</p>
+  {proposals.map(p=><div className="ui-subsection" key={p.id}><h3>{p.label} · {p.universe_label}</h3><p className="small">{p.method==='walk_forward'?'Refit each year':'Fitted once'}{p.training?` · training ${formatDate(p.training.from)} – ${formatDate(p.training.to)}`:''}</p><AllocationBreakdown weights={p.weights} names={FUND_NAMES} tone="neutral"/></div>)}</Disclosure>:null}
+ <Disclosure variant="card" title="Figures and limitations">
+  {h?.universe&&<p>Funds tested ({h.universe.name}, declared {formatDate(h.universe.declared)}): {h.universe.funds.map(tradeName).join(', ')}. At most {percent(h.universe.max_weight)} in any one fund. {h.universe.rationale}</p>}
+  {h?.note&&<p>{h.note}</p>}
+  <p>“Year” here is any 12-month hold, starting in any month. Sharpe is the average 12-month return above cash divided by its spread across starts. Volatility is the average within each 12-month hold. “Middle 80%” runs from the 10th to the 90th percentile of 12-month returns.</p>
+  {n.history_note&&<p>{n.history_note}</p>}{n.assumptions?.length?<ul>{n.assumptions.filter(x=>!(h?.rows&&/walk-forward/i.test(x))).map((x,i)=><li key={i}>{x}</li>)}</ul>:null}
+  <p>{n.disclaimer??'Before tax and trading or surrender costs. Past results are not forecasts.'} Information, not investment advice. UFO never places orders or moves money.</p>
+ </Disclosure></>}
  </CardStack>;
 }
