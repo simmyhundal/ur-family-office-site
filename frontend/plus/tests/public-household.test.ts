@@ -45,12 +45,12 @@ test('public household runs all three shared tabs and changes benchmark, period 
   await until(()=>details.textContent!.includes(account.selectedOptions[0].textContent!));
   w.UFOBridge.navigate('next');const next=w.document.getElementById('react-next')!;
   await until(()=>!next.hidden);
-  assert.match(next.textContent!,/Has it held up over time/);
-  const mix=next.querySelector('select[aria-label="Investment mix"]') as HTMLSelectElement;
-  const sharpe=[...mix.options].find(o=>o.textContent==='Sharpe strategy')!;
-  assert.ok(sharpe);mix.value=sharpe.value;mix.dispatchEvent(new w.Event('change',{bubbles:true}));
-  await until(()=>next.textContent!.includes('Walk through a past decision'));
-  assert.equal((next.querySelector('select[aria-label="Benchmark"]') as HTMLSelectElement).value,benchmark.value);
+  assert.match(next.textContent!,/How the allocation is chosen/);
+  assert.match(next.textContent!,/Inspect the annual decisions|Compare the evidence/);
+  const objective=next.querySelector('select[aria-label="Portfolio objective"]') as HTMLSelectElement;
+  const other=[...objective.options].find(o=>o.value!==objective.value)!;
+  assert.ok(other);objective.value=other.value;objective.dispatchEvent(new w.Event('change',{bubbles:true}));
+  await until(()=>(next.querySelector('select[aria-label="Portfolio objective"]') as HTMLSelectElement).value===other.value);
   assert.match(w.document.querySelector('header')!.textContent!,/invented household/);
   assert.doesNotMatch(w.document.getElementById('tabs')!.textContent!,/Learn/);
   assert.deepEqual(errors,[]);
