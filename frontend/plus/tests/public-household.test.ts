@@ -16,7 +16,7 @@ test('published household embeds the current shared bundle and only invented acc
  assert.equal(data.overview.accounts,5);
  assert.deepEqual(data.nextSteps.accounts.map((a:{id:string})=>a.id).sort(),[...expected].sort());
  assert.equal(data.benchmark,'SPY');
- assert.deepEqual(data.nextSteps.mixes.map((m:{key:string})=>m.key),['VT','SPY'].flatMap(s=>[30,60,80,100].map(p=>`fixed:${s}-${p}`)));
+ assert.deepEqual(data.nextSteps.mixes.map((m:{key:string})=>m.key),[['VTI','SPY'],['VT','ACWI']].flatMap(g=>[30,60,80,100].flatMap(p=>g.map(s=>`fixed:${s}-${p}`))));
  assert.equal(data.nextSteps.holdout,undefined,'the holdout test is shelved (M22)');
  assert.ok(data.nextSteps.grid.months.length>36);
  assert.ok(data.benchmarks.every(([s,label]:[string,string])=>label.endsWith('ETF')&&label.includes(s)));
@@ -48,10 +48,10 @@ test('public household runs all three shared tabs and changes benchmark, period 
   await until(()=>details.textContent!.includes(account.selectedOptions[0].textContent!));
   w.UFOBridge.navigate('next');const next=w.document.getElementById('react-next')!;
   await until(()=>!next.hidden);
-  assert.match(next.textContent!,/How it did in the past/);
+  assert.match(next.textContent!,/Risk versus return/);
   const rule=next.querySelector('select[aria-label="Proposed portfolio"]') as HTMLSelectElement;
   rule.value='fixed:SPY-80';rule.dispatchEvent(new w.Event('change',{bubbles:true}));
-  await until(()=>[...next.querySelectorAll('#evidence tr[data-tone="proposal"] th')].some(th=>th.textContent==='Growth 80/20 · SPY'));
+  await until(()=>next.querySelector('#evidence [data-point="proposed"]')?.getAttribute('aria-label')?.startsWith('US large cap 80/20 · SPY/BND alone')===true);
   assert.ok(next.querySelector('[data-series="moved"]'),'Sharpe over time compares the checked account');
   for(const id of ['react-overview','react-details','react-next']){const t=w.document.getElementById(id)!.textContent!;
    assert.doesNotMatch(t,/\bmix(es)?\b/i,id);assert.doesNotMatch(t,/Information, not (investment )?advice/,id);}

@@ -44,8 +44,11 @@ export function TimeSeriesChart({dates,series,label,zeroBaseline=false,resetKey=
  <DateInspector format={show} date={dates[active]} values={valid.map(s=>({label:s.label,value:s.values[active]??null,role:s.role}))} previous={()=>inspect(active-1)} next={()=>inspect(active+1)} atStart={active===0} atEnd={active===dates.length-1}/>
  </div>;
 }
-export type ScatterPoint={key:string;label:string;markerLabel?:string;marker?:'dot'|'ring';x:number;y:number;role:Role};
-export function RiskScatterChart({points,label,xTitle,yTitle}:{points:ScatterPoint[];label:string;xTitle:string;yTitle:string}){
+export type ScatterPoint={key:string;label:string;markerLabel?:string;marker?:'dot'|'ring';x:number;y:number;role:Role;sharpe?:number|null};
+/** With `inspect`, tapping, hovering or focusing a point shows its return, volatility and Sharpe ratio below the chart
+ * (an SVG title alone does nothing on a phone). The first point is shown until another is chosen. */
+export function RiskScatterChart({points,label,xTitle,yTitle,inspect=false}:{points:ScatterPoint[];label:string;xTitle:string;yTitle:string;inspect?:boolean}){
+ const [picked,setPicked]=useState<string|null>(null);
  const good=points.filter(v=>Number.isFinite(v.x)&&Number.isFinite(v.y)&&v.x>=0);if(!good.length)return <StatusMessage kind="missing">More monthly history is needed for this comparison.</StatusMessage>;
  const p=plotLayout(xTitle,yTitle),rounded=(v:number)=>[.01,.025,.05,.1,.25,.5,1,2.5,5,10].find(n=>n>=v)??Math.ceil(v);
  const xmax0=Math.max(.01,...good.map(v=>v.x)),sx=rounded(xmax0/3),xmax=Math.ceil(xmax0/sx)*sx;
@@ -56,5 +59,7 @@ export function RiskScatterChart({points,label,xTitle,yTitle}:{points:ScatterPoi
   for(const q of choices){const box={x:q.anchor==='start'?q.x:q.x-width,y:q.y-12,w:width,h:15};if(box.x<p.l||box.x+box.w>p.w-p.r||box.y<p.t||box.y+box.h>p.h-p.b)continue;if(labelBoxes.some(b=>box.x<b.x+b.w+3&&box.x+box.w+3>b.x&&box.y<b.y+b.h+3&&box.y+box.h+3>b.y))continue;labels.set(v.key,q);labelBoxes.push(box);break;}
   if(!labels.has(v.key))labels.set(v.key,{x:Math.max(p.l,Math.min(p.w-p.r-width,X(v.x)+10)),y:Math.max(p.t+13,Math.min(p.h-p.b-4,Y(v.y)-10)),anchor:'start'});
  }
- return <div className="ui-chart"><ChartFrame layout={p} label={label}><Axis direction="y" ticks={Array.from({length:Math.round((ymax-ymin)/sy)+1},(_,i)=>ymin+i*sy)} position={Y} format={percent} layout={p}/><Axis direction="x" ticks={Array.from({length:Math.round(xmax/sx)+1},(_,i)=>i*sx)} position={X} format={percent} layout={p}/>{good.map(v=><g key={v.key}><title>{`${v.label}: return ${percent(v.y)}, volatility ${percent(v.x)}`}</title><circle cx={X(v.x)} cy={Y(v.y)} r={v.marker==='ring'?8:5} fill={v.marker==='ring'?'var(--surface)':seriesStyle(v.role).color} stroke={seriesStyle(v.role).color} strokeWidth={v.marker==='ring'?2:0}/>{v.markerLabel&&labels.has(v.key)&&<text x={labels.get(v.key)!.x} y={labels.get(v.key)!.y} textAnchor={labels.get(v.key)!.anchor}>{v.markerLabel}</text>}</g>)}</ChartFrame></div>;
+ return <div className="ui-chart"><ChartFrame layout={p} label={label}><Axis direction="y" ticks={Array.from({length:Math.round((ymax-ymin)/sy)+1},(_,i)=>ymin+i*sy)} position={Y} format={percent} layout={p}/><Axis direction="x" ticks={Array.from({length:Math.round(xmax/sx)+1},(_,i)=>i*sx)} position={X} format={percent} layout={p}/>{good.map(v=><g key={v.key} data-point={v.key} {...(inspect?{tabIndex:0,role:'button','aria-label':`${v.label}: return ${percent(v.y)}, volatility ${percent(v.x)}${v.sharpe!=null?`, Sharpe ${ratio(v.sharpe)}`:''}`,'aria-pressed':(picked??good[0].key)===v.key,className:'ui-point',onClick:()=>setPicked(v.key),onFocus:()=>setPicked(v.key),onPointerEnter:()=>setPicked(v.key)}:{})}><title>{`${v.label}: return ${percent(v.y)}, volatility ${percent(v.x)}`}</title>{inspect&&<circle className="ui-point-hit" cx={X(v.x)} cy={Y(v.y)} r={18} fill="transparent"/>}<circle cx={X(v.x)} cy={Y(v.y)} r={v.marker==='ring'?8:5} fill={v.marker==='ring'?'var(--surface)':seriesStyle(v.role).color} stroke={seriesStyle(v.role).color} strokeWidth={v.marker==='ring'?2:0}/>{v.markerLabel&&labels.has(v.key)&&<text x={labels.get(v.key)!.x} y={labels.get(v.key)!.y} textAnchor={labels.get(v.key)!.anchor}>{v.markerLabel}</text>}</g>)}</ChartFrame>
+ {inspect&&(()=>{const v=good.find(x=>x.key===picked)??good[0];return <p className="ui-point-readout" aria-live="polite" data-tone={v.role}><b>{v.label}</b><span>Return {percent(v.y,true)} /yr</span><span>Volatility {percent(v.x)}</span><span>Sharpe {ratio(v.sharpe)}</span></p>;})()}
+ </div>;
 }

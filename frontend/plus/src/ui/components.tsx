@@ -9,7 +9,8 @@ export const seriesStyle=(role:Role,quality:Quality='observed')=>({color:ROLE_CO
 export function Card({children,className='',...props}:HTMLAttributes<HTMLElement>){return <section {...props} className={`card ui-card ${className}`}>{children}</section>;}
 export function CardStack({children,className=''}:{children:ReactNode;className?:string}){return <div className={`ui-stack ${className}`}>{children}</div>;}
 /** The masthead every tab opens with: a small kicker, the tab title and an optional note on the right (data date, demo label). */
-export function PageHeader({kicker,title,note}:{kicker:string;title:string;note?:ReactNode}){return <div className="ui-page-header"><div><p className="ui-kicker">{kicker}</p><h1>{title}</h1></div>{note&&<span className="ui-pill">{note}</span>}</div>;}
+/** The tab bar names the page, so the heading is for screen readers only; an as-of note stays visible as one small line. */
+export function PageHeader({title,note}:{title:string;note?:ReactNode}){const h=<h1 className="ui-sr">{title}</h1>;return note?<div className="ui-page-header">{h}<span className="ui-pill">{note}</span></div>:h;}
 /** A labelled checkbox row with a value on the right (accounts to change). */
 export function CheckRow({checked,onChange,title,detail,value,tone='portfolio'}:{checked:boolean;onChange(checked:boolean):void;title:ReactNode;detail?:ReactNode;value?:ReactNode;tone?:Tone}){return <label className="ui-check-row" data-tone={tone}><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><span><b>{title}</b>{detail&&<small>{detail}</small>}</span>{value!=null&&<strong>{value}</strong>}</label>;}
 /** Two-column layout: controls on the left, evidence on the right; one column on phones. */

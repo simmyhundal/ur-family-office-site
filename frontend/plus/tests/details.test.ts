@@ -41,9 +41,9 @@ const base={schema_version:1,benchmark:'IDX',benchmarks:[['IDX','Index']],window
 const noop=()=>{};
 test('tabs share the masthead and empty states say what to do',()=>{
  const o=renderToStaticMarkup(React.createElement(Overview,{data:base as never,benchmark:'IDX',period:'1y',onBenchmark:noop,onPeriod:noop,onNavigate:noop}));
- assert.match(o,/ui-page-header/);assert.match(o,/No accounts yet/);assert.match(o,/Add accounts/);
+ assert.match(o,/<h1 class="ui-sr">/);assert.match(o,/No accounts yet/);assert.match(o,/Add accounts/);
  const d=renderToStaticMarkup(React.createElement(Details,{data:{...base,entities:[]} as never,benchmark:'IDX',period:'1y',onBenchmark:noop,onPeriod:noop,onNavigate:noop}));
- assert.match(d,/ui-page-header/);assert.match(d,/No accounts yet/);
+ assert.match(d,/<h1 class="ui-sr">/);assert.match(d,/No accounts yet/);
 });
 test('an account whose statements do not reconcile says so instead of showing bare dashes',()=>{
  const odd={...entity,label:'Example odd account',unreconciled:'Does not reconcile'};

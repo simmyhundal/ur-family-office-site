@@ -2,10 +2,10 @@
 // account replay on the right. Information, not advice. Nothing here places orders or moves money; draft trades are read-only.
 import {useState} from 'react';
 import {AdoptionTracking} from './AdoptionTracking';
-import {Card,CardHeader,CardStack,PageHeader,SplitLayout,SelectField,CheckRow,Disclosure,StatusMessage,DataTable,AllocationBreakdown,MetricPair,ComparisonSummary,DataCoverage} from './ui/components';
-import {TimeSeriesChart} from './ui/charts';
+import {Card,CardHeader,CardStack,PageHeader,SplitLayout,SelectField,CheckRow,Disclosure,StatusMessage,DataTable,AllocationBreakdown,Metric,MetricPair,ComparisonSummary,DataCoverage} from './ui/components';
+import {TimeSeriesChart,RiskScatterChart,type ScatterPoint} from './ui/charts';
 import {money,percent,ratio,formatDate} from './ui/format';
-import {FUND_NAMES,title,portfolios,defaultPortfolio,draftTrades,rollingSharpe,swappedHousehold,type NextData,type NextPayload,type Mix,type Account,type Move,type Row} from './next-model';
+import {FUND_NAMES,PRO_FEATURES,title,portfolios,defaultPortfolio,draftTrades,rollingSharpe,swappedHousehold,monthlyReturns,commonMonths,riskRow,type NextData,type NextPayload,type Mix,type Account,type Row} from './next-model';
 export type {NextData} from './next-model';
 
 const WRAPPER:Record<string,string>={taxable:'Taxable',roth_ira:'Roth IRA',traditional_ira:'Traditional IRA',hsa:'HSA','401k':'401(k)'};
@@ -46,6 +46,26 @@ function History({mix}:{mix?:Mix}){
  </Card>;
 }
 
+/** Risk versus return (issue 327): your portfolio, the household with the checked accounts switched (value-weighted, recomputed
+ * on every change), the proposed portfolio alone and the benchmark, all over the same months. Past replay. */
+function RiskReturn({n,mix,chosen,accounts,benchmark}:{n:NextPayload;mix?:Mix;chosen:string[];accounts:Account[];benchmark:string}){
+ const g=n.grid;
+ if(!g||g.months.length<13||!mix?.grid_returns)return <History mix={mix}/>;
+ const asIs=monthlyReturns(g.values,g.net,g.weighted),swap=chosen.length?swappedHousehold(g,n.moves??{},mix.key,chosen):undefined;
+ const moved=swap?.used.length?monthlyReturns(swap.values,g.net,g.weighted):undefined,bench=g.bench?.[benchmark];
+ const months=commonMonths([asIs,mix.grid_returns,...(bench?[bench]:[]),...(moved?[moved]:[])]);
+ const funds=mix.name.split(' · ').at(-1)??mix.name,name=(id:string)=>accounts.find(a=>a.id===id)?.label??id;
+ const point=(key:string,label:string,markerLabel:string,role:'portfolio'|'proposal'|'benchmark',rets:(number|null)[],marker:'dot'|'ring'='dot'):ScatterPoint|null=>{
+  const r=riskRow(rets,g.rf,months);return r.ret==null||r.vol==null?null:{key,label,markerLabel,role,marker,x:r.vol,y:r.ret,sharpe:r.sharpe};};
+ const points=[point('yours','Your portfolio','Yours','portfolio',asIs),moved?point('changed',`With the change (${swap!.used.length===1?name(swap!.used[0]):swap!.used.length+' accounts'} in ${funds})`,'With the change','proposal',moved,'ring'):null,
+  point('proposed',`${title(mix)} alone`,funds,'proposal',mix.grid_returns),bench?point('bench',`${benchmark} (benchmark)`,benchmark,'benchmark',bench):null].filter((p):p is ScatterPoint=>p!=null);
+ return <Card id="evidence"><CardHeader title="Risk versus return" caption={months.length?`Past replay · ${formatDate(g.months[months[0]])} – ${formatDate(g.months[months.at(-1)!])}`:'Past replay'}/>
+ {months.length<12?<StatusMessage kind="missing">Needs at least 12 months that every point shares.</StatusMessage>:<>
+  <RiskScatterChart inspect key={mix.key+chosen.join()+benchmark} points={points} label={`Yearly return versus volatility: your portfolio, ${title(mix)}${moved?', the household with the change':''}${bench?` and ${benchmark}`:''}`} xTitle="Volatility / year" yTitle="Return / year"/>
+  <p className="small">Tap a point for its numbers.{!chosen.length?' Check an account to add the household with the change.':''}{!bench?` ${benchmark} has no prices for these months.`:''}</p></>}
+ </Card>;
+}
+
 function SharpeOverTime({n,mix,chosen,accounts}:{n:NextPayload;mix?:Mix;chosen:string[];accounts:Account[]}){
  const g=n.grid;
  if(!g||g.months.length<2)return <Card><CardHeader title="Sharpe ratio over time"/><StatusMessage kind="missing">Needs a household total with monthly values.</StatusMessage></Card>;
@@ -62,24 +82,28 @@ function SharpeOverTime({n,mix,chosen,accounts}:{n:NextPayload;mix?:Mix;chosen:s
  </Card>;
 }
 
+/** The household replayed with the checked accounts in the proposed portfolio, through the same dated deposits and withdrawals.
+ * Always shown: with nothing checked it is your portfolio alone. Value-weighted by construction (each account's own values). */
 function Replay({n,mix,chosen,accounts}:{n:NextPayload;mix?:Mix;chosen:string[];accounts:Account[]}){
- const picked=accounts.filter(a=>chosen.includes(a.id)),moves=n.moves??{};
- const get=(a:Account):Move|undefined=>mix?moves[`${a.id}|${mix.key}`]:undefined;
- const one=picked.length===1?get(picked[0]):undefined,acct=one?.account,hh=one?.household;
- return <Card><CardHeader title="With your deposits and withdrawals" caption="The portfolio replayed through each checked account’s own dated payments. Hindsight."/>
- {!picked.length?<StatusMessage kind="info">Check an account on the left to see this replay.</StatusMessage>:!mix?<StatusMessage kind="missing">This replay is unavailable.</StatusMessage>
- :picked.length===1?(acct?<><MetricPair left={{label:n.estimated?'Recorded · includes estimates':'Recorded',value:money(acct.actual_value),detail:percent(acct.actual_irr,true)+' /yr'}} right={{label:title(mix),tone:'proposal',value:money(acct.new_value),detail:percent(acct.new_irr,true)+' /yr'}}/>
-  <ComparisonSummary difference={acct.new_value-acct.actual_value} tolerance={.5}>{money(Math.abs(acct.new_value-acct.actual_value))} {acct.new_value>=acct.actual_value?'more':'less'} in this replay</ComparisonSummary>
-  <TimeSeriesChart key={mix.key+picked[0].id} label={`${picked[0].label}: recorded value and ${title(mix)} replayed with the same payments`} dates={acct.months} series={[{key:'actual',label:'Recorded',role:'portfolio',values:acct.actual,quality:n.estimated?'estimated':'observed'},{key:'replay',label:title(mix),role:'proposal',values:acct.new,quality:'modeled'}]}/>
-  <DataCoverage from={acct.first} to={acct.as_of}>same deposits and withdrawals</DataCoverage>
-  {hh?<div className="ui-subsection"><h3>Whole household</h3><p className="small">Only {picked[0].label} changes · through {formatDate(hh.as_of)}</p><MetricPair left={{label:'As is',value:money(hh.as_is.value),detail:percent(hh.as_is.irr,true)+' /yr'}} right={{label:'With the change',tone:'proposal',value:money(hh.moved.value),detail:percent(hh.moved.irr,true)+' /yr'}}/></div>
-   :one?.household_note?<p className="small">{one.household_note}</p>:null}</>
-  :<StatusMessage kind="missing">{one?.error?`This replay is unavailable: ${one.error}`:'This replay is unavailable for this account.'}</StatusMessage>)
- :<DataTable label="Replay for each checked account"><thead><tr><th>Account</th><th>Recorded</th><th>{title(mix)}</th><th>As of</th></tr></thead><tbody>{picked.map(a=>{const m=get(a)?.account;return <tr key={a.id}><th>{a.label}</th><td className="own-value">{money(m?.actual_value)}</td><td className="proposal-value">{m?money(m.new_value):'Unavailable'}</td><td>{m?formatDate(m.as_of):'—'}</td></tr>;})}</tbody></DataTable>}
+ const g=n.grid&&n.grid.months.length>1?n.grid:undefined,moves=n.moves??{},picked=accounts.filter(a=>chosen.includes(a.id));
+ const swap=g&&mix&&picked.length?swappedHousehold(g,moves,mix.key,chosen):undefined,changed=swap?.used.length?swap:undefined;
+ const name=(id:string)=>accounts.find(a=>a.id===id)?.label??id,quality=n.estimated?'estimated' as const:'observed' as const;
+ const now=g?g.values.at(-1):n.today?.total,after=changed?.values.at(-1);
+ return <Card className="ui-replay" aria-label="Your portfolio, replayed with the same deposits and withdrawals">
+ {changed&&mix?<><MetricPair left={{label:'Your portfolio',value:money(now)}} right={{label:'With the change',tone:'proposal',value:money(after)}}/>
+  <ComparisonSummary difference={(after??0)-(now??0)} tolerance={.5}>{money(Math.abs((after??0)-(now??0)))} {(after??0)>=(now??0)?'more':'less'} in this replay</ComparisonSummary></>
+  :<div className="ui-metric-pair"><Metric label="Your portfolio" value={money(now)}/></div>}
+ {g?<><TimeSeriesChart key={(mix?.key??'')+chosen.join()} label={`Household value: your portfolio${changed&&mix?` and with the checked accounts in ${title(mix)}`:''}`} dates={g.months}
+   series={[{key:'as-is',label:'Your portfolio',role:'portfolio',values:g.values,quality},...(changed&&mix?[{key:'moved',label:'With the change',role:'proposal' as const,values:changed.values,quality:'modeled' as const}]:[])]}/>
+  <DataCoverage from={g.months[0]} to={g.months.at(-1)}>{changed?'same deposits and withdrawals · past replay':'recorded household value'}</DataCoverage></>
+  :<StatusMessage kind="missing">The household’s monthly history is unavailable{picked.length?', so only each checked account is shown':''}.</StatusMessage>}
+ {!picked.length?(accounts.length?<p className="small">Check an account to see it in {mix?title(mix):'a portfolio'}.</p>:null):!mix?<StatusMessage kind="missing">No portfolio is available.</StatusMessage>:<>
+  {swap?.skipped.length?<p className="small">Not in the household total, so left as is: {swap.skipped.map(name).join(', ')}.</p>:null}
+  <Disclosure title={picked.length===1?'The checked account':`The ${picked.length} checked accounts`} defaultOpen={!g}><DataTable label="Replay for each checked account"><thead><tr><th>Account</th><th>As is</th><th>{title(mix)}</th><th>As of</th></tr></thead><tbody>{picked.map(a=>{const m=moves[`${a.id}|${mix.key}`],r=m?.account;return <tr key={a.id}><th>{a.label}</th><td className="own-value">{money(r?.actual_value??a.value)}</td><td className="proposal-value">{r?money(r.new_value):'Unavailable'}</td><td>{r?formatDate(r.as_of):'—'}</td></tr>;})}</tbody></DataTable></Disclosure></>}
  </Card>;
 }
 
-export function NextSteps({data}:{data:NextData;onNavigate?(tab:string):void;benchmark?:string;onBenchmark?(symbol:string):void}){
+export function NextSteps({data,benchmark}:{data:NextData;onNavigate?(tab:string):void;benchmark?:string;onBenchmark?(symbol:string):void}){
  const n=data.nextSteps,list=portfolios(n),accounts=n?.accounts??[];
  const [pick,setPick]=useState(''),[chosen,setChosen]=useState<string[]|null>(null);
  if(!n)return null;
@@ -87,12 +111,12 @@ export function NextSteps({data}:{data:NextData;onNavigate?(tab:string):void;ben
  const first=accounts.find(a=>a.holdings?.length),selected=chosen??(first?[first.id]:[]);
  const standins=mix?.compare?.standins??[];
  return <CardStack className="next-steps">
- <PageHeader kicker="Investment research" title="Next steps" note={n.asof?`Prices to ${formatDate(n.asof)}`:undefined}/>
+ <PageHeader title="Next steps" note={n.asof?`Prices to ${formatDate(n.asof)}`:undefined}/>
  {n.error?<StatusMessage kind="error">{n.error}</StatusMessage>:<>
  <SplitLayout side={<Picker list={list} mix={mix} onMix={setPick} n={n} chosen={selected} onChosen={setChosen}/>}>
-  <History mix={mix}/>
-  <SharpeOverTime n={n} mix={mix} chosen={selected} accounts={accounts}/>
   <Replay n={n} mix={mix} chosen={selected} accounts={accounts}/>
+  <RiskReturn n={n} mix={mix} chosen={selected} accounts={accounts} benchmark={benchmark??data.benchmark}/>
+  {PRO_FEATURES.sharpeOverTime&&<SharpeOverTime n={n} mix={mix} chosen={selected} accounts={accounts}/>}
  </SplitLayout>
  {n.adoptionTracking&&<AdoptionTracking tracking={n.adoptionTracking}/>}
  <Disclosure variant="card" title="Fine print">
