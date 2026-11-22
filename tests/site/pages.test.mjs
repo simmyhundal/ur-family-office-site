@@ -215,7 +215,7 @@ test("word budget: Home ≤ 220, Sign up ≤ 100, Try ≤ 240 (issue 239)", asyn
 });
 
 // Trim part 2 (issue 239): Pricing stays short, and its plans are only the ones on sale or planned.
-test("Pricing: at most 140 visible words (page text plus the plan cards), one FAQ question, no Scheduler plan", async () => {
+test("Pricing: at most 200 visible words (page text plus the plan cards incl. the refund policy), two FAQ questions, no Scheduler plan", async () => {
   const html = await read("pricing/");
   const { plans } = JSON.parse(await readFile(new URL("data/plans.json", site), "utf8"));
   assert.deepEqual(plans.map((p) => p.id), ["free", "plus"]);
@@ -223,9 +223,11 @@ test("Pricing: at most 140 visible words (page text plus the plan cards), one FA
   const text = main.replace(/<[^>]+>/g, " ").replace("Loading plans…", " ");
   const cards = plans.map((p) => [p.status, p.name, p.price, p.blurb, ...p.features, p.teaser ? `See what ${p.name} looks like →` : "", p.id === "free" ? "Try it free" : "Pre-order Plus"].join(" ")).join(" ");
   const words = (text + " " + cards).split(/\s+/).filter(Boolean).length;
-  assert.ok(words <= 140, `Pricing has ${words} words`);
-  assert.equal((html.match(/<h3>/g) || []).length, 1);
+  assert.ok(words <= 200, `Pricing has ${words} words`);
+  assert.equal((html.match(/<h3>/g) || []).length, 2);
   assert.match(html, /<h3>Am I charged\?<\/h3>/);
+  assert.match(html, /<h3>Refunds<\/h3>/);
+  assert.match(html, /full refund, no questions asked/);
   for (const gone of ["No card needed", "not a purchase</li>", "never uploaded", "Scheduler", 'class="assure"']) assert.ok(!html.includes(gone), gone);
 });
 
@@ -266,4 +268,15 @@ test("Plus buttons are marked for pre-order; no waitlist wording; 'portfolio' no
   assert.ok(plus.features.includes("Your numbers never leave your computer"));
   const chrome = await readFile(new URL("js/chrome.mjs", site), "utf8");
   assert.match(chrome, /querySelectorAll\("\[data-plus-cta\]"\)/); assert.match(chrome, /upgradePlanLinks\(/);
+});
+
+// Issues 319 and 323: Plus band label, "on your Mac", refund policy in Terms and Pricing.
+test("Home Plus band label and wording; refund policy on Terms and Pricing", async () => {
+  const home = await read("");
+  assert.match(home, /<span class="eyebrow">UFO PLUS: \$67\/YR<\/span>/);
+  assert.ok(!home.includes("in a Mac app") && home.includes("side by side on your Mac."));
+  const terms = await read("terms/");
+  assert.match(terms, /<h2>Refunds<\/h2>/);
+  assert.match(terms, /Last updated November 22, 2026/);
+  for (const html of [terms, await read("pricing/")]) assert.match(html, /within 30 days of purchase for a full refund, no questions asked\. Refunds go back to your original payment method\. After 30 days you can cancel anytime; Plus keeps working until the end of your paid year\./);
 });
