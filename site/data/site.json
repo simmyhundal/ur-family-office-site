@@ -7,6 +7,7 @@
   "base_url": "https://simmyhundal.github.io/ur-family-office-site/",
   "contact_email": "",
   "signup_endpoint": "https://formspree.io/f/mvkakrvd",
+  "show_code_box": false,
   "checkout_urls": { "plus": "https://buy.stripe.com/fZu4gz2Py8dv8ez50BcEw01" },
   "founder": { "name": "Simmy Hundal", "photo": "img/founder.jpg", "linkedin": "" }
 }

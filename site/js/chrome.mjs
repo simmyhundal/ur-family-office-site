@@ -20,6 +20,6 @@ if (plusLinks.length) (async () => {
   try {
     const { plans } = await loadJson(new URL("../data/plans.json", import.meta.url).href);
     const plus = plans.find((p) => p.id === "plus");
-    if (plus) upgradePlanLinks(plusLinks, plus, cfg.checkout_urls, prefix, preorderNotes, promos);
+    if (plus) upgradePlanLinks(plusLinks, plus, cfg.checkout_urls, prefix, preorderNotes, cfg.show_code_box ? promos : []);  // codes off until issue 339 is decided
   } catch { /* keep the sign-up links */ }
 })();
