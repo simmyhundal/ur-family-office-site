@@ -33,7 +33,7 @@
 <header class="site-head"><div class="wrap head-row">
   <a class="brand" href="../" aria-label="Ur Family Office, home"><img class="brand-mark" src="../img/logo.svg" alt="" width="36" height="36"><span class="brand-word" aria-hidden="true"><span class="brand-full"><b>U</b>r <b>F</b>amily <b>O</b>ffice</span><span class="brand-short">UFO</span></span></a>
   <nav class="main-nav" aria-label="Main"><a href="../try/">Try it</a><a href="../pricing/" aria-current="page">Pricing</a><a href="../about/">About</a></nav>
-  <a class="nav-cta" href="../signup/">Sign up</a>
+  <a class="nav-cta" href="../pricing/#plus">Get Plus</a>
 </div></header>
 <main id="main">
 <div class="page-top mesh">
@@ -82,7 +82,7 @@ try {
     const ext = a.external ? ' rel="noopener noreferrer"' : "";
     const [st, on] = STATUS[p.status] || [p.status, ""];
     const featured = p.status === "available";
-    return `<article class="plan reveal in${featured ? " featured" : ""}" aria-label="${esc(p.name)}: ${esc(priceLabel(p))}">${featured ? '<span class="plan-badge">Start here</span>' : ""}
+    return `<article id="${esc(p.id)}" class="plan reveal in${featured ? " featured" : ""}" aria-label="${esc(p.name)}: ${esc(priceLabel(p))}">${featured ? '<span class="plan-badge">Start here</span>' : ""}
       <div class="plan-tags"><span class="plan-status${on}">${esc(st)}</span>${clearanceHtml(p)}</div><h2>${esc(p.name)}</h2>
       ${bigPrice(p)}<p class="blurb">${esc(p.blurb)}${/^#[a-z-]+$/.test(p.teaser || "") ? ` <a class="teaser" href="../${p.teaser}">See what ${esc(p.name)} looks like →</a>` : ""}</p>
       <ul>${p.features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
@@ -90,6 +90,7 @@ try {
   }).join("");
   for (const el of box.querySelectorAll(".promo[data-checkout]")) mountPromo(el, el.dataset.checkout);
   document.getElementById("tax-note").hidden = !plans.some((p) => p.tax_included);
+  if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 } catch { box.innerHTML = '<p class="error">Could not load the plans. Reload the page, or <a href="../signup/">sign up</a>.</p>'; }
 </script>
 </body>

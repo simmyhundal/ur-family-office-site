@@ -22,7 +22,7 @@ test("config: loader falls back to defaults on failure and reads on success", as
 test("header and footer render the name and links", () => {
   const cfg = mergeConfig({ name: "Renamed", contact_email: "a@example.com" });
   const h = headerHtml(cfg, "../", "pricing");
-  assert.match(h, /href="..\/pricing\/" aria-current="page"/); assert.match(h, /Sign up/);
+  assert.match(h, /href="..\/pricing\/" aria-current="page"/); assert.match(h, /Get Plus/);
   assert.match(h, /<img class="brand-mark" src="..\/img\/logo.svg"/);
   assert.match(h, /aria-label="Renamed, home"/); assert.match(h, /<span class="brand-full">Renamed<\/span>/);
   const f = footerHtml(cfg, "../");

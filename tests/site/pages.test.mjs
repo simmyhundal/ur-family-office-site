@@ -297,3 +297,23 @@ test("every 'Have a code?' box obeys show_code_box (issue 339)", async () => {
   assert.match(pricing, /a\.mode === "checkout" && cfg\.show_code_box \? `<div class="promo"/);
   assert.match(chrome, /cfg\.show_code_box \? promos : \[\]/);
 });
+
+// Header CTA is "Get Plus" and opens the Plus card on Pricing, on every page; the footer keeps "Sign up".
+test("header CTA: Get Plus -> pricing/#plus on every page", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const pages = [];
+  const walk = async (dir) => { for (const e of await readdir(new URL(dir, site), { withFileTypes: true })) {
+    if (e.isDirectory()) await walk(`${dir}${e.name}/`); else if (e.name === "index.html") pages.push(dir); } };
+  await walk("");
+  let n = 0;
+  for (const rel of pages) {
+    const html = await read(rel);
+    const m = html.match(/<a class="nav-cta"[^>]*>[^<]*<\/a>/);
+    if (!m) continue;
+    const up = "../".repeat(rel.split("/").filter(Boolean).length);
+    assert.equal(m[0], `<a class="nav-cta" href="${up}pricing/#plus">Get Plus</a>`, rel || "home");
+    n++;
+  }
+  assert.ok(n >= 9, `checked ${n} pages`);
+  assert.match(await read("pricing/"), /<article id="\$\{esc\(p\.id\)\}"/);
+});

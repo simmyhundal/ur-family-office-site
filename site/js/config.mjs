@@ -110,7 +110,7 @@ export function headerHtml(cfg, root, current) {
   return `<div class="wrap head-row">
   <a class="brand" href="${root}" aria-label="${esc(cfg.name)}, home">${mark(cfg, root, 36)}<span class="brand-word" aria-hidden="true"><span class="brand-full">${nameHtml(cfg)}</span><span class="brand-short">${esc(cfg.wordmark)}</span></span></a>
   <nav class="main-nav" aria-label="Main">${links}</nav>
-  <a class="nav-cta" href="${root}signup/"${current === "signup" ? ' aria-current="page"' : ""}>Sign up</a>
+  <a class="nav-cta" href="${root}pricing/#plus">Get Plus</a>
 </div>`;
 }
 // `current` is the page's nav key; the price and cash-rate note shows only on the Try page, where the numbers are.
