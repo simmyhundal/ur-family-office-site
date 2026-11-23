@@ -1,11 +1,12 @@
 import {useId,type ReactNode,type HTMLAttributes} from 'react';
 import {PERIODS,percent,money,formatDate,comparisonTone} from './format';
-export type Tone='portfolio'|'benchmark'|'proposal'|'neutral';
+export type Tone='portfolio'|'benchmark'|'proposal'|'previous'|'neutral';
 export type Quality='observed'|'estimated'|'modeled';
 /** One colour per series everywhere (issue 264): your portfolio purple, the benchmark orange (dashed), a proposed mix blue, other references gray (dotted). */
-export type Role='portfolio'|'benchmark'|'proposal'|'reference';
-const ROLE_COLOR:Record<Role,string>={portfolio:'var(--accent)',benchmark:'var(--bench)',proposal:'var(--proposal)',reference:'var(--ink-3)'};
-export const seriesStyle=(role:Role,quality:Quality='observed')=>({color:ROLE_COLOR[role],dash:role==='benchmark'?'8 4':role==='reference'?'2 4':quality==='estimated'?'3 4':undefined});
+/** `previous` is your own old holdings: the portfolio purple, faded and dashed. */
+export type Role='portfolio'|'benchmark'|'proposal'|'previous'|'reference';
+const ROLE_COLOR:Record<Role,string>={portfolio:'var(--accent)',benchmark:'var(--bench)',proposal:'var(--proposal)',previous:'var(--previous)',reference:'var(--ink-3)'};
+export const seriesStyle=(role:Role,quality:Quality='observed')=>({color:ROLE_COLOR[role],dash:role==='benchmark'?'8 4':role==='previous'?'6 4':role==='reference'?'2 4':quality==='estimated'?'3 4':undefined});
 export function Card({children,className='',...props}:HTMLAttributes<HTMLElement>){return <section {...props} className={`card ui-card ${className}`}>{children}</section>;}
 export function CardStack({children,className=''}:{children:ReactNode;className?:string}){return <div className={`ui-stack ${className}`}>{children}</div>;}
 /** The masthead every tab opens with: a small kicker, the tab title and an optional note on the right (data date, demo label). */

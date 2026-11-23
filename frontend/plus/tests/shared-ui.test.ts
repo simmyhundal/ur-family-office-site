@@ -17,6 +17,8 @@ test('series role and data quality share the same line and legend semantics',()=
  assert.equal(seriesStyle('portfolio','observed').dash,undefined);
  assert.equal(seriesStyle('portfolio','estimated').dash,'3 4');
  assert.equal(seriesStyle('benchmark','modeled').dash,'8 4');
+ assert.equal(seriesStyle('previous','modeled').color,'var(--previous)');
+ assert.equal(seriesStyle('previous','modeled').dash,'6 4');
  assert.equal(seriesStyle('portfolio','estimated').color,seriesStyle('portfolio','observed').color);
  assert.notEqual(seriesStyle('portfolio').color,seriesStyle('benchmark').color);
 });

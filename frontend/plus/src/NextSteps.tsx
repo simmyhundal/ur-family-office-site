@@ -111,7 +111,7 @@ export function NextSteps({data,benchmark}:{data:NextData;onNavigate?(tab:string
  const first=accounts.find(a=>a.holdings?.length),selected=chosen??(first?[first.id]:[]);
  const standins=mix?.compare?.standins??[];
  return <CardStack className="next-steps">
- <PageHeader title="Next steps" note={n.asof?`Prices to ${formatDate(n.asof)}`:undefined}/>
+ <PageHeader title="Next steps"/>
  {n.error?<StatusMessage kind="error">{n.error}</StatusMessage>:<>
  <SplitLayout side={<Picker list={list} mix={mix} onMix={setPick} n={n} chosen={selected} onChosen={setChosen}/>}>
   <Replay n={n} mix={mix} chosen={selected} accounts={accounts}/>

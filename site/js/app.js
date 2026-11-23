@@ -152,7 +152,7 @@ function draw({ r, dates, monthly, bench, limitedBy, years }) {
   const { mix, bench: b } = r;
   $("period-line").textContent = `${monthYear(dates[0])} to ${monthYear(dates.at(-1))}.` +
     (limitedBy ? ` Starts when ${limitedBy} does.` : years < 99 && mix.m.months < years * 12 ? " That is all the history there is." : "") + ` Put in ${money(mix.m.putIn)}.` +
-    (mix.m.sharpe != null && mix.m.months < 12 ? " Sharpe over under a year: noisy." : "");
+    (mix.m.sharpe != null && mix.m.months < 12 ? " Sharpe over less than a year is noisy." : "");
   const mixName = state.mixName, benchName = bench;
   $("cards").replaceChildren(card("mix", mixName, mix.m), card("bench", benchName, b.m));
   const diff = mix.m.endValue - b.m.endValue;

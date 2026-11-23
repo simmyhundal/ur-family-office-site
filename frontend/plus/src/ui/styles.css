@@ -43,7 +43,7 @@
 
 /* Series colours (issue 264): proposal blue joins accent purple (yours) and bench orange (benchmark). */
 .plus-ui{--proposal:#0b6fb8}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .plus-ui{--proposal:#62b9f2}}:root[data-theme="dark"] .plus-ui{--proposal:#62b9f2}
-.plus-ui [data-tone=proposal]{--ui-tone:var(--proposal)}.plus-ui .proposal-value{color:var(--proposal)}
+.plus-ui{--previous:color-mix(in srgb,var(--accent) 45%,transparent)}.plus-ui [data-tone=previous]{--ui-tone:var(--previous)}.plus-ui [data-tone=proposal]{--ui-tone:var(--proposal)}.plus-ui .proposal-value{color:var(--proposal)}
 /* Page masthead, shared by every tab */
 .plus-ui .ui-page-header{display:flex;justify-content:flex-end;margin:8px 0 0}.plus-ui .ui-kicker{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:750;color:var(--accent);margin:0 0 4px}.plus-ui .ui-page-header h1{font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.03em}.plus-ui .ui-pill{font-size:12px;color:var(--ink-2);background:var(--surface-2);padding:5px 10px;border-radius:20px;white-space:nowrap}
 /* Two-column research layout */

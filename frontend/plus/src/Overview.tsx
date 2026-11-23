@@ -9,7 +9,7 @@ export function Overview({data,benchmark,period,onBenchmark,onPeriod}:Props){
  const view=useMemo(()=>deriveView(data,benchmark,period),[data,benchmark,period]);const o=data.overview;
  if(!o||view.empty)return <CardStack className="overview"><PageHeader title="Overview"/><Card><StatusMessage kind="info">No accounts yet. In the UFO app, choose “Add accounts”, then refresh.</StatusMessage></Card></CardStack>;
  return <CardStack className="overview">
- <PageHeader title="Overview" note={`Updated ${formatDate(o.as_of,'day')}`}/>
+ <PageHeader title="Overview"/>
  <Card><div className="ui-headline-controls"><h2>{o.accounts} {o.accounts===1?'account':'accounts'}</h2><SelectField label="Benchmark" tone="benchmark" hideLabel value={benchmark} options={tupleOptions(data.benchmarks)} onChange={onBenchmark}/></div>
  <MetricPair left={{label:'Your investments',hideLabel:true,value:money(view.value),detail:<span className="portfolio-irr" aria-label={`${view.annualized?'Annual':'Period'} IRR ${percent(view.irr,true)}`}>{percent(view.irr,true)}</span>}} right={{label:benchmark,hideLabel:true,tone:'benchmark',value:money(view.comparison?.value),detail:<span aria-label={`${view.annualized?'Annual':'Period'} IRR ${percent(view.comparison?.irr,true)}`}>{percent(view.comparison?.irr,true)}</span>}}/>
  <PeriodSelector value={period} onChange={onPeriod}/>
