@@ -118,7 +118,7 @@ export function NextSteps({data,benchmark}:{data:NextData;onNavigate?(tab:string
   <RiskReturn n={n} mix={mix} chosen={selected} accounts={accounts} benchmark={benchmark??data.benchmark}/>
   {PRO_FEATURES.sharpeOverTime&&<SharpeOverTime n={n} mix={mix} chosen={selected} accounts={accounts}/>}
  </SplitLayout>
- {n.adoptionTracking&&<AdoptionTracking tracking={n.adoptionTracking}/>}
+ {n.adoptionTracking&&<AdoptionTracking tracking={n.adoptionTracking} accounts={accounts}/>}
  <Disclosure variant="card" title="Fine print">
   {standins.length?<p>Stand-ins before a fund existed: {standins.map(s=>`${s.standin} for ${s.fund} before ${formatDate(s.before)}`).join('; ')}.</p>:null}
   {mix?.compare?.current_left_out?.length?<p>Left out of your portfolio (no prices): {mix.compare.current_left_out.join(', ')}. Cash and accounts without fund holdings are left out too.</p>:<p>Your portfolio here is your priced funds at today’s weights; cash and accounts without fund holdings are left out.</p>}

@@ -29,6 +29,18 @@ test('product tabs compose shared controls, tables, disclosures and charts',()=>
  }
 });
 
+test('scatter labels never sit on another point (phone report: labels over dots)',async()=>{
+ const React=await import('react');const {renderToStaticMarkup}=await import('react-dom/server');
+ const {RiskScatterChart}=await import('../src/ui/charts');const {JSDOM}=await import('jsdom');
+ // Invented points shaped like the phone report: three close together near the right edge, one ring.
+ const points=[{key:'yours',label:'Your portfolio',markerLabel:'Yours',x:.197,y:.096,role:'portfolio' as const},{key:'changed',label:'With the change',markerLabel:'With the change',marker:'ring' as const,x:.19,y:.093,role:'proposal' as const},
+  {key:'proposed',label:'Invented mix',markerLabel:'SPY/BND',x:.16,y:.11,role:'proposal' as const},{key:'bench',label:'SPY',markerLabel:'SPY',x:.172,y:.148,role:'benchmark' as const}];
+ const dom=new JSDOM(renderToStaticMarkup(React.createElement(RiskScatterChart,{points,label:'Risk',xTitle:'Risk',yTitle:'Return'})));try{
+  const doc=dom.window.document,dots=[...doc.querySelectorAll('g[data-point] circle')].map(c=>({x:+c.getAttribute('cx')!,y:+c.getAttribute('cy')!,r:+c.getAttribute('r')!}));
+  for(const t of doc.querySelectorAll('g[data-point] text')){const w=t.textContent!.length*8,x0=t.getAttribute('text-anchor')==='end'?+t.getAttribute('x')!-w:+t.getAttribute('x')!,y0=+t.getAttribute('y')!-12;
+   for(const d of dots)assert.ok(!(x0<d.x+d.r&&x0+w>d.x-d.r&&y0<d.y+d.r&&y0+15>d.y-d.r),`${t.textContent} covers a point`);}
+ }finally{dom.window.close();}
+});
 test('scatter labels stay present near plot edges and crowded portfolio markers',async()=>{
  const React=await import('react');const {renderToStaticMarkup}=await import('react-dom/server');
  const {RiskScatterChart}=await import('../src/ui/charts');const {JSDOM}=await import('jsdom');
