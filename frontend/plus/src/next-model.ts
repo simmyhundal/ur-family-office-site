@@ -25,7 +25,7 @@ export type NextData=DashboardData&{nextSteps?:NextPayload;demo?:string};
 
 /** Public facts about common funds, so a weight reads as more than a ticker. */
 export const FUND_NAMES:Record<string,string>={SPY:'US large cap · SPY',VTI:'US total market · VTI',VT:'World total market · VT',ACWI:'World large cap · ACWI',
- AGG:'US bonds · AGG',EFA:'Developed markets outside the US · EFA',IWM:'US small companies · IWM',GLD:'Gold · GLD',CASH:'Cash (3-month T-bills)',BND:'US bonds · BND',QQQ:'Nasdaq-100 · QQQ'};
+ AGG:'US bonds · AGG',EFA:'Developed markets outside the US · EFA',IWM:'US small companies · IWM',GLD:'Gold · GLD',CASH:'Cash (3-month T-bills)',BND:'US bonds · BND',QQQ:'Nasdaq-100 · QQQ',IXN:'World technology · IXN',AOR:'Balanced growth · AOR',BNDW:'World bonds · BNDW'};
 /** Features kept for the Pro tier and switched off in Plus (issue 329: the trailing Sharpe chart). */
 export const PRO_FEATURES={sharpeOverTime:false};
 

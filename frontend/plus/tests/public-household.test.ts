@@ -16,7 +16,7 @@ test('published household embeds the current shared bundle and only invented acc
  assert.equal(data.overview.accounts,5);
  assert.deepEqual(data.nextSteps.accounts.map((a:{id:string})=>a.id).sort(),[...expected].sort());
  assert.equal(data.benchmark,'SPY');
- assert.deepEqual(data.nextSteps.mixes.map((m:{key:string})=>m.key),[['VTI','SPY'],['VT','ACWI']].flatMap(g=>[30,60,80,100].flatMap(p=>g.map(s=>`fixed:${s}-${p}`))));
+ assert.deepEqual(data.nextSteps.mixes.map((m:{key:string})=>m.key),[['VTI','SPY'],['VT','ACWI']].flatMap(g=>[30,60,80,100].flatMap(p=>g.map(s=>`fixed:${s}-${p}`))).concat(["QQQ","IXN","AOR","BND","BNDW"].map(s=>`fixed:${s}-100`)));
  assert.equal(data.nextSteps.holdout,undefined,'the holdout test is shelved (M22)');
  assert.ok(data.nextSteps.grid.months.length>36);
  assert.ok(data.benchmarks.every(([s,label]:[string,string])=>label.endsWith('ETF')&&label.includes(s)));
