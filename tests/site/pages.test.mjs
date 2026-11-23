@@ -221,7 +221,7 @@ test("Pricing: at most 200 visible words (page text plus the plan cards incl. th
   assert.deepEqual(plans.map((p) => p.id), ["free", "plus"]);
   const main = html.match(/<main[\s\S]*<\/main>/)[0].replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<svg[\s\S]*?<\/svg>/g, " ");
   const text = main.replace(/<[^>]+>/g, " ").replace("Loading plans…", " ");
-  const cards = plans.map((p) => [p.status, p.name, p.price, p.blurb, ...p.features, p.teaser ? `See what ${p.name} looks like →` : "", p.id === "free" ? "Try it free" : "Pre-order Plus"].join(" ")).join(" ");
+  const cards = plans.map((p) => [p.status, p.name, p.price, p.blurb, ...p.features, p.teaser ? `See what ${p.name} looks like →` : "", p.id === "free" ? "Try it free" : "Get Plus"].join(" ")).join(" ");
   const words = (text + " " + cards).split(/\s+/).filter(Boolean).length;
   assert.ok(words <= 200, `Pricing has ${words} words`);
   assert.equal((html.match(/<h3>/g) || []).length, 2);
@@ -241,9 +241,9 @@ test("footer: no repeated tagline sentence; the Prices/FRED note shows only on T
   }
 });
 
-// Issue 279: every Plus button on a page is marked so chrome.mjs can turn it into "Pre-order Plus" once a checkout link is
+// Issue 279: every Plus button on a page is marked so chrome.mjs can turn it into "Get Plus" once a checkout link is
 // set; the old waitlist wording is gone; visible text says "portfolio", not "mix"; Plus copy promises no optimizer.
-test("Plus buttons are marked for pre-order; no waitlist wording; 'portfolio' not 'mix'; no optimizer promises", async () => {
+test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not 'mix'; no optimizer promises", async () => {
   const { visibleText } = await import("./wordcount.mjs");
   let marked = 0;
   for (const rel of PAGES) {
@@ -254,7 +254,7 @@ test("Plus buttons are marked for pre-order; no waitlist wording; 'portfolio' no
     for (const text of [visibleText(html), title, desc]) assert.ok(!/\bmix(es)?\b/i.test(text), `${rel || "home"}: says "mix": ${text.match(/.{0,40}\bmix\b.{0,20}/i)?.[0]}`);
   }
   assert.ok(marked >= 3, "Home, Try's next step and Try's imports note");
-  assert.match(await read(""), /<p class="lead" data-preorder-note hidden>Pre-order now/, "Home's pay-now line starts hidden");
+  assert.match(await read(""), /<p class="lead" data-purchase-note hidden>After checkout/, "Home's pay-now line starts hidden");
   for (const f of ["app.js", "share.mjs", "portfolios.mjs", "lesson.mjs", "result.mjs", "home.mjs"]) {
     const js = (await readFile(new URL("js/" + f, site), "utf8")).replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, "");
     for (const m of js.matchAll(/(["`])((?:(?!\1).)*)\1/g)) assert.ok(m[2] === "mix" || !/(?<![-#.])\b[Mm]ix(es)?\b(?![-=(])/.test(m[2].replace(/\$\{[^}]*\}/g, "")), `${f}: "${m[2]}"`);
@@ -263,7 +263,7 @@ test("Plus buttons are marked for pre-order; no waitlist wording; 'portfolio' no
   const home = await read("");
   for (const text of [plans, visibleText(home)]) assert.ok(!/\bmix\b|optimi[sz]|walk-forward|what-if|strateg/i.test(text), "Plus copy matches the product");
   const plus = JSON.parse(plans).plans.find((p) => p.id === "plus");
-  assert.equal(plus.status, "preorder");
+  assert.equal(plus.status, "selling");
   assert.ok(plus.features.some((f) => /Conservative, Balanced, Growth, All stocks/.test(f) && /world or US-only/.test(f)));
   assert.ok(plus.features.includes("Your numbers never leave your computer"));
   const chrome = await readFile(new URL("js/chrome.mjs", site), "utf8");
@@ -277,6 +277,14 @@ test("Home Plus band label and wording; refund policy on Terms and Pricing", asy
   assert.ok(!home.includes("in a Mac app") && home.includes("side by side on your Mac."));
   const terms = await read("terms/");
   assert.match(terms, /<h2>Refunds<\/h2>/);
-  assert.match(terms, /Last updated November 22, 2026/);
+  assert.match(terms, /Last updated November 23, 2026/);
   for (const html of [terms, await read("pricing/")]) assert.match(html, /within 30 days of purchase for a full refund, no questions asked\. Refunds go back to your original payment method\. After 30 days you can cancel anytime; Plus keeps working until the end of your paid year\./);
+});
+
+test("no visible 'pre-order' wording remains on the public pages", async () => {
+  const fs = await import("node:fs/promises");
+  for (const f of ["index.html", "pricing/index.html", "signup/index.html", "terms/index.html", "privacy/index.html", "data/plans.json", "js/plans.mjs"]) {
+    const t = await fs.readFile(new URL("../../site/" + f, import.meta.url), "utf8");
+    assert.doesNotMatch(t.replace(/<!--[\s\S]*?-->/g, ""), /pre-?order/i, f);
+  }
 });

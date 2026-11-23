@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricing · Ur Family Office</title>
-<meta name="description" content="Free in your browser; Plus is a Mac app you can pre-order.">
+<meta name="description" content="Free in your browser; Plus is a Mac app you can buy now.">
 <meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0b1c" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ur Family Office">
 <meta property="og:title" content="Pricing · Ur Family Office">
-<meta property="og:description" content="Free in your browser; Plus is a Mac app you can pre-order.">
+<meta property="og:description" content="Free in your browser; Plus is a Mac app you can buy now.">
 <meta property="og:url" content="https://simmyhundal.github.io/ur-family-office-site/pricing/">
 <meta property="og:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <meta property="og:image:width" content="1200">
@@ -22,7 +22,7 @@
 <meta property="og:image:alt" content="Ur Family Office: a higher view of your money">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Pricing · Ur Family Office">
-<meta name="twitter:description" content="Free in your browser; Plus is a Mac app you can pre-order.">
+<meta name="twitter:description" content="Free in your browser; Plus is a Mac app you can buy now.">
 <meta name="twitter:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <!-- /link preview -->
 <link rel="stylesheet" href="../style.css">
@@ -47,7 +47,7 @@
   <div class="wrap">
     <div class="section-head center reveal"><h2 id="faq-h">Good to know</h2></div>
     <div class="faq">
-      <div class="reveal"><h3>Am I charged?</h3><p>Only if you pre-order Plus. You pay on Stripe’s page, and we email your download link when the signed Mac app is ready.</p></div>
+      <div class="reveal"><h3>Am I charged?</h3><p>Only if you buy Plus. You pay on Stripe’s page. After checkout we email you within a day to set up Plus with you on a short call.</p></div>
       <div class="reveal"><h3>Refunds</h3><p>Changed your mind? Email us within 30 days of purchase for a full refund, no questions asked. Refunds go back to your original payment method. After 30 days you can cancel anytime; Plus keeps working until the end of your paid year. To ask, use the <a href="../signup/">sign-up form</a>.</p></div>
     </div>
   </div>
@@ -71,7 +71,7 @@ import { planAction, priceLabel, mountPromo, clearanceHtml } from "../js/plans.m
 const box = document.getElementById("plans");
 try {
   const { plans } = await loadJson(new URL("../data/plans.json", import.meta.url).href);
-  const STATUS = { available: ["Available now", " on"], preorder: ["Pre-order", ""], planned: ["Planned", ""], later: ["Coming later", ""] };
+  const STATUS = { available: ["Available now", " on"], selling: ["Available now", ""], planned: ["Planned", ""], later: ["Coming later", ""] };
   const bigPrice = (p) => {
     if (p.status === "later") return '<p class="price word">Later</p>';
     const m = /^(\$[\d.,]+)(\/.+)?$/.exec(p.price);

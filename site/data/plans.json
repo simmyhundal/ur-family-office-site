@@ -18,7 +18,7 @@
       "id": "plus",
       "name": "Plus",
       "price": "$67/year",
-      "status": "preorder",
+      "status": "selling",
       "blurb": "A Mac app for all your accounts.",
       "features": [
         "Every account side by side",

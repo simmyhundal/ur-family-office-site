@@ -63,18 +63,18 @@ test("plan: free goes to the sample; price label marks planned", () => {
   assert.equal(planAction({ id: "free", name: "Free" }, {}, "../").mode, "try");
   assert.equal(priceLabel({ price: "$67/year", status: "planned" }), "$67/year, planned");
   assert.equal(priceLabel({ price: "$0", status: "available" }), "$0");
-  assert.equal(priceLabel({ price: "$67/year", status: "preorder" }), "$67/year, pre-order");
+  assert.equal(priceLabel({ price: "$67/year", status: "selling" }), "$67/year");
 });
 
-// Pre-order (issue 279): with a Stripe Payment Link the Plus button says "Pre-order Plus" and opens it; without one,
+// Pre-order (issue 279): with a Stripe Payment Link the Plus button says "Get Plus" and opens it; without one,
 // it says "Get notified" and opens the sign-up form with Plus chosen. No card data is ever handled by the site.
-test("Plus pre-order: checkout link set -> 'Pre-order Plus' to the payment page; empty -> 'Get notified' sign-up", () => {
-  const plus = { id: "plus", name: "Plus", status: "preorder", checkout_url: "" };
+test("Plus buying: checkout link set -> 'Get Plus' to the payment page; empty -> 'Get notified' sign-up", () => {
+  const plus = { id: "plus", name: "Plus", status: "selling", checkout_url: "" };
   const off = planAction(plus, {}, "../");
   assert.deepEqual(off, { mode: "signup", href: "../signup/?plan=plus", label: "Get notified", external: false });
   const on = planAction(plus, { plus: "https://buy.stripe.example/test_abc" }, "../");
-  assert.deepEqual(on, { mode: "checkout", href: "https://buy.stripe.example/test_abc", label: "Pre-order Plus", external: true });
-  assert.equal(planAction({ ...plus, checkout_url: "https://buy.stripe.example/plan" }, {}, "").label, "Pre-order Plus", "plans.json link works too");
+  assert.deepEqual(on, { mode: "checkout", href: "https://buy.stripe.example/test_abc", label: "Get Plus", external: true });
+  assert.equal(planAction({ ...plus, checkout_url: "https://buy.stripe.example/plan" }, {}, "").label, "Get Plus", "plans.json link works too");
 });
 
 function fakeLink(html) {
@@ -82,19 +82,19 @@ function fakeLink(html) {
   return { attrs, label, setAttribute: (k, v) => { attrs[k] = v; }, removeAttribute: (k) => { delete attrs[k]; },
     querySelector: (s) => (s === "[data-cta-label]" ? label : null), get textContent() { return html; } };
 }
-test("static Plus buttons: upgraded to 'Pre-order Plus' only when a checkout link is set", () => {
-  const plus = { id: "plus", name: "Plus", status: "preorder", checkout_url: "" };
+test("static Plus buttons: upgraded to 'Get Plus' only when a checkout link is set", () => {
+  const plus = { id: "plus", name: "Plus", status: "selling", checkout_url: "" };
   const a = fakeLink(), b = fakeLink(), note = { hidden: true };
   upgradePlanLinks([a, b], plus, {}, "https://site.example/", [note]);
-  assert.equal(note.hidden, true, "no pre-order promise while the button only signs you up");
+  assert.equal(note.hidden, true, "no purchase promise while the button only signs you up");
   for (const l of [a, b]) {
     assert.equal(l.attrs.href, "https://site.example/signup/?plan=plus"); assert.equal(l.label.textContent, "Get notified");
     assert.ok(!("rel" in l.attrs));
   }
   upgradePlanLinks([a, b], plus, { plus: "https://buy.stripe.example/x" }, "https://site.example/", [note]);
-  assert.equal(note.hidden, false, "the pay-now line shows once pre-orders are open");
+  assert.equal(note.hidden, false, "the pay-now line shows once buying is open");
   for (const l of [a, b]) {
-    assert.equal(l.attrs.href, "https://buy.stripe.example/x"); assert.equal(l.label.textContent, "Pre-order Plus");
+    assert.equal(l.attrs.href, "https://buy.stripe.example/x"); assert.equal(l.label.textContent, "Get Plus");
     assert.equal(l.attrs.rel, "noopener noreferrer");
   }
   upgradePlanLinks([a], plus, { plus: "javascript:alert(1)" }, "../");
@@ -128,7 +128,7 @@ function fakePromoBox() {
   return { box, input, err, form, toggle, listeners };
 }
 test("'Have a code?': hidden and empty with no checkout link; with one, a valid code goes to Stripe and a bad one stays", () => {
-  const plus = { id: "plus", name: "Plus", status: "preorder", checkout_url: "" };
+  const plus = { id: "plus", name: "Plus", status: "selling", checkout_url: "" };
   const off = fakePromoBox(); off.box.hidden = false; off.box.innerHTML = "stale";
   upgradePlanLinks([fakeLink()], plus, {}, "../", [], [off.box]);
   assert.equal(off.box.hidden, true); assert.equal(off.box.innerHTML, "", "no code box while the button says 'Get notified'");
@@ -146,7 +146,7 @@ test("'Have a code?': hidden and empty with no checkout link; with one, a valid 
   assert.match(html, /autocomplete="off"/); assert.match(html, /role="alert"/);
 });
 test("upgradePlanLinks shows the code box only with a checkout link", () => {
-  const plus = { id: "plus", name: "Plus", status: "preorder", checkout_url: "" };
+  const plus = { id: "plus", name: "Plus", status: "selling", checkout_url: "" };
   const box = fakePromoBox();
   upgradePlanLinks([fakeLink()], plus, { plus: "https://buy.stripe.example/x" }, "../", [], [box.box]);
   assert.equal(box.box.hidden, false);
