@@ -67,3 +67,5 @@
 
 .plus-ui .ui-point{cursor:pointer;outline:none}.plus-ui .ui-point:focus-visible circle:not(.ui-point-hit){stroke:var(--ink);stroke-width:2}.plus-ui .ui-point[aria-pressed="true"] circle:not(.ui-point-hit){stroke:var(--ink);stroke-width:2}
 .plus-ui .ui-point-readout{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0;font-size:14px;color:var(--ink-2)}.plus-ui .ui-point-readout b{color:var(--ink);flex-basis:100%}
+
+.plus-ui .ui-track{margin-top:24px}.plus-ui .ui-track-rule{border:0;border-top:2px solid var(--line);margin:0 0 20px}.plus-ui .ui-track-title{font-size:20px;margin:0 0 4px}.plus-ui .ui-track>.ui-caption{margin:0 0 16px}

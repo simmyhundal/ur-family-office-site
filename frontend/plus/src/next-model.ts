@@ -28,6 +28,8 @@ export const FUND_NAMES:Record<string,string>={SPY:'US large cap · SPY',VTI:'US
  AGG:'US bonds · AGG',EFA:'Developed markets outside the US · EFA',IWM:'US small companies · IWM',GLD:'Gold · GLD',CASH:'Cash (3-month T-bills)',BND:'US bonds · BND',QQQ:'Nasdaq-100 · QQQ',IXN:'World technology · IXN',AOR:'Balanced growth · AOR',BNDW:'World bonds · BNDW'};
 /** Features kept for the Pro tier and switched off in Plus (issue 329: the trailing Sharpe chart). */
 export const PRO_FEATURES={sharpeOverTime:false};
+/** Shelved, not deleted: read-only draft buys and sells. Off until holdings are reliably available (issue 371). Tests flip it on. */
+export const SHELVED_FEATURES={draftTrades:false};
 
 /** The portfolios in the left-hand selector, in the payload's fixed order (never sorted by result). */
 export function portfolios(n:NextPayload|undefined):Mix[]{return (n?.mixes??[]).filter(m=>!m.error);}

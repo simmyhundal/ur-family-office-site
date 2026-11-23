@@ -5,7 +5,7 @@ import {AdoptionTracking} from './AdoptionTracking';
 import {Card,CardHeader,CardStack,PageHeader,SplitLayout,SelectField,CheckRow,Disclosure,StatusMessage,DataTable,AllocationBreakdown,Metric,MetricPair,ComparisonSummary,DataCoverage} from './ui/components';
 import {TimeSeriesChart,RiskScatterChart,type ScatterPoint} from './ui/charts';
 import {money,percent,ratio,formatDate} from './ui/format';
-import {FUND_NAMES,PRO_FEATURES,title,portfolios,defaultPortfolio,draftTrades,rollingSharpe,swappedHousehold,monthlyReturns,commonMonths,riskRow,type NextData,type NextPayload,type Mix,type Account,type Row} from './next-model';
+import {FUND_NAMES,PRO_FEATURES,SHELVED_FEATURES,title,portfolios,defaultPortfolio,draftTrades,rollingSharpe,swappedHousehold,monthlyReturns,commonMonths,riskRow,type NextData,type NextPayload,type Mix,type Account,type Row} from './next-model';
 export type {NextData} from './next-model';
 
 const WRAPPER:Record<string,string>={taxable:'Taxable',roth_ira:'Roth IRA',traditional_ira:'Traditional IRA',hsa:'HSA','401k':'401(k)'};
@@ -23,7 +23,7 @@ function Picker({list,mix,onMix,n,chosen,onChosen}:{list:Mix[];mix?:Mix;onMix(v:
    detail={`${WRAPPER[a.wrapper??'']??'Account'} · ${chosen.includes(a.id)?'would change':'stays as is'}`} value={money(a.value)}/>)}
   <p className="small">{picked.length?<><b className="proposal-value">{money(picked.reduce((s,a)=>s+(a.value??0),0))}</b> in {picked.length} of {accounts.length} accounts</>:'No accounts checked. Nothing changes.'}</p>
  </fieldset>:null}
- {picked.length&&mix?<Disclosure title="Draft buys and sells (read-only)"><p className="small">From each account’s holdings to these weights, at its latest balance. UFO never places orders. Check taxes, fees and surrender charges first.</p>
+ {SHELVED_FEATURES.draftTrades&&picked.length&&mix?<Disclosure title="Draft buys and sells (read-only)"><p className="small">From each account’s holdings to these weights, at its latest balance. UFO never places orders. Check taxes, fees and surrender charges first.</p>
   {picked.map(a=>{const t=draftTrades(a,mix.weights);return <div className="ui-draft" key={a.id}><h3>{a.label}</h3>{t==null?<StatusMessage kind="missing">No fund holdings to trade.</StatusMessage>:t.length?t.map(x=><div className="ui-draft-row" key={x.symbol}><span>{tradeName(x.symbol)}</span><strong>{x.amount<0?'Sell':'Buy'} {money(Math.abs(x.amount))}</strong></div>):<p className="small">Already at these weights.</p>}</div>;})}
  </Disclosure>:null}
  </Card>;
@@ -118,7 +118,10 @@ export function NextSteps({data,benchmark}:{data:NextData;onNavigate?(tab:string
   <RiskReturn n={n} mix={mix} chosen={selected} accounts={accounts} benchmark={benchmark??data.benchmark}/>
   {PRO_FEATURES.sharpeOverTime&&<SharpeOverTime n={n} mix={mix} chosen={selected} accounts={accounts}/>}
  </SplitLayout>
- {n.adoptionTracking&&<AdoptionTracking tracking={n.adoptionTracking} accounts={accounts}/>}
+ {n.adoptionTracking&&<section className="ui-track" aria-labelledby="track-change"><hr className="ui-track-rule"/>
+  <h2 id="track-change" className="ui-track-title">Track a change you made</h2>
+  <p className="ui-caption">Separate from the proposed portfolio above: once you have changed your real holdings, this compares what happened with keeping the old ones.</p>
+  <AdoptionTracking tracking={n.adoptionTracking} accounts={accounts}/></section>}
  <Disclosure variant="card" title="Fine print">
   {standins.length?<p>Stand-ins before a fund existed: {standins.map(s=>`${s.standin} for ${s.fund} before ${formatDate(s.before)}`).join('; ')}.</p>:null}
   {mix?.compare?.current_left_out?.length?<p>Left out of your portfolio (no prices): {mix.compare.current_left_out.join(', ')}. Cash and accounts without fund holdings are left out too.</p>:<p>Your portfolio here is your priced funds at today’s weights; cash and accounts without fund holdings are left out.</p>}
