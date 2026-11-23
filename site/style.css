@@ -351,7 +351,15 @@ th:last-child .tip::after, th:nth-last-child(2) .tip::after { left: auto; right:
 .plan { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); padding: 30px 26px 26px; display: flex; flex-direction: column; transition: transform .35s var(--ease), box-shadow .35s; }
 .plan:hover { transform: translateY(-4px); box-shadow: var(--shadow-up); }
 .plan.featured { border: 1.5px solid transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(140deg, #7a5cff, #c04ad8 55%, #38bdf8) border-box; box-shadow: var(--shadow-up); }
-@media (min-width: 860px) { .plan.featured { transform: translateY(-10px); } .plan.featured:hover { transform: translateY(-14px); } }
+/* Side by side, the cards share their rows (tags, name, price, blurb, features with the divider, button), so prices,
+   dividers and buttons line up whatever wraps. No resting lift on the featured card: it would undo the alignment. */
+.plan-tags { display: flex; flex-direction: column; align-items: flex-start; }
+@media (min-width: 860px) {
+  .plans { row-gap: 0; }
+  @supports (grid-template-rows: subgrid) {
+    .plan { display: grid; grid-row: span 6; grid-template-rows: subgrid; row-gap: 0; }
+  }
+}
 .plan-badge { position: absolute; top: -13px; left: 26px; padding: 4px 12px; border-radius: var(--r-pill); font-size: .72rem; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow-accent); }
 .plan-status { align-self: flex-start; font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); background: var(--bg-2); border: 1px solid var(--line); padding: 4px 10px; border-radius: var(--r-pill); margin-bottom: 14px; }
 .plan-status.on { color: var(--good); background: color-mix(in srgb, var(--good) 10%, transparent); border-color: color-mix(in srgb, var(--good) 30%, transparent); }
