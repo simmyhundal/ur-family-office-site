@@ -12,6 +12,8 @@ async function until(check:()=>boolean){for(let i=0;i<100;i++){if(check())return
 test('published household embeds the current shared bundle and only invented accounts',()=>{
  const bundle=readFileSync(new URL('../../../src/ufo/performance/react-assets/overview.js',import.meta.url),'utf8').replaceAll('</script','<\\/script');
  assert.equal(page.match(/<script id="react-overview-bundle" type="text\/plain">([\s\S]*?)<\/script>/)![1],bundle,'Rebuild the public household after changing the shared frontend');
+ const css=readFileSync(new URL('../../../src/ufo/performance/react-assets/page.css',import.meta.url),'utf8').replaceAll('</style','<\\/style');
+ assert.equal(page.match(/<style id="plus-page">([\s\S]*?)<\/style>/)?.[1],css,'Rebuild the public household after changing the page styles');
  assert.match(data.demo,/invented household/);
  assert.equal(data.overview.accounts,5);
  assert.deepEqual(data.nextSteps.accounts.map((a:{id:string})=>a.id).sort(),[...expected].sort());

@@ -1,0 +1,136 @@
+/* The Plus page styles ("Exhibit"): consulting-report discipline. Numbered exhibits, a crisp grotesque, a headline that
+   states the takeaway, a source line under every exhibit. White page, black rules, colour only where it carries meaning.
+   Inlined in <head> after the dashboard's own styles; :root:root outranks its :root:not([data-theme=light]) dark rules.
+   No web fonts: system stacks only (the page makes no network requests). */
+:root:root{
+ color-scheme:light;
+ --bg:#ffffff;--surface:#ffffff;--surface-2:#f2f4f7;--ink:#101828;--ink-2:#344054;--ink-3:#667085;--line:#e4e7ec;--line-2:#d0d5dd;
+ --accent:#4b2fc2;--accent-2:#6a52d9;--accent-soft:#eeeafb;--accent-ink:#fff;--bench:#b54708;--up:#067647;--up-soft:#e6f4ec;--down:#b42318;--down-soft:#fdecea;--warn:#93670b;--warn-soft:#fdf3d8;
+ --k0:#4b2fc2;--c0:#4b2fc2;--k3:#c4861a;--k5:#98a2b3;
+ --t-body:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;--t-head:var(--t-body);--t-num:var(--t-body);--t-brand:var(--t-body);
+ --t-head-weight:700;--t-h2:13px;--t-lede:clamp(20px,2.2vw,26px);--t-lede-weight:700;--t-head-track:-.01em;--t-num-weight:600;--t-brand-weight:700;
+ --t-label-case:uppercase;--t-label-track:.06em;--t-radius:0;--t-radius-sm:2px;--t-gap:40px;--t-pad:0px;--t-max:1280px;
+ --t-rule:#d0d5dd;--t-th-rule:#101828;--t-card-bg:transparent;--t-period:#101828;--t-nav-mark:#101828;--t-cell:8px 12px
+}
+:root:root{
+ --font:var(--t-body);--r:var(--t-radius);--r-sm:var(--t-radius-sm);
+ & body{font-family:var(--t-body);font-size:15px;line-height:1.5;background:var(--bg);font-feature-settings:"tnum" 1,"lnum" 1}
+ & main{max-width:var(--t-max);padding:0 20px calc(88px + env(safe-area-inset-bottom))}
+ & .top{position:sticky;top:0;margin:0 -20px;padding:calc(10px + env(safe-area-inset-top)) 20px 10px;min-height:56px;background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:1px solid var(--t-rule)}
+ & .brand{gap:10px;font-family:var(--t-brand);font-weight:var(--t-brand-weight);font-size:16px;letter-spacing:var(--t-brand-track,0)}
+ & .brand svg{width:26px;height:26px}
+ & .brand-word b{color:var(--ink)}
+ & .brand .demo-tag{border-radius:var(--t-radius-sm);font-weight:600;letter-spacing:.02em;background:none;padding:0;color:var(--ink-3);font-family:var(--t-body);font-size:11.5px}
+ & .demo-join{border-radius:var(--t-radius-sm);font-weight:600;padding:8px 14px;font-family:var(--t-body)}
+ & .foot{max-width:none;margin:40px 0 0;padding-top:16px;border-top:1px solid var(--t-rule);font-size:12.5px}
+ /* Phones: a plain full-width tab bar, not a floating pill. */
+ & .tabs{left:0;right:0;bottom:0;transform:none;border-radius:0;padding:2px 8px env(safe-area-inset-bottom);gap:0;justify-content:space-around;background:var(--surface);box-shadow:none;border-top:1px solid var(--t-rule)}
+ & .tabs button{flex:1;min-width:0;min-height:52px;border-radius:0;font-size:11px;font-weight:500;color:var(--ink-3);font-family:var(--t-body)}
+ & .tabs button[aria-current=page]{background:none;color:var(--accent)}
+ & .view{animation:none}
+ & .plus-ui{--ui-radius:var(--t-radius);--ui-gap:var(--t-gap);--ui-pad:var(--t-pad);font-size:15px;color:var(--ink);counter-reset:exhibit}
+ & .plus-ui .ui-card{box-shadow:none;background:var(--t-card-bg,var(--surface));border:var(--t-card-border,0);border-radius:var(--t-radius);display:flex;flex-direction:column}
+ & .plus-ui .ui-card>*{margin-top:0}
+ & .plus-ui .ui-card>*+*{margin-top:14px}
+ & .plus-ui details.ui-card{display:block}
+ & .plus-ui h1,& .plus-ui h2{font-family:var(--t-head);font-weight:var(--t-head-weight);font-size:var(--t-h2);letter-spacing:var(--t-head-track,0);line-height:1.25}
+ & .plus-ui h3{font-family:var(--t-head);font-weight:var(--t-head-weight)}
+ & .plus-ui .ui-card-header{order:-2;margin-bottom:0}
+ & .plus-ui .ui-takeaway{order:-1;margin:0;font-family:var(--t-head);font-size:var(--t-lede);font-weight:var(--t-lede-weight);line-height:1.22;letter-spacing:var(--t-head-track,0);color:var(--ink);text-wrap:balance}
+ & .plus-ui .ui-card-header+.ui-takeaway,& .plus-ui .ui-takeaway+.ui-card-header{margin-top:6px}
+ & .plus-ui .ui-source{font-size:12px;line-height:1.45;color:var(--ink-3);margin:16px 0 0;padding-top:8px;border-top:1px solid var(--line)}
+ & .plus-ui .ui-source span{font-weight:650;color:var(--ink-2)}
+ & .plus-ui .ui-caption,& .plus-ui .small{font-size:13px}
+ & .plus-ui .ui-label{font-size:12.5px;font-weight:600;color:var(--ink-3);letter-spacing:var(--t-label-track,0);text-transform:var(--t-label-case,none)}
+ & .plus-ui .ui-headline-controls h2{font-family:var(--t-body);font-size:13px;font-weight:600;color:var(--ink-3);letter-spacing:var(--t-label-track,0);text-transform:var(--t-label-case,none)}
+ /* Numbers */
+ & .plus-ui .ui-metric-value{font-family:var(--t-num);font-weight:var(--t-num-weight);font-size:clamp(28px,7vw,40px);letter-spacing:-.015em;line-height:1.1}
+ & .plus-ui .ui-metric-detail{font-family:var(--t-num);font-weight:var(--t-num-weight);font-size:clamp(18px,4.6vw,22px)}
+ & .plus-ui .ui-metric-basis{font-family:var(--t-body);font-size:12px}
+ /* Period tabs: an underlined text row, not pills */
+ & .plus-ui .ui-periods{display:flex;gap:0;padding:0;margin:4px 0 0;background:none;border-radius:0;border-bottom:1px solid var(--t-rule)}
+ & .plus-ui .ui-periods button{flex:1;min-height:44px;padding:6px 10px;border-radius:0;font-weight:500;font-size:13.5px;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:var(--t-body)}
+ & .plus-ui .ui-periods button[aria-pressed=true]{background:none;box-shadow:none;color:var(--ink);border-bottom-color:var(--t-period,var(--accent));font-weight:650}
+ /* Selects: a plain field */
+ & .plus-ui .ui-select-value{border-radius:var(--t-radius-sm);background:var(--t-field,var(--surface));border-color:var(--line-2)}
+ & .plus-ui .ui-select-wrap:hover .ui-select-value{border-color:var(--ink-3)}
+ /* Tables */
+ & .plus-ui .ui-table{font-size:14px}
+ & .plus-ui .ui-table thead th{font-size:11.5px;font-weight:650;color:var(--ink-2);letter-spacing:var(--t-label-track,0);text-transform:var(--t-label-case,none);border-bottom:1px solid var(--t-th-rule,var(--ink-3));vertical-align:bottom}
+ & .plus-ui .ui-table th,& .plus-ui .ui-table td{padding:10px 10px;vertical-align:middle}
+ & .plus-ui .ui-account-link{font-weight:600;text-decoration-thickness:1px;text-decoration-color:var(--line-2)}
+ & .plus-ui .ui-status{border-radius:var(--t-radius-sm)}
+ & .plus-ui .ui-verdict,& .plus-ui .ui-facts>div{border-radius:var(--t-radius-sm)}
+ & .plus-ui .ui-bar-track,& .plus-ui .ui-source-track,& .plus-ui .ui-allocation-track{border-radius:1px;height:8px}
+ & .plus-ui .ui-bar-track>i,& .plus-ui .ui-source-track i,& .plus-ui .ui-allocation-track i{border-radius:1px}
+ /* Charts are drawn at their real width (charts.tsx), so text is set in pixels. */
+ & .plus-ui .ui-chart{max-width:none;margin:12px 0 0}
+ & .plus-ui .ui-chart-svg text{font:12px var(--t-body);fill:var(--ink-3)}
+ & .plus-ui .ui-chart-svg .ui-axis-title{font:600 12px var(--t-body);fill:var(--ink-2)}
+ & .plus-ui .ui-legend{font-size:12.5px;color:var(--ink-2)}
+ & .plus-ui .ui-date-inspector button{border-radius:var(--t-radius-sm);background:var(--surface);font-size:20px}
+ & .plus-ui .ui-disclosure>summary{font-size:13.5px}
+ & .plus-ui .ui-quality,& .plus-ui .ui-pill{border-radius:var(--t-radius-sm)}
+}
+/* Desktop: a top navigation row in the header, denser controls, and multi-column pages. */
+@media (min-width:900px){:root:root{
+ & main{padding:0 40px 56px}
+ & .top{margin:0 -40px;padding:0 40px;min-height:64px}
+ & .tabs{top:0;bottom:auto;left:50%;right:auto;transform:translateX(-50%);height:64px;padding:0;gap:32px;background:none;border:0;align-items:stretch}
+ & .tabs button{flex:none;min-height:0;padding:0 2px;font-size:14px;font-weight:500;color:var(--ink-2);border-top:2px solid transparent;border-bottom:2px solid transparent;flex-direction:row}
+ & .tabs button svg{display:none}
+ & .tabs button:hover{color:var(--ink)}
+ & .tabs button[aria-current=page]{background:none;box-shadow:none;color:var(--ink);border-bottom-color:var(--t-nav-mark,var(--accent))}
+ & .plus-ui{--ui-control-height:38px}
+ & .plus-ui .ui-select-value{min-height:38px;padding:7px 34px 7px 26px;font-size:14px}
+ & .plus-ui .ui-select-wrap select{font-size:14px}
+ & .plus-ui .ui-periods{display:inline-flex;align-self:flex-start}
+ & .plus-ui .ui-periods button{flex:none;min-height:34px;padding:4px 14px}
+ & .plus-ui .ui-account-link{min-height:0}
+ & .plus-ui .ui-table th,& .plus-ui .ui-table td{padding:var(--t-cell,9px 12px)}
+ & .plus-ui .ui-date-inspector{grid-template-columns:32px minmax(0,1fr) 32px;min-height:40px}
+ & .plus-ui .ui-date-inspector button{width:32px;height:32px;font-size:18px}
+ & .plus-ui .ui-check-row{min-height:44px}
+ & .plus-ui .ui-disclosure>summary{min-height:40px;padding:8px 0}
+ & .plus-ui .ui-disclosure.ui-card>summary{padding:12px var(--ui-pad)}
+}}
+@media (min-width:1100px){:root:root{
+ & .plus-ui .overview{grid-template-columns:minmax(0,2fr) minmax(300px,1fr);align-items:start}
+ & .plus-ui .overview>.overview-hero{grid-column:1;grid-row:span 2}
+ & .plus-ui .overview>.overview-sources{grid-column:2}
+ & .plus-ui .overview>details{grid-column:2}
+ & .plus-ui .details{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+ & .plus-ui .details>.details-table,& .plus-ui .details>.details-solo,& .plus-ui .details>details{grid-column:1/-1}
+ & .plus-ui .ui-split{grid-template-columns:minmax(300px,.8fr) minmax(0,1.6fr)}
+}}
+@media (prefers-reduced-motion:no-preference){:root:root .plus-ui{animation:ufo-tab-in var(--t-motion,.25s) ease-out}}
+@keyframes ufo-tab-in{from{opacity:0}to{opacity:1}}
+:root:root .react-overview,:root:root .react-details{padding-top:var(--t-top,28px)}
+@media (min-width:1100px){:root:root .plus-ui .overview{grid-template-rows:auto 1fr}}
+/* Dark: the same rules on a neutral near-black; colours lifted so they keep their contrast. Follows the system setting
+   unless the page's own light/dark choice says otherwise. */
+@media (prefers-color-scheme:dark){:root:root:not([data-theme=light]){color-scheme:dark;--bg:#0e1116;--surface:#0e1116;--surface-2:#1a1f27;--ink:#f2f4f7;--ink-2:#c3c9d3;--ink-3:#98a2b3;--line:#262c36;--line-2:#363d4a;--accent:#a593ff;--accent-2:#c3b8ff;--accent-soft:#25214a;--accent-ink:#0e1116;--bench:#f59a4d;--up:#47cd89;--up-soft:#10291d;--down:#ff8a80;--down-soft:#33191b;--warn:#f0c560;--warn-soft:#30280f;--k0:#a593ff;--c0:#a593ff;--k3:#f0b04a;--k5:#7d8696;--t-rule:#363d4a;--t-th-rule:#f2f4f7;--t-period:#f2f4f7;--t-nav-mark:#f2f4f7}}
+:root:root[data-theme=dark]{color-scheme:dark;--bg:#0e1116;--surface:#0e1116;--surface-2:#1a1f27;--ink:#f2f4f7;--ink-2:#c3c9d3;--ink-3:#98a2b3;--line:#262c36;--line-2:#363d4a;--accent:#a593ff;--accent-2:#c3b8ff;--accent-soft:#25214a;--accent-ink:#0e1116;--bench:#f59a4d;--up:#47cd89;--up-soft:#10291d;--down:#ff8a80;--down-soft:#33191b;--warn:#f0c560;--warn-soft:#30280f;--k0:#a593ff;--c0:#a593ff;--k3:#f0b04a;--k5:#7d8696;--t-rule:#363d4a;--t-th-rule:#f2f4f7;--t-period:#f2f4f7;--t-nav-mark:#f2f4f7}
+:root:root{
+ & .plus-ui section.ui-card{border-top:2px solid var(--ink);padding-top:14px}
+ & .plus-ui section.ui-card::before{counter-increment:exhibit;content:"Exhibit " counter(exhibit);order:-3;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+ & .plus-ui .ui-card-header h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:650}
+ & .plus-ui details.ui-card{border-top:1px solid var(--t-rule)}
+ & .plus-ui .ui-disclosure.ui-card>summary{padding:12px 0}
+ & .plus-ui .ui-disclosure.ui-card>.ui-disclosure-content{padding:0 0 12px}
+ & .plus-ui .ui-takeaway[data-direction=down]::after,& .plus-ui .ui-takeaway[data-direction=up]::after{content:"";display:block;width:40px;height:3px;margin-top:10px;background:var(--down)}
+ & .plus-ui .ui-takeaway[data-direction=up]::after{background:var(--up)}
+ & .plus-ui .ui-source{border-top:0;padding-top:0;font-size:11.5px}
+ & .plus-ui .ui-status{background:var(--surface-2)}
+ & .plus-ui .ui-select-value{background:var(--surface)}
+ & .foot{border-top:2px solid var(--ink)}
+ /* "Track a change you made": a second part of the Next steps page, opened by a heavy rule like an exhibit. */
+ & .plus-ui .ui-track{margin-top:56px}
+ & .plus-ui .ui-track-rule{border-top:2px solid var(--ink);margin:0 0 14px}
+ & .plus-ui .ui-track-title{font-size:var(--t-lede);font-weight:700;letter-spacing:-.01em;color:var(--ink);text-transform:none;margin:0 0 6px}
+ & .plus-ui .ui-track>.ui-caption{max-width:68ch;margin:0 0 24px}
+}
+
+:root:root .plus-ui{--proposal:#1a6bb0}
+@media (prefers-color-scheme:dark){:root:root:not([data-theme=light]) .plus-ui{--proposal:#62b3f0}}
+:root:root[data-theme=dark] .plus-ui{--proposal:#62b3f0}

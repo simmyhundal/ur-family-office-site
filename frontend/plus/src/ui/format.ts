@@ -13,3 +13,5 @@ export function formatDate(day:string|null|undefined,precision:'month'|'day'='mo
 export function moneyTick(v:number){const a=Math.abs(v);return `${v<0?'−':''}$${a>=1e6?`${+(a/1e6).toFixed(1)}m`:a>=1000?`${+(a/1000).toFixed(1)}k`:+a.toFixed(1)}`;}
 export const comparisonTone=(v:Numeric,tolerance=.005)=>!valid(v)||Math.abs(v)<=tolerance?'neutral':v>0?'up':'down';
 export const PERIODS=[['ytd','YTD'],['1y','1Y'],['3y','3Y'],['5y','5Y'],['inception','All']] as const;
+/** Plain words for a period, for takeaway headlines: "over the past year", "since the start". */
+export const periodWords=(period:string)=>({ytd:'so far this year','1y':'over the past year','3y':'over 3 years','5y':'over 5 years'} as Record<string,string>)[period]??'since the start';
