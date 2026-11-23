@@ -86,7 +86,7 @@ try {
       <span class="plan-status${on}">${esc(st)}</span>${clearanceHtml(p)}<h2>${esc(p.name)}</h2>
       ${bigPrice(p)}<p class="blurb">${esc(p.blurb)}${/^#[a-z-]+$/.test(p.teaser || "") ? ` <a class="teaser" href="../${p.teaser}">See what ${esc(p.name)} looks like →</a>` : ""}</p>
       <ul>${p.features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
-      <a class="btn${featured ? "" : " ghost"}" href="${esc(a.href)}"${ext}>${esc(a.label)}</a>${a.mode === "checkout" ? `<div class="promo" data-checkout="${esc(a.href)}" hidden></div>` : ""}${p.wink ? `<p class="wink">${esc(p.wink)}</p>` : ""}</article>`;
+      <a class="btn${featured ? "" : " ghost"}" href="${esc(a.href)}"${ext}>${esc(a.label)}</a>${a.mode === "checkout" && cfg.show_code_box ? `<div class="promo" data-checkout="${esc(a.href)}" hidden></div>` : ""}${p.wink ? `<p class="wink">${esc(p.wink)}</p>` : ""}</article>`;
   }).join("");
   for (const el of box.querySelectorAll(".promo[data-checkout]")) mountPromo(el, el.dataset.checkout);
   document.getElementById("tax-note").hidden = !plans.some((p) => p.tax_included);

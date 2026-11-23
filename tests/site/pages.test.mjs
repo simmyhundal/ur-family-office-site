@@ -128,7 +128,7 @@ test("Plus is $67/year, tax included, with an 'Area 67' clearance tag that never
 test("'Have a code?' ships hidden and empty on Home and Pricing; no list of codes anywhere on the site", async () => {
   const home = await read("");
   assert.match(home, /<div class="promo" data-promo hidden><\/div>/);
-  assert.match(await read("pricing/"), /a\.mode === "checkout" \? `<div class="promo" data-checkout=/);
+  assert.match(await read("pricing/"), /a\.mode === "checkout" && cfg\.show_code_box \? `<div class="promo" data-checkout=/);
   const json = (await Promise.all(["data/plans.json", "data/site.json"].map((f) => readFile(new URL(f, site), "utf8")))).join("");
   assert.doesNotMatch(json, /promo|coupon|codes?"/i);
 });
@@ -287,4 +287,12 @@ test("no visible 'pre-order' wording remains on the public pages", async () => {
     const t = await fs.readFile(new URL("../../site/" + f, import.meta.url), "utf8");
     assert.doesNotMatch(t.replace(/<!--[\s\S]*?-->/g, ""), /pre-?order/i, f);
   }
+});
+
+test("every 'Have a code?' box obeys show_code_box (issue 339)", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const pricing = await readFile(new URL("../../site/pricing/index.html", import.meta.url), "utf8");
+  const chrome = await readFile(new URL("../../site/js/chrome.mjs", import.meta.url), "utf8");
+  assert.match(pricing, /a\.mode === "checkout" && cfg\.show_code_box \? `<div class="promo"/);
+  assert.match(chrome, /cfg\.show_code_box \? promos : \[\]/);
 });
