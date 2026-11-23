@@ -101,7 +101,8 @@ test("?sample= picks a sample: 1 and household give the household, student the s
 test("hero answer reads well ahead, behind and level, and never hides the gap", () => {
   const base = { bench: "SPY", mixAnnual: 0.095, benchAnnual: 0.12 };
   const behind = heroAnswer({ ...base, diff: -25483.4 }, 5);
-  assert.equal(behind.question, "Did this household keep up with SPY?");
+  assert.equal(behind.question, "Did this household keep up with the S&P 500?", "SPY named as the index people know");
+  assert.equal(heroAnswer({ ...base, bench: "VTI", diff: 1 }, 5).question, "Did this household keep up with VTI?");
   assert.equal(behind.answer, "Not quite."); assert.equal(behind.tone, "behind");
   assert.equal(behind.rates, "+9.5% vs +12.0% a year"); assert.equal(behind.gap, "Behind by $25,483 after 5 years.");
   const ahead = heroAnswer({ ...base, mixAnnual: 0.13, diff: 1200 }, 5);

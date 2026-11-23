@@ -140,7 +140,7 @@ test("Try: manual entry after the sample, clear investment choices, and Plus-onl
   assert.equal([...ns.matchAll(/<a /g)].length, 1, "one link");
   assert.match(ns, /<a class="btn" href="\.\.\/signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(t, /id="try-own-button"[^>]*>Try your own investments/);
-  assert.match(t, /File imports are a Plus feature/);
+  assert.match(t, /<h2>Load your real account files with Plus<\/h2>/);
   assert.doesNotMatch(t, /type="file"|id="(?:positions|csv|drop|template-dl)"/);
   assert.match(t, /id="benchmark-picker"/);
   const app = await readFile(new URL("js/app.js", site), "utf8");
@@ -180,7 +180,7 @@ test("Home says each thing once (issue 239)", async () => {
   const home = await read("");
   for (const gone of ['class="trust-row"', 'class="hero-lesson"', 'class="float-card', 'class="benefits3"', 'class="founder-line"',
     'class="teach-line', 'class="final-cta', "See pricing", "is not a purchase", "Opens the sample household"]) assert.ok(!home.includes(gone), gone);
-  assert.match(home, /<h2 id="priv-h">Your numbers never leave your computer<\/h2>\s*<p><a href="privacy\/">/);
+  assert.match(home, /<h2 id="priv-h">Your numbers never leave your computer<\/h2>\s*<p>Read-only: UFO never moves money\. <a href="privacy\/">/);
   assert.match(home, /<a class="btn big" href="signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(home, /Would yours\?<\/b> <span>Try your own →/);
   const js = await readFile(new URL("js/home.mjs", site), "utf8");
@@ -264,7 +264,8 @@ test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not '
   for (const text of [plans, visibleText(home)]) assert.ok(!/\bmix\b|optimi[sz]|walk-forward|what-if|strateg/i.test(text), "Plus copy matches the product");
   const plus = JSON.parse(plans).plans.find((p) => p.id === "plus");
   assert.equal(plus.status, "selling");
-  assert.ok(plus.features.some((f) => /Conservative, Balanced, Growth, All stocks/.test(f) && /world or US-only/.test(f)));
+  assert.ok(plus.features.some((f) => /30% to 100% stocks/.test(f) && /world or US-only/.test(f)), "the portfolios Next steps really shows (30/70 to all stocks)");
+  assert.match(plus.blurb, /never moves money/, "read-only, said on the card");
   assert.ok(plus.features.includes("Your numbers never leave your computer"));
   const chrome = await readFile(new URL("js/chrome.mjs", site), "utf8");
   assert.match(chrome, /querySelectorAll\("\[data-plus-cta\]"\)/); assert.match(chrome, /upgradePlanLinks\(/);

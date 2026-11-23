@@ -5,10 +5,10 @@
       "name": "Free",
       "price": "$0",
       "status": "available",
-      "blurb": "Everything on this site.",
+      "blurb": "In your browser.",
       "features": [
-        "Your portfolio vs a benchmark",
-        "Return, risk and Sharpe ratio",
+        "Your portfolio vs the S&P 500",
+        "Return, risk and Sharpe ratio, explained",
         "Lessons and samples"
       ],
       "checkout_url": "",
@@ -19,10 +19,10 @@
       "name": "Plus",
       "price": "$67/year",
       "status": "selling",
-      "blurb": "A Mac app for all your accounts.",
+      "blurb": "A Mac app for all your accounts. It never moves money.",
       "features": [
-        "Every account side by side",
-        "Compare simple portfolios: Conservative, Balanced, Growth, All stocks; world or US-only",
+        "Every account side by side, from files you download",
+        "Compare with simple index portfolios: 30% to 100% stocks, world or US-only",
         "Your numbers never leave your computer",
         "Everything in Free"
       ],

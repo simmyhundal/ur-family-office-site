@@ -74,7 +74,7 @@ export function heroAnswer(h, years) {
   const span = years ? ` after ${years} years` : "";
   return {
     tone,
-    question: `Did this household keep up with ${h.bench}?`,
+    question: `Did this household keep up with ${h.bench === "SPY" ? "the S&P 500" : h.bench}?`, // SPY tracks the S&P 500
     answer: { ahead: "Yes.", behind: "Not quite.", even: "Neck and neck." }[tone],
     rates: `${spct(h.mixAnnual)} vs ${spct(h.benchAnnual)} a year`,
     gap: tone === "even" ? `The same money${span}.` : `${tone === "ahead" ? "Ahead" : "Behind"} by ${money(Math.abs(h.diff))}${span}.`,
