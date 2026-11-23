@@ -12,7 +12,7 @@ const TIPS = {
   year: "How fast the investments grew each year, as if $1 had stayed in the whole time. Your deposits and timing don't flatter it. Needs 12 months of history.",
   ups: "How much the monthly returns swing, shown as a yearly figure (volatility). Higher means a bumpier ride.",
   fall: "The biggest drop from a previous high point, before it recovered (maximum drawdown).",
-  sharpe: "Return above a safe cash rate (3-month Treasury bills) for each unit of ups and downs. Higher is better: below 0.5 is weak, around 1 is good, above 2 is rare. Needs 12 months of history.",
+  sharpe: "Return above a safe cash rate (3-month Treasury bills) for each unit of ups and downs. Higher is better: below 0.5 is weak, around 1 is good, above 2 is rare. Needs 6 months of history; under a year it is noisy.",
   ends: "What the money would be worth on the last date, before taxes.",
 };
 const tip = (label, key) => el("span", { class: "tip", tabindex: "0", "data-tip": TIPS[key], "aria-description": TIPS[key] }, label);
@@ -151,7 +151,8 @@ function card(kind, title, m) {
 function draw({ r, dates, monthly, bench, limitedBy, years }) {
   const { mix, bench: b } = r;
   $("period-line").textContent = `${monthYear(dates[0])} to ${monthYear(dates.at(-1))}.` +
-    (limitedBy ? ` Starts when ${limitedBy} does.` : years < 99 && mix.m.months < years * 12 ? " That is all the history there is." : "") + ` Put in ${money(mix.m.putIn)}.`;
+    (limitedBy ? ` Starts when ${limitedBy} does.` : years < 99 && mix.m.months < years * 12 ? " That is all the history there is." : "") + ` Put in ${money(mix.m.putIn)}.` +
+    (mix.m.sharpe != null && mix.m.months < 12 ? " Sharpe over under a year: noisy." : "");
   const mixName = state.mixName, benchName = bench;
   $("cards").replaceChildren(card("mix", mixName, mix.m), card("bench", benchName, b.m));
   const diff = mix.m.endValue - b.m.endValue;

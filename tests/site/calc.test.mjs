@@ -225,3 +225,14 @@ test("correlation and the 50/50 blend: known answers", () => {
   close(same.volMix, same.volAvg, 1e-12);
   close(priceReturns([100, 110, 99])[1], -0.1);
 });
+
+test("Sharpe and volatility start at six months, annualized return at twelve", () => {
+  const wavy = (n) => ({ A: Array.from({ length: n + 1 }, (_, i) => 100 * 1.01 ** i * (1 + 0.02 * Math.sin(i * 1.7))) });
+  for (const [n, sharpeOk, annualOk] of [[5, false, false], [6, true, false], [11, true, false], [12, true, true]]) {
+    const m = metrics(simulate({ prices: wavy(n), weights: { A: 1 }, initial: 100 }), 3);
+    assert.equal(m.months, n);
+    assert.equal(m.sharpe != null, sharpeOk, `sharpe at ${n}`);
+    assert.equal(m.volatility != null, sharpeOk, `volatility at ${n}`);
+    assert.equal(m.annualReturn != null, annualOk, `annual return at ${n}`);
+  }
+});

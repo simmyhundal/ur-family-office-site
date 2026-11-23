@@ -66,6 +66,8 @@ export function maxDrawdown(growth) {
   }
   return worst;
 }
+/** Sharpe and volatility from 6 monthly returns (noisy under a year); annualized return still needs 12. Same as metrics.py. */
+export const MIN_MONTHS_FOR_SHARPE = 6;
 export const monthlyRf = (annualPercent) => (1 + annualPercent / 100) ** (1 / 12) - 1;
 
 /** Headline numbers for one simulated path. `rf` is the cash rate in percent a year: a flat number, or an array with
@@ -78,6 +80,7 @@ export function metrics(sim, rf = null) {
   const known = rf != null && Array.from({ length: months }, (_, k) => rfAt(k)).every((x) => x != null);
   const excess = known ? sim.returns.map((r, k) => r - monthlyRf(rfAt(k))) : [];
   const enough = months >= 12;
+  const enoughSharpe = months >= MIN_MONTHS_FOR_SHARPE;
   const sd = months > 1 ? stdev(sim.returns) : NaN;
   const exSd = known && months > 1 ? stdev(excess) : NaN;
   return {
@@ -86,8 +89,8 @@ export function metrics(sim, rf = null) {
     gain: sim.values[sim.values.length - 1] - sim.putIn,
     totalReturn: g - 1, // time-weighted: ignores when money went in
     annualReturn: enough && g > 0 ? g ** (12 / months) - 1 : null,
-    volatility: enough ? sd * Math.sqrt(12) : null,
-    sharpe: known && enough && exSd > 1e-12 ? (mean(excess) / exSd) * Math.sqrt(12) : null,
+    volatility: enoughSharpe ? sd * Math.sqrt(12) : null,
+    sharpe: known && enoughSharpe && exSd > 1e-12 ? (mean(excess) / exSd) * Math.sqrt(12) : null,
     maxDrawdown: maxDrawdown(growth),
     months,
   };

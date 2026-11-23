@@ -77,11 +77,12 @@ export function commonMonths(lists:(number|null)[][]):number[]{
  for(let i=1;i<n;i++)if(lists.every(l=>l[i]!=null&&Number.isFinite(l[i] as number)))out.push(i);return out;
 }
 /** Annual return, volatility and Sharpe ratio over the given months. Mirrors metrics.annualize, volatility and sharpe in Python:
- * sample standard deviation times the square root of 12, nothing under 12 months. */
+ * sample standard deviation times the square root of 12, Sharpe and volatility from 6 months (noisy under a year), annual return from 12. */
+export const MIN_MONTHS_FOR_SHARPE=6;
 export function riskRow(rets:(number|null)[],rf:number[],months:number[]):RiskRow{
- if(months.length<12)return {ret:null,vol:null,sharpe:null};
+ if(months.length<MIN_MONTHS_FOR_SHARPE)return {ret:null,vol:null,sharpe:null};
  const r=months.map(i=>rets[i] as number),ex=months.map((i,j)=>r[j]-(rf[i]??0));
  const sd=(xs:number[])=>{const m=mean(xs);return Math.sqrt(xs.reduce((a,x)=>a+(x-m)**2,0)/(xs.length-1));};
  const growth=r.reduce((g,x)=>g*(1+x),1),sx=sd(ex);
- return {ret:growth>0?growth**(12/r.length)-1:null,vol:sd(r)*Math.sqrt(12),sharpe:sx>1e-12?mean(ex)/sx*Math.sqrt(12):null};
+ return {ret:months.length>=12&&growth>0?growth**(12/r.length)-1:null,vol:sd(r)*Math.sqrt(12),sharpe:sx>1e-12?mean(ex)/sx*Math.sqrt(12):null};
 }
