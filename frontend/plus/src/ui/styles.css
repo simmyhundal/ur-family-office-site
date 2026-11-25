@@ -69,3 +69,5 @@
 .plus-ui .ui-point-readout{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0;font-size:14px;color:var(--ink-2)}.plus-ui .ui-point-readout b{color:var(--ink);flex-basis:100%}
 
 .plus-ui .ui-track{margin-top:24px}.plus-ui .ui-track-rule{border:0;border-top:2px solid var(--line);margin:0 0 20px}.plus-ui .ui-track-title{font-size:20px;margin:0 0 4px}.plus-ui .ui-track>.ui-caption{margin:0 0 16px}
+.plus-ui .ui-table td[data-direction=up]{color:var(--up)}.plus-ui .ui-table td[data-direction=down]{color:var(--down)}.plus-ui .tax-missing{color:var(--ink-3);font-size:12px;white-space:normal;text-align:right}.plus-ui .tax-share{font-weight:450;color:var(--ink-3);font-size:14px;margin-left:6px}.plus-ui .tax-group+.tax-group,.plus-ui .tax-account+.tax-account,.plus-ui .tax-total{margin-top:16px}.plus-ui .tax-foot{text-align:center}
+.plus-ui .tax .ui-table th,.plus-ui .tax .ui-table td{padding:10px 5px}.plus-ui .tax .ui-table th:first-child{min-width:0}
