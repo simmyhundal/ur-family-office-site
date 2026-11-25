@@ -71,3 +71,15 @@
 .plus-ui .ui-track{margin-top:24px}.plus-ui .ui-track-rule{border:0;border-top:2px solid var(--line);margin:0 0 20px}.plus-ui .ui-track-title{font-size:20px;margin:0 0 4px}.plus-ui .ui-track>.ui-caption{margin:0 0 16px}
 .plus-ui .ui-table td[data-direction=up]{color:var(--up)}.plus-ui .ui-table td[data-direction=down]{color:var(--down)}.plus-ui .tax-missing{color:var(--ink-3);font-size:12px;white-space:normal;text-align:right}.plus-ui .tax-share{font-weight:450;color:var(--ink-3);font-size:14px;margin-left:6px}.plus-ui .tax-group+.tax-group,.plus-ui .tax-account+.tax-account,.plus-ui .tax-total{margin-top:16px}.plus-ui .tax-foot{text-align:center}
 .plus-ui .tax .ui-table th,.plus-ui .tax .ui-table td{padding:10px 5px}.plus-ui .tax .ui-table th:first-child{min-width:0}
+.plus-ui .ui-pick{border:2px solid var(--ink);padding:20px;background:var(--surface);border-radius:var(--ui-radius);margin-bottom:var(--ui-gap)}
+.plus-ui .ui-pick-h{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin:0 0 12px;color:var(--ink-2)}
+.plus-ui .ui-pick .ui-fieldset{margin-top:16px}
+.plus-ui .ui-gate-go{margin-top:16px;border:0;border-radius:2px;min-height:46px;padding:10px 20px;font:inherit;font-weight:700;background:var(--ink);color:var(--bg);cursor:pointer}
+.plus-ui .ui-gate-go:disabled{background:var(--surface-2);color:var(--ink-3);cursor:default}
+.plus-ui .ui-choice-summary{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 var(--ui-gap);padding:10px 16px;border:1px solid var(--line);border-radius:var(--ui-radius);background:var(--surface);font-weight:650}
+.plus-ui .ui-choice-summary button{border:0;background:none;font:inherit;font-weight:650;color:var(--accent);text-decoration:underline;cursor:pointer;min-height:44px;padding:0 4px}
+.plus-ui .ui-gate{transition:filter .45s,opacity .45s}
+.plus-ui .ui-gate.blur{filter:blur(7px) saturate(.6);opacity:.4;pointer-events:none;user-select:none}
+.plus-ui .ui-gate-ghost{display:grid;gap:var(--ui-gap)}.plus-ui .ui-gate-ghost i{display:block;height:140px;border-radius:var(--ui-radius);background:var(--surface-2)}
+@media(prefers-reduced-motion:reduce){.plus-ui .ui-gate{transition:none}}
+@media(max-width:640px){.plus-ui .ui-pick{padding:16px}}

@@ -2,6 +2,7 @@
 // account replay on the right. Information, not advice. Nothing here places orders or moves money; draft trades are read-only.
 import {useState} from 'react';
 import {AdoptionTracking} from './AdoptionTracking';
+import {ChoiceGate} from './ui/ChoiceGate';
 import {Card,CardHeader,CardStack,PageHeader,SplitLayout,SelectField,CheckRow,Disclosure,StatusMessage,DataTable,AllocationBreakdown,Metric,MetricPair,ComparisonSummary,DataCoverage} from './ui/components';
 import {TimeSeriesChart,RiskScatterChart,type ScatterPoint} from './ui/charts';
 import {money,percent,ratio,formatDate} from './ui/format';
@@ -11,18 +12,26 @@ export type {NextData} from './next-model';
 const WRAPPER:Record<string,string>={taxable:'Taxable',roth_ira:'Roth IRA',traditional_ira:'Traditional IRA',hsa:'HSA','401k':'401(k)'};
 const tradeName=(s:string)=>FUND_NAMES[s]??s;
 
-function Picker({list,mix,onMix,n,chosen,onChosen}:{list:Mix[];mix?:Mix;onMix(v:string):void;n:NextPayload;chosen:string[];onChosen(ids:string[]):void}){
- const accounts=n.accounts??[],today=n.today,picked=accounts.filter(a=>chosen.includes(a.id));
- return <Card><SelectField label="Proposed portfolio" tone="proposal" value={mix?.key??''} onChange={onMix} options={list.map(m=>({value:m.key,label:title(m),group:m.group}))}/>
- {mix&&<><h3>If started today</h3><AllocationBreakdown weights={mix.weights} names={FUND_NAMES} tone="proposal"/><p className="small">{mix.desc}</p></>}
- <div className="ui-current"><Disclosure title="Your current portfolio">{today&&today.total>0?<><p><b className="own-value">{money(today.total)}</b> across your accounts</p>
-  <AllocationBreakdown weights={Object.fromEntries([...today.funds.slice(0,8).map(f=>[f.symbol,f.weight]),...today.lines.map(l=>[l.label,l.weight])])} names={FUND_NAMES}/>
-  {today.funds.length>8&&<p className="small">Plus {today.funds.length-8} smaller holdings.</p>}</>:<StatusMessage kind="missing">Current holdings are unavailable.</StatusMessage>}</Disclosure></div>
+/** The choice itself: portfolio and accounts. Nothing is pre-filled; it lives inside the gate's picker. */
+function Choice({list,mix,onMix,n,chosen,onChosen}:{list:Mix[];mix?:Mix;onMix(v:string):void;n:NextPayload;chosen:string[];onChosen(ids:string[]):void}){
+ const accounts=n.accounts??[],picked=accounts.filter(a=>chosen.includes(a.id));
+ return <>{/* an empty value shows a blank select until a portfolio is picked */}
+ <SelectField label="Proposed portfolio" tone="proposal" value={mix?.key??''} onChange={onMix} options={[{value:'',label:'Choose a portfolio',disabled:true},...list.map(m=>({value:m.key,label:title(m),group:m.group}))]}/>
  {accounts.length?<fieldset className="ui-fieldset"><legend>Accounts to change</legend>
   {accounts.map(a=><CheckRow key={a.id} tone="proposal" checked={chosen.includes(a.id)} onChange={on=>onChosen(on?[...chosen,a.id]:chosen.filter(x=>x!==a.id))} title={a.label}
    detail={`${WRAPPER[a.wrapper??'']??'Account'} · ${chosen.includes(a.id)?'would change':'stays as is'}`} value={money(a.value)}/>)}
   <p className="small">{picked.length?<><b className="proposal-value">{money(picked.reduce((s,a)=>s+(a.value??0),0))}</b> in {picked.length} of {accounts.length} accounts</>:'No accounts checked. Nothing changes.'}</p>
- </fieldset>:null}
+ </fieldset>:null}</>;
+}
+
+/** What the confirmed portfolio looks like, and your current one; draft trades stay shelved. */
+function Details({mix,n,chosen}:{mix?:Mix;n:NextPayload;chosen:string[]}){
+ const accounts=n.accounts??[],today=n.today,picked=accounts.filter(a=>chosen.includes(a.id));
+ return <Card>
+ {mix&&<><h3>If started today</h3><AllocationBreakdown weights={mix.weights} names={FUND_NAMES} tone="proposal"/><p className="small">{mix.desc}</p></>}
+ <div className="ui-current"><Disclosure title="Your current portfolio">{today&&today.total>0?<><p><b className="own-value">{money(today.total)}</b> across your accounts</p>
+  <AllocationBreakdown weights={Object.fromEntries([...today.funds.slice(0,8).map(f=>[f.symbol,f.weight]),...today.lines.map(l=>[l.label,l.weight])])} names={FUND_NAMES}/>
+  {today.funds.length>8&&<p className="small">Plus {today.funds.length-8} smaller holdings.</p>}</>:<StatusMessage kind="missing">Current holdings are unavailable.</StatusMessage>}</Disclosure></div>
  {SHELVED_FEATURES.draftTrades&&picked.length&&mix?<Disclosure title="Draft buys and sells (read-only)"><p className="small">From each account’s holdings to these weights, at its latest balance. UFO never places orders. Check taxes, fees and surrender charges first.</p>
   {picked.map(a=>{const t=draftTrades(a,mix.weights);return <div className="ui-draft" key={a.id}><h3>{a.label}</h3>{t==null?<StatusMessage kind="missing">No fund holdings to trade.</StatusMessage>:t.length?t.map(x=><div className="ui-draft-row" key={x.symbol}><span>{tradeName(x.symbol)}</span><strong>{x.amount<0?'Sell':'Buy'} {money(Math.abs(x.amount))}</strong></div>):<p className="small">Already at these weights.</p>}</div>;})}
  </Disclosure>:null}
@@ -103,21 +112,30 @@ function Replay({n,mix,chosen,accounts}:{n:NextPayload;mix?:Mix;chosen:string[];
  </Card>;
 }
 
-export function NextSteps({data,benchmark}:{data:NextData;onNavigate?(tab:string):void;benchmark?:string;onBenchmark?(symbol:string):void}){
+// Last confirmed choice, kept for this session only (module memory; never saved to disk).
+let remembered:{pick:string;chosen:string[]}|null=null;
+
+export function NextSteps({data,benchmark,initial}:{data:NextData;initial?:{pick:string;chosen:string[]};onNavigate?(tab:string):void;benchmark?:string;onBenchmark?(symbol:string):void}){
  const n=data.nextSteps,list=portfolios(n),accounts=n?.accounts??[];
- const [pick,setPick]=useState(''),[chosen,setChosen]=useState<string[]|null>(null);
+ const start=initial??remembered,ok=start&&list.some(m=>m.key===start.pick)?start:null;
+ const [pick,setPick]=useState(ok?.pick??''),[chosen,setChosen]=useState<string[]>(ok?.chosen.filter(id=>accounts.some(a=>a.id===id))??[]),[confirmed,setConfirmed]=useState(!!ok);
  if(!n)return null;
- const mix=list.find(m=>m.key===pick)??list.find(m=>m.key===defaultPortfolio(list));
- const first=accounts.find(a=>a.holdings?.length),selected=chosen??(first?[first.id]:[]);
+ const mix=list.find(m=>m.key===pick);
  const standins=mix?.compare?.standins??[];
+ const confirm=()=>{remembered={pick,chosen};setConfirmed(true);};
  return <CardStack className="next-steps">
  <PageHeader title="Next steps"/>
  {n.error?<StatusMessage kind="error">{n.error}</StatusMessage>:<>
- <SplitLayout side={<Picker list={list} mix={mix} onMix={setPick} n={n} chosen={selected} onChosen={setChosen}/>}>
-  <Replay n={n} mix={mix} chosen={selected} accounts={accounts}/>
-  <RiskReturn n={n} mix={mix} chosen={selected} accounts={accounts} benchmark={benchmark??data.benchmark}/>
-  {PRO_FEATURES.sharpeOverTime&&<SharpeOverTime n={n} mix={mix} chosen={selected} accounts={accounts}/>}
+ <ChoiceGate heading="Your choice" confirmed={confirmed&&!!mix} canConfirm={!!mix} confirmLabel="Show results" onConfirm={confirm} onChange={()=>setConfirmed(false)}
+  summary={mix?`${title(mix)} · ${chosen.length} of ${accounts.length} accounts`:''}
+  picker={<Choice list={list} mix={mix} onMix={setPick} n={n} chosen={chosen} onChosen={setChosen}/>}
+  placeholder={<div className="ui-gate-ghost"><i/><i/></div>}>
+ <SplitLayout side={<Details mix={mix} n={n} chosen={chosen}/>}>
+  <Replay n={n} mix={mix} chosen={chosen} accounts={accounts}/>
+  <RiskReturn n={n} mix={mix} chosen={chosen} accounts={accounts} benchmark={benchmark??data.benchmark}/>
+  {PRO_FEATURES.sharpeOverTime&&<SharpeOverTime n={n} mix={mix} chosen={chosen} accounts={accounts}/>}
  </SplitLayout>
+ </ChoiceGate>
  {n.adoptionTracking&&<section className="ui-track" aria-labelledby="track-change"><hr className="ui-track-rule"/>
   <h2 id="track-change" className="ui-track-title">Track a change you made</h2>
   <p className="ui-caption">Separate from the proposed portfolio above: once you have changed your real holdings, this compares what happened with keeping the old ones.</p>

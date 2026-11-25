@@ -50,9 +50,13 @@ test('public household runs all three shared tabs and changes benchmark, period 
   await until(()=>details.textContent!.includes(account.selectedOptions[0].textContent!));
   w.UFOBridge.navigate('next');const next=w.document.getElementById('react-next')!;
   await until(()=>!next.hidden);
-  assert.match(next.textContent!,/Risk versus return/);
+  assert.ok(next.querySelector('.ui-gate.blur'),'Next steps starts locked until a choice is confirmed');
   const rule=next.querySelector('select[aria-label="Proposed portfolio"]') as HTMLSelectElement;
   rule.value='fixed:SPY-80';rule.dispatchEvent(new w.Event('change',{bubbles:true}));
+  (next.querySelector('input[type=checkbox]') as HTMLInputElement).click();
+  await until(()=>!(next.querySelector('.ui-gate-go') as HTMLButtonElement).disabled);
+  (next.querySelector('.ui-gate-go') as HTMLButtonElement).click();
+  await until(()=>!next.querySelector('.ui-gate.blur'));assert.match(next.textContent!,/Risk versus return/);
   await until(()=>next.querySelector('#evidence [data-point="proposed"]')?.getAttribute('aria-label')?.startsWith('US large cap 80/20 · SPY/BND alone')===true);
   assert.ok(next.querySelector('[data-series="moved"]'),'Sharpe over time compares the checked account');
   for(const id of ['react-overview','react-details','react-next']){const t=w.document.getElementById(id)!.textContent!;
