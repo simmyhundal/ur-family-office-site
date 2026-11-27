@@ -44,7 +44,7 @@ const FUND_GROUPS = [
   [["JEPI"], "Fund · US stocks with an options-based income strategy."],
 ];
 const FUND_DESCRIPTIONS = Object.fromEntries(FUND_GROUPS.flatMap(([symbols, description]) => symbols.map((s) => [s, description])));
-const COMPANY_STOCKS = new Set(["AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "META", "TSLA", "BRK-B", "JPM", "V", "UNH", "COST", "KO", "JNJ"]);
+export const COMPANY_STOCKS = new Set(["AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "META", "TSLA", "BRK-B", "JPM", "V", "UNH", "COST", "KO", "JNJ"]);
 
 export function investmentChoices(symbols, labels) {
   return symbols.map((symbol) => ({

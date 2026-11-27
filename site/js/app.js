@@ -4,7 +4,8 @@ import { $, el, svg, money, pct, spct, monthYear, revealOnScroll, saveMix } from
 import { runResult, sampleConfig, defaultBenchmark, headline, SAMPLES, sampleId } from "./result.mjs";
 import { loadPrices } from "./data.mjs";
 import { savePortfolio, listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
-import { investmentChoices, createFundPicker } from "./fund-picker.mjs";
+import { investmentChoices, createFundPicker, COMPANY_STOCKS } from "./fund-picker.mjs";
+import { topEtfs } from "./top-etfs.mjs";
 import { encodeShare, decodeShare, cardContent } from "./share.mjs";
 
 const TIPS = {
@@ -275,7 +276,13 @@ function drawTable(dates, an, bn, a, b, put) {
 // Invented people with invented deposits; the prices are the real bundled ones (or the demo set when running on demo data).
 function drawSampleNote() {
   const note = $("sample-note"), S = SAMPLES[state.sample];
-  note.hidden = !S;
+  note.hidden = !S && state.sample !== "top5";
+  if (state.sample === "top5") {
+    const { candidates } = topEtfs(state.data, COMPANY_STOCKS);
+    note.replaceChildren(el("p", {}, el("b", {}, "Top 5 ETFs, last 5 years."),
+      ` Picked with hindsight from our list of ${candidates} funds. Past winners often don't repeat.`));
+    return;
+  }
   if (!S) return;
   const head = el("p", {}, el("b", {}, `${S.name}.`), ` ${S.who}: ${money(S.initial)} to start, then ${money(S.monthly)} a month.`);
   const parts = [head];
@@ -291,6 +298,16 @@ function loadSample(id = "household") {
   $("initial").value = c.initial; $("monthly").value = c.monthly; $("strategy").value = c.strategy; $("benchmark").value = c.benchmark;
   state.years = c.years;
   document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(Number(o.dataset.years) === c.years)));
+  setup();
+  $("preset").value = "custom";
+}
+
+function loadTop5() {
+  const { picks } = topEtfs(state.data, COMPANY_STOCKS);
+  if (picks.length < 5) { $("error").textContent = "The top 5 needs five funds with 5 full years of prices."; return; }
+  state.rows = picks.map((p) => ({ sym: p.sym, w: 20 })); state.mixName = "Top 5 ETFs, last 5 years"; state.sample = "top5";
+  state.years = 5;
+  document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(Number(o.dataset.years) === 5)));
   setup();
   $("preset").value = "custom";
 }
@@ -456,6 +473,7 @@ $("toggle-table").addEventListener("click", () => {
 });
 $("sample").addEventListener("click", () => loadSample("household"));
 $("sample-student").addEventListener("click", () => loadSample("student"));
+$("top5").addEventListener("click", loadTop5);
 
 revealOnScroll();
 load().catch((e) => { $("error").textContent = "Could not load prices: " + e.message; });
