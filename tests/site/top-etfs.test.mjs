@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { topEtfs } from "../../site/js/top-etfs.mjs";
+import { topEtfs, top5Window } from "../../site/js/top-etfs.mjs";
 
 const dates = Array.from({ length: 62 }, (_, i) => `d${i}`);
 const ramp = (g) => dates.map((_, i) => 100 * (1 + g) ** i);
@@ -25,4 +25,21 @@ test("uses the last 60 completed months, not all history", () => {
 });
 test("too little history gives no picks", () => {
   assert.deepEqual(topEtfs({ dates: dates.slice(0, 30), series: { A: ramp(0.01).slice(0, 30) } }).picks, []);
+});
+
+test("top 5 window follows the horizon, and its name says which", () => {
+  const d = { dates: Array.from({ length: 133 }, (_, i) => `${2015 + Math.floor((i + 9) / 12)}-${String(((i + 9) % 12) + 1).padStart(2, "0")}-28`) };
+  assert.deepEqual(top5Window(d, 1), { months: 12, name: "Top 5 ETFs, last 1 year" });
+  assert.deepEqual(top5Window(d, 3), { months: 36, name: "Top 5 ETFs, last 3 years" });
+  assert.deepEqual(top5Window(d, 10), { months: 120, name: "Top 5 ETFs, last 10 years" });
+  assert.deepEqual(top5Window(d, 99), { months: 132, name: "Top 5 ETFs since 2015" });
+  assert.equal(top5Window({ dates: d.dates.slice(0, 50) }, 10).months, 49, "longer than the data: use all of it");
+});
+
+test("a shorter window can pick different funds", () => {
+  const dates = Array.from({ length: 61 }, (_, i) => `d${i}`);
+  // LATE only rises in the last year; STEADY rises the whole time
+  const series = { STEADY: dates.map((_, i) => 100 * 1.02 ** i), LATE: dates.map((_, i) => (i < 48 ? 100 : 100 * 1.08 ** (i - 48))) };
+  assert.equal(topEtfs({ dates, series }, new Set(), 1, 60).picks[0].sym, "STEADY");
+  assert.equal(topEtfs({ dates, series }, new Set(), 1, 12).picks[0].sym, "LATE");
 });

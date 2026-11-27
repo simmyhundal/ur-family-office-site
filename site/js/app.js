@@ -5,7 +5,7 @@ import { runResult, sampleConfig, defaultBenchmark, headline, excessLine, SAMPLE
 import { loadPrices } from "./data.mjs";
 import { listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
 import { investmentChoices, createFundPicker, COMPANY_STOCKS } from "./fund-picker.mjs";
-import { topEtfs } from "./top-etfs.mjs";
+import { topEtfs, top5Window } from "./top-etfs.mjs";
 import { decodeShare } from "./share.mjs"; // old share links still open; Try no longer makes new ones
 
 const TIPS = {
@@ -271,7 +271,7 @@ function drawSampleNote() {
   note.hidden = !S && state.sample !== "top5";
   if (state.sample === "top5") {
     const { candidates } = topEtfs(state.data, COMPANY_STOCKS);
-    note.replaceChildren(el("p", {}, el("b", {}, "Top 5 ETFs, last 5 years."),
+    note.replaceChildren(el("p", {}, el("b", {}, `${state.mixName}.`),
       ` Picked with hindsight from our list of ${candidates} funds. Past winners often don't repeat.`));
     return;
   }
@@ -294,19 +294,21 @@ function loadSample(id = "household") {
   $("preset").value = "custom";
 }
 
-function loadTop5() {
-  const { picks } = topEtfs(state.data, COMPANY_STOCKS);
-  if (picks.length < 5) { $("error").textContent = "The top 5 needs five funds with 5 full years of prices."; return; }
-  state.rows = picks.map((p) => ({ sym: p.sym, w: 20 })); state.mixName = "Top 5 ETFs, last 5 years"; state.sample = "top5";
-  state.years = 5;
-  document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(Number(o.dataset.years) === 5)));
+// The top 5 follows the chosen horizon: ranked over the same window the result shows, and named for it.
+function loadTop5(years = state.sample === "top5" ? state.years : 5) {
+  const { months, name } = top5Window(state.data, years);
+  const { picks } = topEtfs(state.data, COMPANY_STOCKS, 5, months);
+  if (picks.length < 5) { $("error").textContent = "The top 5 needs five funds with prices for the whole period."; return; }
+  state.rows = picks.map((p) => ({ sym: p.sym, w: 20 })); state.mixName = name; state.sample = "top5";
+  state.years = years;
+  document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(Number(o.dataset.years) === years)));
   setup();
   $("preset").value = "custom";
 }
 
 // ---------- the row of portfolio choices above the result ----------
 const PICKS = [["sample", "Sample household", () => loadSample("household")], ["student", "Sample student", () => loadSample("student")],
-  ["top5", "Top 5 ETFs, last 5 years", loadTop5], ["own", "Your own", startTyping]];
+  ["top5", "Top 5 ETFs", () => loadTop5(5)], ["own", "Your own", startTyping]];
 function drawPresetRow() {
   const row = $("preset-row");
   const mk = (key, label, fn) => { const b = el("button", { type: "button", class: "secondary", "data-pick": key, "aria-pressed": "false" }, label); b.addEventListener("click", fn); return b; };
@@ -411,6 +413,7 @@ for (const id of ["benchmark", "strategy", "initial", "monthly"]) $(id).addEvent
 document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => {
   state.years = Number(b.dataset.years);
   document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+  if (state.sample === "top5") { loadTop5(state.years); return; } // re-rank for the new horizon so the name and picks match it
   render();
 }));
 
