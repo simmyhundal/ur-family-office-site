@@ -6,12 +6,13 @@ import { mergeConfig, headTags, OG_IMAGE } from "../../site/js/config.mjs";
 
 const site = new URL("../../site/", import.meta.url);
 const cfg = mergeConfig(JSON.parse(await readFile(new URL("data/site.json", site), "utf8")));
-// Every hand-written page (plus-demo/ is a built page, tested on its own below).
+// Every hand-written page (plus-demo/ is a built page and mothership-demo/ a standalone mock; both are tested on their own).
+const STANDALONE = ["plus-demo", "mothership-demo"];
 async function pages(dir = "") {
   const out = [];
   for (const e of await readdir(new URL(dir, site), { withFileTypes: true })) {
-    if (e.isDirectory() && e.name !== "plus-demo") out.push(...await pages(dir + e.name + "/"));
-    else if (e.name === "index.html" && dir !== "plus-demo/") out.push(dir);
+    if (e.isDirectory() && !STANDALONE.includes(e.name)) out.push(...await pages(dir + e.name + "/"));
+    else if (e.name === "index.html" && !STANDALONE.some((d) => dir === d + "/")) out.push(dir);
   }
   return out;
 }
@@ -316,4 +317,10 @@ test("header CTA: Get Plus -> pricing/#plus on every page", async () => {
   }
   assert.ok(n >= 9, `checked ${n} pages`);
   assert.match(await read("pricing/"), /<article id="\$\{esc\(p\.id\)\}"/);
+});
+
+test("Mothership demo: standalone mock, invented family, no Exhibit labels", async () => {
+  const html = await read("mothership-demo/");
+  assert.match(html, /Invented/);
+  assert.doesNotMatch(html, /Exhibit/i);
 });
