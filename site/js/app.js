@@ -1,12 +1,12 @@
 // The page. All data stays in the browser: no network calls except loading the bundled demo prices.
 import { compare } from "./calc.mjs";
 import { $, el, svg, money, pct, spct, monthYear, revealOnScroll, saveMix } from "./util.mjs";
-import { runResult, sampleConfig, defaultBenchmark, headline, SAMPLES, sampleId } from "./result.mjs";
+import { runResult, sampleConfig, defaultBenchmark, headline, excessLine, SAMPLES, sampleId } from "./result.mjs";
 import { loadPrices } from "./data.mjs";
-import { savePortfolio, listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
+import { listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
 import { investmentChoices, createFundPicker, COMPANY_STOCKS } from "./fund-picker.mjs";
 import { topEtfs } from "./top-etfs.mjs";
-import { encodeShare, decodeShare, cardContent } from "./share.mjs";
+import { decodeShare } from "./share.mjs"; // old share links still open; Try no longer makes new ones
 
 const TIPS = {
   gain: "Ending value minus the money you put in, before taxes.",
@@ -14,6 +14,7 @@ const TIPS = {
   ups: "How much the monthly returns swing, shown as a yearly figure (volatility). Higher means a bumpier ride.",
   fall: "The biggest drop from a previous high point, before it recovered (maximum drawdown).",
   sharpe: "Return above a safe cash rate (3-month Treasury bills) for each unit of ups and downs. Higher is better: below 0.5 is weak, around 1 is good, above 2 is rare. Needs 6 months of history; under a year it is noisy.",
+  excess: "How much more (or less) a year than the benchmark.",
   ends: "What the money would be worth on the last date, before taxes.",
 };
 const tip = (label, key) => el("span", { class: "tip", tabindex: "0", "data-tip": TIPS[key], "aria-description": TIPS[key] }, label);
@@ -48,8 +49,9 @@ function setup() {
   // Demo data and a visitor's own file get a banner; the built-in real prices get a small plain date line (issue 225).
   const note = state.demo ? "Demo data: invented funds, not real prices." : state.source ? "" : `Your file: ${symbols().length} funds.`;
   $("data-banner").textContent = note; $("data-banner").hidden = !note;
-  $("data-date").textContent = state.source ? `${state.source} Month-end closes. Cash rate: 3-month Treasury bills from FRED.` : "";
+  $("data-date").textContent = state.source ? `${state.source} Month-end closes, completed months only. Cash rate: 3-month Treasury bills from FRED.` : "";
   drawSampleNote();
+  drawPresetRow();
   const benchmarkPicker = createFundPicker({ id: "benchmark-choice", label: "Benchmark", symbol: $("benchmark").value, choices: choices(),
     onChange: (symbol) => { $("benchmark").value = symbol; render(); } });
   $("benchmark-picker").replaceChildren(benchmarkPicker.element);
@@ -84,10 +86,10 @@ function mixWeights() {
   return out;
 }
 
-let lastR = null; // the latest result, for the share card
 
 function render() {
   drawSampleNote();
+  markPresetRow();
   $("try-own").hidden = !state.sample;
   const err = $("error");
   err.textContent = "";
@@ -102,13 +104,11 @@ function render() {
     draw({ r, dates: data.dates, monthly, bench, limitedBy: data.limitedBy, years: state.years });
     drawOthers({ data, mix, others, initial, monthly, mixEnd: r.mix.m.endValue });
     drawSummary(headline(res, state.mixName));
-    lastR = { r, bench, mix, years: state.years, strategy: $("strategy").value, initial, monthly };
-    if (!$("share-panel").hidden) drawSharePanel();
     saveMix({ rows: state.rows, benchmark: bench, initial, monthly, strategy: $("strategy").value, years: state.years, name: state.mixName, sample: state.sample });
   } catch (e) {
     err.textContent = e.message;
     for (const id of ["verdict", "period-line", "chart-desc", "headline", "headline-sub"]) $(id).textContent = "";
-    for (const id of ["cards", "chart", "legend", "table-wrap", "benchmarks", "hl-stats"]) $(id).replaceChildren();
+    for (const id of ["cards", "chart", "legend", "benchmarks", "hl-stats"]) $(id).replaceChildren();
     $("next-step").hidden = true;
   }
 }
@@ -124,7 +124,9 @@ function drawSummary(h) {
     $("headline").textContent = `${h.name} ended at ${money(h.mixEnd)}; ${h.bench} at ${money(h.benchEnd)}.`;
     $("headline-sub").textContent = "A yearly rate needs 12 months of prices; open the details for the rest.";
   } else {
-    $("headline").textContent = `${h.name} vs ${h.bench}: ${spct(a)} vs ${spct(b)} a year`;
+    const hl = $("headline");
+    hl.textContent = `${h.name} vs ${h.bench}: `;
+    hl.append(el("span", { class: "tip", tabindex: "0", "data-tip": TIPS.excess, "aria-description": TIPS.excess }, excessLine(a, b)));
     $("headline-sub").textContent = (h.diff === 0 ? "The same result." : `${h.name} finished ${money(Math.abs(h.diff))} ${h.diff > 0 ? "ahead of" : "behind"} ${h.bench}.`) +
       ` ${monthYear(h.from)} through ${monthYear(h.to)}.`;
   }
@@ -160,7 +162,6 @@ function draw({ r, dates, monthly, bench, limitedBy, years }) {
   $("verdict").textContent = diff === 0 ? "Same result."
     : `${mixName} finished ${money(Math.abs(diff))} ${diff > 0 ? "ahead of" : "behind"} ${bench}. Worst fall: ${pct(Math.abs(mix.m.maxDrawdown))} vs ${pct(Math.abs(b.m.maxDrawdown))}.`;
   drawChart({ dates, series: [{ name: mixName, key: "mix", color: "var(--mix)", v: mix.sim.values }, { name: benchName, key: "bench", color: "var(--bench)", v: b.sim.values }], put: monthly > 0 ? mix.sim.contributed : null });
-  drawTable(dates, mixName, benchName, mix.sim.values, b.sim.values, monthly > 0 ? mix.sim.contributed : null);
 }
 
 // ---------- chart ----------
@@ -263,15 +264,6 @@ function drawChart({ dates, series, put }) {
   $("chart-desc").textContent = `${state.mixName} goes from ${money(a.v[0])} to ${money(a.v.at(-1))}; the benchmark from ${money(b.v[0])} to ${money(b.v.at(-1))}. Arrow keys step through months.`;
 }
 
-function drawTable(dates, an, bn, a, b, put) {
-  const head = ["Month", an, bn, ...(put ? ["What you put in"] : [])];
-  const table = el("table", {}, el("thead", {}, el("tr", {}, ...head.map((h) => el("th", { scope: "col" }, h)))));
-  const body = el("tbody");
-  dates.forEach((d, i) => body.append(el("tr", {}, el("td", {}, monthYear(d)), el("td", {}, money(a[i])), el("td", {}, money(b[i])), ...(put ? [el("td", {}, money(put[i]))] : []))));
-  table.append(body);
-  $("table-wrap").replaceChildren(el("div", { class: "table-scroll" }, table));
-}
-
 // ---------- sample portfolios ----------
 // Invented people with invented deposits; the prices are the real bundled ones (or the demo set when running on demo data).
 function drawSampleNote() {
@@ -312,6 +304,27 @@ function loadTop5() {
   $("preset").value = "custom";
 }
 
+// ---------- the row of portfolio choices above the result ----------
+const PICKS = [["sample", "Sample household", () => loadSample("household")], ["student", "Sample student", () => loadSample("student")],
+  ["top5", "Top 5 ETFs, last 5 years", loadTop5], ["own", "Your own", startTyping]];
+function drawPresetRow() {
+  const row = $("preset-row");
+  const mk = (key, label, fn) => { const b = el("button", { type: "button", class: "secondary", "data-pick": key, "aria-pressed": "false" }, label); b.addEventListener("click", fn); return b; };
+  row.replaceChildren(
+    ...state.presets.map((p, i) => mk("preset" + i, p.name, () => { $("preset").value = String(i); $("preset").dispatchEvent(new Event("change")); })),
+    ...PICKS.map(([k, l, f]) => mk(k, l, f)));
+  markPresetRow();
+}
+function markPresetRow() {
+  const cur = state.sample === "household" ? "sample" : state.sample === "student" ? "student" : state.sample === "top5" ? "top5"
+    : state.presets.some((p) => p.name === state.mixName) ? "preset" + state.presets.findIndex((p) => p.name === state.mixName) : "own";
+  document.querySelectorAll("#preset-row button").forEach((b) => {
+    const on = b.dataset.pick === cur;
+    b.setAttribute("aria-pressed", String(on));
+    if (on) { const row = b.parentElement; row.scrollLeft = Math.max(0, b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2 - row.offsetLeft); }
+  });
+}
+
 // ---------- apply a saved mix or a shared link ----------
 function applyConfig(c, { fromLink = false } = {}) {
   const have = symbols();
@@ -334,10 +347,6 @@ function applyConfig(c, { fromLink = false } = {}) {
 
 // ---------- save / my portfolios (this browser only) ----------
 const store = () => { try { return localStorage; } catch { return null; } };
-function currentConfig() {
-  return { name: state.mixName === "Your portfolio" ? "My portfolio" : state.mixName, weights: mixWeights(), benchmark: $("benchmark").value.trim().toUpperCase(),
-    years: state.years, strategy: $("strategy").value, initial: Number($("initial").value), monthly: Number($("monthly").value) || 0 };
-}
 function renderSaved() {
   const st = store(), list = $("saved-list");
   const items = st ? listPortfolios(st) : [];
@@ -353,18 +362,6 @@ function renderSaved() {
     return el("li", {}, el("div", {}, el("div", { class: "nm" }, p.name), el("div", { class: "sub" }, `${n} fund${n === 1 ? "" : "s"} vs ${p.benchmark || "n/a"}, ${p.years >= 99 ? "all history" : p.years + "y"}`)), el("div", { class: "acts" }, open, ren, del));
   }));
 }
-$("save-mix").addEventListener("click", () => {
-  const st = store();
-  if (!st) { $("save-status").textContent = "This browser isn't allowing saving."; return; }
-  try {
-    const cfg = currentConfig();
-    const name = prompt("Name for this portfolio", cfg.name);
-    if (name === null) return;
-    savePortfolio(st, { ...cfg, name });
-    renderSaved();
-    $("save-status").textContent = "Saved on this device, under “Your portfolio and settings”.";
-  } catch (e) { $("save-status").textContent = e.message; }
-});
 $("clear-all").addEventListener("click", () => {
   if (!confirm("Remove every saved portfolio and setting from this device? This can't be undone.")) return;
   let n = 0;
@@ -388,55 +385,6 @@ for (const type of ["dragover", "drop"]) {
     if (Array.from(event.dataTransfer?.types || []).includes("Files")) event.preventDefault();
   });
 }
-
-// ---------- share link and card (percentages only) ----------
-function shareConfig() {
-  return { weights: mixWeights(), benchmark: lastR.bench, years: lastR.years, strategy: lastR.strategy };
-}
-function drawSharePanel() {
-  if (!lastR) return;
-  const cfg = shareConfig();
-  const link = `${location.origin}${location.pathname}?${encodeShare(cfg)}`;
-  $("share-link").value = link;
-  const n = Object.keys(cfg.weights).length;
-  $("share-what").textContent = `Shares ${n} holding${n === 1 ? "" : "s"} as percentages, the benchmark (${cfg.benchmark}), time window and style. No dollar amounts, deposits or name.`;
-  const m = lastR.r.mix.m, b = lastR.r.bench.m;
-  const c = cardContent({ ...cfg, mixAnnual: m.annualReturn, benchAnnual: b.annualReturn, mixSharpe: m.sharpe, benchSharpe: b.sharpe });
-  paintCard($("share-card"), c);
-}
-function paintCard(cv, c) {
-  const g = cv.getContext("2d"), css = getComputedStyle(document.documentElement), v = (k) => css.getPropertyValue(k).trim();
-  const W = cv.width, H = cv.height, font = "ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
-  g.fillStyle = v("--surface") || "#fff"; g.fillRect(0, 0, W, H);
-  g.fillStyle = v("--mix") || "#5b3fe0"; g.fillRect(0, 0, 14, H);
-  g.textBaseline = "alphabetic";
-  const t = (txt, x, y, size, color, weight = 600) => { g.font = `${weight} ${size}px ${font}`; g.fillStyle = color; g.fillText(txt, x, y); };
-  t(c.title, 70, 110, 54, v("--ink") || "#13132b", 750);
-  t(c.window, 70, 160, 28, v("--ink-2") || "#54577a", 500);
-  t(c.mixLine, 70, 300, 96, v("--mix") || "#5b3fe0", 750);
-  t(c.benchLine, 70, 370, 40, v("--bench") || "#c2410c");
-  t(c.sharpeLine, 70, 430, 36, v("--ink") || "#13132b", 600);
-  t(c.mixText, 70, 505, 28, v("--ink-2") || "#54577a", 500);
-  t(c.foot, 70, 580, 22, v("--ink-2") || "#54577a", 500);
-}
-$("share-open").addEventListener("click", () => {
-  const open = $("share-panel").hidden;
-  $("share-panel").hidden = !open;
-  $("share-open").setAttribute("aria-expanded", String(open));
-  if (open) drawSharePanel();
-});
-$("share-copy").addEventListener("click", async () => {
-  const inp = $("share-link");
-  try { await navigator.clipboard.writeText(inp.value); $("save-status").textContent = "Link copied."; }
-  catch { inp.select(); $("save-status").textContent = "Press Ctrl/Cmd+C to copy the selected link."; }
-});
-$("share-png").addEventListener("click", () => {
-  $("share-card").toBlob((blob) => {
-    const url = URL.createObjectURL(blob);
-    const a = el("a", { href: url, download: "my-portfolio-vs-benchmark.png" });
-    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
-});
 
 // ---------- events ----------
 let resizeTimer = null, lastWidth = 0;
@@ -465,15 +413,6 @@ document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("clic
   document.querySelectorAll(".seg button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
   render();
 }));
-$("toggle-table").addEventListener("click", () => {
-  const open = $("table-wrap").hidden;
-  $("table-wrap").hidden = !open;
-  $("toggle-table").setAttribute("aria-expanded", String(open));
-  $("toggle-table").textContent = open ? "Hide table" : "Show table";
-});
-$("sample").addEventListener("click", () => loadSample("household"));
-$("sample-student").addEventListener("click", () => loadSample("student"));
-$("top5").addEventListener("click", loadTop5);
 
 revealOnScroll();
 load().catch((e) => { $("error").textContent = "Could not load prices: " + e.message; });

@@ -141,7 +141,11 @@ test("Try: manual entry after the sample, clear investment choices, and Plus-onl
   assert.equal([...ns.matchAll(/<a /g)].length, 1, "one link");
   assert.match(ns, /<a class="btn" href="\.\.\/signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(t, /id="try-own-button"[^>]*>Try your own investments/);
-  assert.match(t, /<h2>Load your real account files with Plus<\/h2>/);
+  assert.doesNotMatch(t, /Load your real account files|plus-imports|toggle-table|id="save-mix"|id="share-open"|share-panel|id="top5"/, "clean-up: removed pieces stay removed");
+  assert.match(t, /id="preset-row"/, "portfolio choices sit above the result");
+  assert.ok(t.indexOf('id="preset-row"') < t.indexOf('id="headline"'));
+  assert.match(t, /<p id="chart-desc" class="sr-only">/, "chart text is for screen readers only");
+  assert.ok(t.indexOf('id="data-date"') > t.indexOf('id="settings"'), "source line sits at the bottom of the page");
   assert.doesNotMatch(t, /type="file"|id="(?:positions|csv|drop|template-dl)"/);
   assert.match(t, /id="benchmark-picker"/);
   const app = await readFile(new URL("js/app.js", site), "utf8");
@@ -254,7 +258,7 @@ test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not '
     const title = html.match(/<title>([^<]*)<\/title>/)[1], desc = meta(html, "name", "description");
     for (const text of [visibleText(html), title, desc]) assert.ok(!/\bmix(es)?\b/i.test(text), `${rel || "home"}: says "mix": ${text.match(/.{0,40}\bmix\b.{0,20}/i)?.[0]}`);
   }
-  assert.ok(marked >= 3, "Home, Try's next step and Try's imports note");
+  assert.ok(marked >= 2, "Home and Try's next step");
   assert.match(await read(""), /<p class="lead" data-purchase-note hidden>After checkout/, "Home's pay-now line starts hidden");
   for (const f of ["app.js", "share.mjs", "portfolios.mjs", "lesson.mjs", "result.mjs", "home.mjs"]) {
     const js = (await readFile(new URL("js/" + f, site), "utf8")).replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, "");

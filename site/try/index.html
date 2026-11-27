@@ -41,6 +41,7 @@
 <div class="page-top mesh try-top">
 <div class="wrap">
   <p id="data-banner" class="banner" role="status" hidden></p>
+  <div class="preset-row" id="preset-row" role="group" aria-label="Choose a portfolio"></div>
   <div class="result-card glass">
   <section class="summary" aria-live="polite">
     <span class="eyebrow">Your result</span>
@@ -57,31 +58,11 @@
     <div id="chart" class="chart" tabindex="0" role="img" aria-labelledby="chart-title chart-desc"></div>
     <p id="chart-desc" class="sr-only"></p>
   </figure>
-  <p id="data-date" class="muted small data-date"></p>
   </div>
 </div>
 </div>
 <div class="wrap">
   <p id="link-note" class="banner" role="status" hidden><b>From a shared link:</b> percentages, benchmark and time window only. Set deposits under “Your portfolio and settings”.</p>
-  <div class="tool-bar">
-    <button type="button" id="save-mix" class="secondary">Save this portfolio</button>
-    <button type="button" id="share-open" class="secondary" aria-expanded="false" aria-controls="share-panel">Share…</button>
-    <span id="save-status" class="muted small" role="status"></span>
-  </div>
-  <section id="share-panel" class="share-panel" hidden aria-labelledby="share-h">
-    <h3 id="share-h">What you would share</h3>
-    <div class="share-grid">
-      <canvas id="share-card" width="1200" height="630" role="img" aria-label="Preview of the share card"></canvas>
-      <div>
-        <label class="field"><span class="lbl">Link</span><input id="share-link" readonly aria-describedby="share-what"></label>
-        <p id="share-what" class="muted small"></p>
-        <div class="controls">
-          <button type="button" id="share-copy" class="secondary">Copy link</button>
-          <button type="button" id="share-png" class="secondary">Download card (PNG)</button>
-        </div>
-      </div>
-    </div>
-  </section>
   <div id="sample-note" class="banner sample-note" role="status" hidden></div>
   <aside id="try-own" class="own-action" hidden aria-label="Try your own investments">
     <button id="try-own-button" class="btn" type="button">Try your own investments <span aria-hidden="true">→</span></button>
@@ -99,18 +80,13 @@
       <div class="cards" id="cards"></div>
       <p id="verdict" class="verdict"></p>
       <div id="benchmarks" class="bench-table"></div>
-      <button type="button" id="toggle-table" class="link" aria-expanded="false" aria-controls="table-wrap">Show month-by-month table</button>
-      <div id="table-wrap" hidden></div>
     </div>
   </details>
 
   <details class="details" id="settings">
     <summary>Your portfolio and settings</summary>
     <div class="inner">
-      <div class="mix-head"><h3 id="mix-h" style="margin:0">Portfolio</h3><label class="inline">Start from <select id="preset"></select></label>
-        <button type="button" id="sample" class="secondary">Sample household</button>
-        <button type="button" id="sample-student" class="secondary">Sample student</button>
-        <button type="button" id="top5" class="secondary">Top 5 ETFs, last 5 years</button></div>
+      <div class="mix-head"><h3 id="mix-h" style="margin:0">Portfolio</h3><label class="inline">Start from <select id="preset"></select></label></div>
       <div id="rows"></div>
       <div class="row-actions"><button type="button" id="add-row" class="secondary">Add a fund</button><span id="weight-note" class="muted"></span></div>
       <h3 style="margin-top:28px">Compare with</h3>
@@ -129,15 +105,13 @@
       <h3 style="margin-top:28px">Saved portfolios</h3>
       <p class="muted small">Saved in this browser only.</p>
       <ul id="saved-list" class="saved-list"></ul>
+      <p id="save-status" class="muted small" role="status"></p>
       <p id="saved-empty" class="muted small">None yet.</p>
       <button type="button" id="clear-all" class="link">Clear everything saved on this device</button>
     </div>
   </details>
 
-  <aside class="plus-imports" aria-label="Plus file imports">
-    <h2>Load your real account files with Plus</h2>
-    <a href="../signup/?plan=plus" data-plus-cta><span data-cta-label>Get notified</span> →</a>
-  </aside>
+  <p id="data-date" class="muted small data-date"></p>
 </div>
 </main>
 <footer class="site-foot"><div class="wrap foot-grid">

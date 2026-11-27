@@ -67,6 +67,14 @@ export function headline({ r, slice, bench }, name) {
     from: slice.dates[0], to: slice.dates.at(-1), months: m.months };
 }
 
+/** Try's headline figure: the signed yearly excess, e.g. "+10.0% a year" or "−1.1% a year" (a true minus sign). */
+export function excessLine(mixAnnual, benchAnnual) {
+  // From the two rounded figures the tiles show, so the headline always matches what people see.
+  const r = (x) => Math.round(x * 1000) / 10;
+  const d = Math.round((r(mixAnnual) - r(benchAnnual)) * 10) / 10;
+  return `${d === 0 ? "" : d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}% a year`;
+}
+
 /** The Home hero card leads with the question, then the honest answer, whichever way the prices go (issue 181).
  *  `h` is a previewModel (or headline) result; the answer is never a recommendation. */
 export function heroAnswer(h, years) {

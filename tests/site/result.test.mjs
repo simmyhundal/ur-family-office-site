@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { completedMonths, throughLabel, compare, sliceFor } from "../../site/js/calc.mjs";
-import { runResult, sampleConfig, previewModel, headline, defaultBenchmark, OTHER, SAMPLE, SAMPLES, sampleId, heroAnswer } from "../../site/js/result.mjs";
+import { runResult, sampleConfig, previewModel, headline, excessLine, defaultBenchmark, OTHER, SAMPLE, SAMPLES, sampleId, heroAnswer } from "../../site/js/result.mjs";
 import { loadPrices } from "../../site/js/data.mjs";
 import { soWhat, sharpeBand, lessonModel } from "../../site/js/lesson.mjs";
 
@@ -127,4 +127,11 @@ test("So what compares the two ratios in one sentence", () => {
   assert.match(soWhat("Mix", "SPY", 0.8, 0.5), /^Mix earned more/);
   assert.match(soWhat("Mix", "SPY", null, 0.5), /cash rate/);
   assert.deepEqual([0.2, 0.7, 1.2, 2].map(sharpeBand), [0, 1, 2, 3]);
+});
+
+test("Try headline leads with the signed yearly excess return (positive, negative, tie)", () => {
+  assert.equal(excessLine(0.109, 0.12), "−1.1% a year");
+  assert.equal(excessLine(0.10949, 0.12049), "−1.1% a year", "rounded figures 10.9% vs 12.0%, not the raw −1.0% gap");
+  assert.equal(excessLine(0.2, 0.1), "+10.0% a year");
+  assert.equal(excessLine(0.1, 0.1), "0.0% a year");
 });
