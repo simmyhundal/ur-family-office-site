@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { completedMonths, throughLabel, compare, sliceFor } from "../../site/js/calc.mjs";
-import { runResult, sampleConfig, previewModel, headline, excessLine, defaultBenchmark, OTHER, SAMPLE, SAMPLES, sampleId, heroAnswer } from "../../site/js/result.mjs";
+import { runResult, sampleConfig, previewModel, headline, excessLine, excessTone, defaultBenchmark, OTHER, SAMPLE, SAMPLES, sampleId, heroAnswer } from "../../site/js/result.mjs";
 import { loadPrices } from "../../site/js/data.mjs";
 import { soWhat, sharpeBand, lessonModel } from "../../site/js/lesson.mjs";
 
@@ -117,7 +117,7 @@ test("the Home hero leads with the question, not a loss", async () => {
   const hero = home.match(/<section class="home-hero[\s\S]*?<\/section>/)[0];
   assert.match(hero, /<h1>Is your portfolio <span class="grad-text">keeping up\?<\/span><\/h1>/);
   assert.ok(hero.indexOf('id="pv-q"') < hero.indexOf('id="pv-headline"'), "question before the answer");
-  assert.match(hero, /401\(k\), IRA or brokerage/);
+  assert.match(hero, /<p class="sub">Free\. Nothing is uploaded\.<\/p>/, "one short line under the headline (owner, 2026-11-27)");
   assert.match(hero, /Would yours\?/);
 });
 
@@ -130,8 +130,9 @@ test("So what compares the two ratios in one sentence", () => {
 });
 
 test("Try headline leads with the signed yearly excess return (positive, negative, tie)", () => {
-  assert.equal(excessLine(0.109, 0.12), "−1.1% a year");
-  assert.equal(excessLine(0.10949, 0.12049), "−1.1% a year", "rounded figures 10.9% vs 12.0%, not the raw −1.0% gap");
-  assert.equal(excessLine(0.2, 0.1), "+10.0% a year");
-  assert.equal(excessLine(0.1, 0.1), "0.0% a year");
+  assert.equal(excessLine(0.109, 0.12), "1.1% less a year");
+  assert.equal(excessLine(0.10949, 0.12049), "1.1% less a year", "rounded figures 10.9% vs 12.0%, not the raw 1.0% gap");
+  assert.equal(excessLine(0.2, 0.1), "10.0% more a year");
+  assert.equal(excessLine(0.1, 0.1), "the same each year");
+  assert.equal(excessTone(0.109, 0.12), "less"); assert.equal(excessTone(0.2, 0.1), "more"); assert.equal(excessTone(0.1, 0.1), "same");
 });

@@ -41,7 +41,7 @@
   <div class="wrap">
     <div class="hero-copy">
       <h1>Is your portfolio <span class="grad-text">keeping up?</span></h1>
-      <p class="sub">See how your 401(k), IRA or brokerage account did against the market. Free; nothing is uploaded.</p>
+      <p class="sub">Free. Nothing is uploaded.</p>
       <div class="hero-actions">
         <a class="btn big" href="try/?own=1">Check your own portfolio <span class="arr" aria-hidden="true">→</span></a>
         <a class="btn big ghost" href="plus-demo/">See Plus with a sample household</a>
@@ -51,9 +51,9 @@
       <div class="orbit" aria-hidden="true"></div>
       <a class="preview glass" id="pv" href="try/?sample=1">
         <div class="pv-top"><span class="pv-label">Invented household</span><span class="pv-chip" id="pv-chip">5 years</span></div>
-        <p class="pv-q" id="pv-q">Did this household keep up?</p>
+        <p class="pv-q" id="pv-q" hidden>Did this household keep up?</p>
         <p class="pv-headline" id="pv-headline"><span class="pv-ans" id="pv-ans"></span> <span class="m" id="pv-m">…</span> vs <span class="b" id="pv-b">…</span> <span class="pv-per">a year</span></p>
-        <p class="pv-sub" id="pv-sub">A 401(k), an IRA and a brokerage account, added up.</p>
+        <p class="pv-sub" id="pv-sub" hidden>A 401(k), an IRA and a brokerage account, added up.</p>
         <svg class="pv-chart" id="pv-chart" viewBox="0 0 480 190" aria-hidden="true">
           <defs><linearGradient id="pvg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--mix)" stop-opacity=".28"/><stop offset="1" stop-color="var(--mix)" stop-opacity="0"/></linearGradient></defs>
           <line class="g" x1="0" x2="480" y1="48" y2="48"/><line class="g" x1="0" x2="480" y1="95" y2="95"/><line class="g" x1="0" x2="480" y1="142" y2="142"/>
@@ -74,16 +74,14 @@
     <div class="plus-head reveal">
       <span class="eyebrow">UFO PLUS: $67/YR</span>
       <h2 id="plus-h">Your whole portfolio, <span class="grad-text">from above</span></h2>
-      <p class="lead">Every account side by side on your Mac. Compare them with simple index portfolios.</p>
-      <p class="lead" data-purchase-note hidden>After checkout we email you within a day to set up Plus with you on a short call. Full refund within 30 days, any reason.</p>
+      <p class="lead">Every account side by side, on your Mac.</p>
     </div>
-    <figure class="mac-wrap reveal" aria-labelledby="mac-cap">
-      <a class="mac" href="plus-demo/" aria-describedby="mac-cap">
+    <figure class="mac-wrap reveal">
+      <a class="mac" href="plus-demo/">
         <span class="mac-lid"><span class="mac-screen"><picture><source srcset="img/plus-mac-dark.png" media="(prefers-color-scheme: dark)"><img src="img/plus-mac-light.png" alt="The Plus dashboard on a Mac: an invented household's accounts added up and compared with the market" width="1280" height="800" loading="lazy" decoding="async"></picture></span></span>
         <span class="mac-base" aria-hidden="true"></span>
         <span class="shot-tag">Invented household</span>
       </a>
-      <figcaption id="mac-cap" class="muted small">Open the live demo.</figcaption>
     </figure>
     <div class="plus-copy reveal">
       <div class="hero-actions"><a class="btn big" href="signup/?plan=plus" data-plus-cta><span data-cta-label>Get notified</span> <span class="arr" aria-hidden="true">→</span></a></div>
@@ -95,15 +93,11 @@
 
 <section class="section" aria-labelledby="priv-h">
   <div class="wrap">
-    <div class="promise promise-shot reveal">
+    <div class="promise reveal">
       <div>
         <h2 id="priv-h">Your numbers never leave your computer</h2>
         <p>Read-only: UFO never moves money. <a href="privacy/">How privacy works →</a></p>
       </div>
-      <figure class="installer-shot">
-        <img src="img/installer-welcome.png" alt="The Plus installer's welcome screen in Terminal: the UFO saucer lifting rising bars, with the words A higher view of your money and Welcome aboard" width="1520" height="840" loading="lazy" decoding="async">
-        <figcaption class="small">The Plus installer.</figcaption>
-      </figure>
     </div>
   </div>
 </section>

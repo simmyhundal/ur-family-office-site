@@ -58,3 +58,7 @@
 
 /* the line under the Try headline is empty unless there is a note to show */
 #headline-sub:empty{display:none}
+
+/* headline gap: green when more than the benchmark, red when less */
+.excess[data-tone="more"]{color:var(--good)}
+.excess[data-tone="less"]{color:var(--err)}

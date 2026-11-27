@@ -72,7 +72,13 @@ export function excessLine(mixAnnual, benchAnnual) {
   // From the two rounded figures the tiles show, so the headline always matches what people see.
   const r = (x) => Math.round(x * 1000) / 10;
   const d = Math.round((r(mixAnnual) - r(benchAnnual)) * 10) / 10;
-  return `${d === 0 ? "" : d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}% a year`;
+  return d === 0 ? "the same each year" : `${Math.abs(d).toFixed(1)}% ${d > 0 ? "more" : "less"} a year`;
+}
+/** "more", "less" or "same": colours the headline figure (green, red, plain), from the same rounded figures. */
+export function excessTone(mixAnnual, benchAnnual) {
+  const r = (x) => Math.round(x * 1000) / 10;
+  const d = Math.round((r(mixAnnual) - r(benchAnnual)) * 10) / 10;
+  return d > 0 ? "more" : d < 0 ? "less" : "same";
 }
 
 /** The Home hero card leads with the question, then the honest answer, whichever way the prices go (issue 181).

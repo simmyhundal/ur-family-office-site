@@ -1,7 +1,7 @@
 // The page. All data stays in the browser: no network calls except loading the bundled demo prices.
 import { compare } from "./calc.mjs";
 import { $, el, svg, money, pct, spct, monthYear, revealOnScroll, saveMix } from "./util.mjs";
-import { runResult, sampleConfig, defaultBenchmark, headline, excessLine, SAMPLES, sampleId } from "./result.mjs";
+import { runResult, sampleConfig, defaultBenchmark, headline, excessLine, excessTone, SAMPLES, sampleId } from "./result.mjs";
 import { loadPrices } from "./data.mjs";
 import { listPortfolios, renamePortfolio, deletePortfolio, clearEverything } from "./portfolios.mjs";
 import { investmentChoices, createFundPicker, COMPANY_STOCKS } from "./fund-picker.mjs";
@@ -126,7 +126,7 @@ function drawSummary(h) {
   } else {
     const hl = $("headline");
     hl.textContent = `${h.name} vs ${h.bench}: `;
-    hl.append(el("span", { class: "tip", tabindex: "0", "data-tip": TIPS.excess, "aria-description": TIPS.excess }, excessLine(a, b)));
+    hl.append(el("span", { class: "tip excess", "data-tone": excessTone(a, b), tabindex: "0", "data-tip": TIPS.excess, "aria-description": TIPS.excess }, excessLine(a, b)));
     $("headline-sub").textContent = ""; // one line only: the headline; the chart's axis shows the dates (owner, 2026-11-27)
   }
   $("next-step").hidden = false; // one invitation after a result: "Want this for all your accounts?" (issue 239)

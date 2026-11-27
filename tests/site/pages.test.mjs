@@ -259,7 +259,7 @@ test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not '
     for (const text of [visibleText(html), title, desc]) assert.ok(!/\bmix(es)?\b/i.test(text), `${rel || "home"}: says "mix": ${text.match(/.{0,40}\bmix\b.{0,20}/i)?.[0]}`);
   }
   assert.ok(marked >= 2, "Home and Try's next step");
-  assert.match(await read(""), /<p class="lead" data-purchase-note hidden>After checkout/, "Home's pay-now line starts hidden");
+  assert.doesNotMatch(await read(""), /After checkout|installer-shot|Open the live demo/, "Home stays short: setup details live on Pricing");
   for (const f of ["app.js", "share.mjs", "portfolios.mjs", "lesson.mjs", "result.mjs", "home.mjs"]) {
     const js = (await readFile(new URL("js/" + f, site), "utf8")).replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, "");
     for (const m of js.matchAll(/(["`])((?:(?!\1).)*)\1/g)) assert.ok(m[2] === "mix" || !/(?<![-#.])\b[Mm]ix(es)?\b(?![-=(])/.test(m[2].replace(/\$\{[^}]*\}/g, "")), `${f}: "${m[2]}"`);
@@ -280,7 +280,7 @@ test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not '
 test("Home Plus band label and wording; refund policy on Terms and Pricing", async () => {
   const home = await read("");
   assert.match(home, /<span class="eyebrow">UFO PLUS: \$67\/YR<\/span>/);
-  assert.ok(!home.includes("in a Mac app") && home.includes("side by side on your Mac."));
+  assert.ok(!home.includes("in a Mac app") && home.includes("side by side, on your Mac."));
   const terms = await read("terms/");
   assert.match(terms, /<h2>Refunds<\/h2>/);
   assert.match(terms, /Last updated November 23, 2026/);
