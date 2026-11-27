@@ -97,7 +97,7 @@ export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", 
 // Header and footer markup. `root` is the site root as a URL prefix ("../" etc.); `current` is a nav key.
 // Header and footer show the logo and the name, with the wordmark's letters picked out in the accent colour
 // ("Ur Family Office" with U, F and O marked). On narrow phones the header shows the logo and the wordmark only (CSS).
-export const NAV = [["try", "Try it"], ["pricing", "Pricing"], ["about", "About"]];
+export const NAV = [["try", "Try"], ["pricing", "Pricing"], ["about", "About"]];
 // The name with each word's first letter marked when those letters spell the wordmark; else the plain name.
 export function nameHtml(cfg) {
   const words = cfg.name.split(/\s+/);
@@ -118,7 +118,7 @@ export function footerHtml(cfg, root, current) {
   const contact = cfg.contact_email ? `<a href="mailto:${esc(cfg.contact_email)}">${esc(cfg.contact_email)}</a>` : "";
   return `<div class="wrap foot-grid">
   <div class="foot-brand"><a class="brand" href="${root}">${mark(cfg, root, 32)}<span class="brand-word">${nameHtml(cfg)}</span></a></div>
-  <nav class="foot-col" aria-label="Product"><h2>Product</h2><a href="${root}try/">Try it</a><a href="${root}learn/">Learn</a><a href="${root}teach/">For instructors</a><a href="${root}pricing/">Pricing</a></nav>
+  <nav class="foot-col" aria-label="Product"><h2>Product</h2><a href="${root}try/">Try</a><a href="${root}learn/">Learn</a><a href="${root}teach/">For instructors</a><a href="${root}pricing/">Pricing</a></nav>
   <nav class="foot-col" aria-label="Company"><h2>Company</h2><a href="${root}about/">About</a><a href="${root}privacy/">Privacy</a><a href="${root}terms/">Terms</a><a href="${root}signup/">Sign up</a>${contact}</nav>
 </div>
 <div class="wrap foot-legal">

@@ -127,8 +127,7 @@ function drawSummary(h) {
     const hl = $("headline");
     hl.textContent = `${h.name} vs ${h.bench}: `;
     hl.append(el("span", { class: "tip", tabindex: "0", "data-tip": TIPS.excess, "aria-description": TIPS.excess }, excessLine(a, b)));
-    $("headline-sub").textContent = (h.diff === 0 ? "The same result." : `${h.name} finished ${money(Math.abs(h.diff))} ${h.diff > 0 ? "ahead of" : "behind"} ${h.bench}.`) +
-      ` ${monthYear(h.from)} through ${monthYear(h.to)}.`;
+    $("headline-sub").textContent = ""; // one line only: the headline; the chart's axis shows the dates (owner, 2026-11-27)
   }
   $("next-step").hidden = false; // one invitation after a result: "Want this for all your accounts?" (issue 239)
 }

@@ -55,3 +55,6 @@
   .preset-row::-webkit-scrollbar { display: none; }
   .preset-row button { flex: 0 0 auto; white-space: nowrap; }
 }
+
+/* the line under the Try headline is empty unless there is a note to show */
+#headline-sub:empty{display:none}
