@@ -78,9 +78,9 @@ test("the owner is not described as an MBA student (About, site.json)", async ()
   for (const rel of PAGES) assert.ok(!/(Hundal|founder|I am|I'm)[^.<]{0,60}MBA student/i.test(await read(rel)), rel || "home");
 });
 
-test("Home shows the real Plus demo on a MacBook (not a phone) and links it as 'See Plus with a sample household'", async () => {
+test("Home shows the real Plus demo on a MacBook (not a phone) and links it as 'See Plus demo'", async () => {
   const home = await read("");
-  assert.match(home, /<a class="btn big[^"]*" href="plus-demo\/">See Plus with a sample household/);
+  assert.match(home, /<a class="btn big[^"]*" href="plus-demo\/" aria-label="See Plus with a sample household">See Plus demo</);
   const fig = home.match(/<figure class="mac-wrap[\s\S]*?<\/figure>/)[0];
   assert.match(fig, /<a class="mac" href="plus-demo\/"/); assert.match(fig, /class="mac-lid"/); assert.match(fig, /class="mac-base"/);
   assert.match(fig, /<img src="img\/plus-mac-light\.png"[^>]*width="1280" height="800"/); assert.match(fig, /srcset="img\/plus-mac-dark\.png"/);
@@ -90,7 +90,7 @@ test("Home shows the real Plus demo on a MacBook (not a phone) and links it as '
   const css = await readFile(new URL("style.css", site), "utf8");
   assert.doesNotMatch(css, /\.phone\b|hover-phone/, "the phone frame CSS is gone");
   for (const f of ["img/plus-mac-light.png", "img/plus-mac-dark.png", "plus-demo/index.html"]) await stat(new URL(f, site));
-  assert.equal(home.split("See Plus with a sample household").length - 1, 1, "said once on Home (issue 239)");
+  assert.equal(home.split(">See Plus demo<").length - 1, 1, "said once on Home (issue 239)");
 });
 
 test("Learn is not in the top navigation; the lessons stay reachable from the footer", async () => {
@@ -154,7 +154,7 @@ test("Try: manual entry after the sample, clear investment choices, and Plus-onl
   assert.match(app, /createFundPicker/);
   assert.match(app, /Cash rate: 3-month Treasury bills from FRED/, "the price source line lives on Try");
   for (const id of new Set([...app.matchAll(/\$\("([\w-]+)"\)/g)].map((m) => m[1]))) assert.ok(t.includes(`id="${id}"`), `app.js uses #${id}, missing on Try`);
-  assert.match(await read(""), /href="try\/\?own=1">Check your own portfolio/);
+  assert.match(await read(""), /href="try\/\?own=1">Check yours/);
 });
 
 // Issue 238: nothing above the fold waits on a fade-in. The hero and every page head must not be in the scroll-reveal set,

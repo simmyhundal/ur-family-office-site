@@ -35,6 +35,19 @@ async function load() {
   else if (new URLSearchParams(location.search).has("sample")) loadSample(sampleId(new URLSearchParams(location.search).get("sample")));
   if (new URLSearchParams(location.search).has("own")) setTimeout(startTyping, 80); // "Check your own mix" from Home: open the mix editor
   renderSaved();
+  hideSplash();
+}
+
+// The welcome screen covers the first paint so the page appears whole, not piece by piece (owner, 2026-11-27).
+// About 2 seconds on the first visit in a browser session; afterwards it fades as soon as the result is ready.
+function hideSplash() {
+  const s = $("splash");
+  if (!s) return;
+  let first = true;
+  try { first = !sessionStorage.getItem("ufo-splash"); sessionStorage.setItem("ufo-splash", "1"); } catch { /* private mode: treat as first */ }
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const min = calm ? 0 : first ? 2200 : 300;
+  setTimeout(() => { s.classList.add("gone"); setTimeout(() => s.remove(), 600); }, Math.max(0, min - performance.now()));
 }
 
 const symbols = () => Object.keys(state.data.series);
@@ -417,4 +430,4 @@ document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("clic
 }));
 
 revealOnScroll();
-load().catch((e) => { $("error").textContent = "Could not load prices: " + e.message; });
+load().catch((e) => { $("error").textContent = "Could not load prices: " + e.message; hideSplash(); });

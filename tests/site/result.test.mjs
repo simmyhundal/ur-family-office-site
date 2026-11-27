@@ -103,10 +103,10 @@ test("hero answer reads well ahead, behind and level, and never hides the gap", 
   const behind = heroAnswer({ ...base, diff: -25483.4 }, 5);
   assert.equal(behind.question, "Did this household keep up with the S&P 500?", "SPY named as the index people know");
   assert.equal(heroAnswer({ ...base, bench: "VTI", diff: 1 }, 5).question, "Did this household keep up with VTI?");
-  assert.equal(behind.answer, "Not quite."); assert.equal(behind.tone, "behind");
+  assert.equal(behind.answer, "This one isn't."); assert.equal(behind.tone, "behind");
   assert.equal(behind.rates, "+9.5% vs +12.0% a year"); assert.equal(behind.gap, "Behind by $25,483 after 5 years.");
   const ahead = heroAnswer({ ...base, mixAnnual: 0.13, diff: 1200 }, 5);
-  assert.equal(ahead.answer, "Yes."); assert.equal(ahead.gap, "Ahead by $1,200 after 5 years.");
+  assert.equal(ahead.answer, "This one is."); assert.equal(ahead.gap, "Ahead by $1,200 after 5 years.");
   const even = heroAnswer({ ...base, diff: 0 }, 5);
   assert.equal(even.answer, "Neck and neck."); assert.equal(even.gap, "The same money after 5 years.");
   for (const a of [behind, ahead, even]) { assert.equal(a.hook, "Would yours?"); assert.ok(!/should|buy|sell/i.test(Object.values(a).join(" "))); }
@@ -117,7 +117,7 @@ test("the Home hero leads with the question, not a loss", async () => {
   const hero = home.match(/<section class="home-hero[\s\S]*?<\/section>/)[0];
   assert.match(hero, /<h1>Is your portfolio <span class="grad-text">keeping up\?<\/span><\/h1>/);
   assert.ok(hero.indexOf('id="pv-q"') < hero.indexOf('id="pv-headline"'), "question before the answer");
-  assert.match(hero, /<p class="sub">Free\. Nothing is uploaded\.<\/p>/, "one short line under the headline (owner, 2026-11-27)");
+  assert.doesNotMatch(hero, /<p class="sub">|pv-top/, "the chart comes right under the headline; no sub-line or card header (owner, 2026-11-27)");
   assert.match(hero, /Would yours\?/);
 });
 

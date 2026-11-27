@@ -3,7 +3,6 @@
 import { $, spct, money, revealOnScroll } from "./util.mjs";
 import { loadPrices } from "./data.mjs";
 import { previewModel, linePaths, heroAnswer, SAMPLE } from "./result.mjs";
-import { throughLabel } from "./calc.mjs";
 
 revealOnScroll();
 
@@ -15,7 +14,6 @@ async function preview() {
   const ans = heroAnswer(m, m.years);
   $("pv-q").textContent = ans.question; $("pv-ans").textContent = ans.answer; $("pv").dataset.tone = ans.tone;
   $("pv-m").textContent = spct(m.mixAnnual); $("pv-b").textContent = spct(m.benchAnnual); $("pv-bench2").textContent = m.bench;
-  $("pv-chip").textContent = `${m.years} years · through ${throughLabel(m.to)}`;
   $("pv-sub").textContent = `${ans.gap} Three accounts, added up.`;
   const [mix, bench, put] = linePaths([m.mixValues, m.benchValues, m.putValues], 480, 190);
   $("pv-mline").setAttribute("d", mix); $("pv-bline").setAttribute("d", bench); $("pv-put").setAttribute("d", put);

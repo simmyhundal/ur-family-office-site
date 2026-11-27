@@ -62,3 +62,16 @@
 /* headline gap: green when more than the benchmark, red when less */
 .excess[data-tone="more"]{color:var(--good)}
 .excess[data-tone="less"]{color:var(--err)}
+
+/* Try: welcome screen while prices load (owner, 2026-11-27) */
+.splash { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: var(--bg); color: var(--ink); text-align: center; transition: opacity .55s ease, visibility .55s; }
+.splash.gone { opacity: 0; visibility: hidden; }
+.splash-mark { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 14px; animation: splash-float 2.4s ease-in-out infinite; }
+.splash p { margin: 0; animation: splash-in .6s ease both; } /* visible even where animations do not run */
+.splash-brand { font-size: 2rem; font-weight: 800; letter-spacing: .18em; animation-delay: .15s !important; }
+.splash-tag { color: var(--ink-2); font-size: 1.05rem; animation-delay: .5s !important; }
+.splash-hello { color: var(--accent); font-weight: 700; margin-top: 10px !important; animation-delay: 1s !important; }
+@keyframes splash-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes splash-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .splash-mark, .splash p { animation: none; } }
