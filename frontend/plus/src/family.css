@@ -1,4 +1,4 @@
-/* Mothership tab (docs/mocks/mothership-v2.html). Palette: purple public markets, amber studio, teal homes, grey cash, blue crypto. */
+/* Family tab (docs/mocks/mothership-v2.html). Palette: purple public markets, amber studio, teal homes, grey cash, blue crypto. */
 :root:root{--a-pub:#4b2fc2;--a-biz:#c4861a;--a-re:#1f7a80;--a-cash:#98a2b3;--a-cry:#2f6fd0}
 @media (prefers-color-scheme:dark){:root:root:not([data-theme=light]){--a-pub:#9d8cff;--a-biz:#e2a943;--a-re:#4fb8be;--a-cash:#7d8696;--a-cry:#6fa3f2}}
 :root:root[data-theme=dark]{--a-pub:#9d8cff;--a-biz:#e2a943;--a-re:#4fb8be;--a-cash:#7d8696;--a-cry:#6fa3f2}

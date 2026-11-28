@@ -1,10 +1,10 @@
-// Mothership: the family tab (docs/mocks/mothership-v2.html). Parents' and children's assets together, with the people toggles.
-// Shown only when the page data carries a `mothership` block. Invented figures in the demo. Information, not investment advice.
+// Family: the family tab (docs/mocks/mothership-v2.html). Parents' and children's assets together, with the people toggles.
+// Shown only when the page data carries a `family` block. Invented figures in the demo. Information, not investment advice.
 import {useMemo,useState,type ReactNode} from 'react';
 import {Card,CardStack,PageHeader,Takeaway,Disclosure} from './ui/components';
 import {useDefinitions} from './ui/definitions';
 import {useWidth} from './tax-sankey';
-import {TYPES,amounts,advisorPaths,bizIrr,homeCash,homeEq,pct,people,sum,usd,usdK,usdM,type Amounts,type MothershipData,type Selection} from './mothership-model';
+import {TYPES,amounts,advisorPaths,bizIrr,homeCash,homeEq,pct,people,sum,usd,usdK,usdM,type Amounts,type FamilyData,type Selection} from './family-model';
 
 const DEFS:Record<string,[string,string]>={
  irr:['Return per year (IRR)','The yearly growth rate that turns the dated money in and out into today’s value. Comparable across accounts.'],
@@ -54,7 +54,7 @@ function Bars({rows}:{rows:{name:string;v:number;c:string;dim?:boolean;w:number}
  return <div className="br">{rows.map(r=><div key={r.name} className={`br-row${r.dim?' dim':''}`}><span>{r.name}</span><b>{pct(r.v)}</b><span className="bar"><i style={{width:`${(r.w*100).toFixed(1)}%`,background:r.c}}/></span></div>)}</div>;
 }
 
-function AdvisorChart({d}:{d:MothershipData}){
+function AdvisorChart({d}:{d:FamilyData}){
  const a=d.advisor,{start,pa,pm}=advisorPaths(a),n=pa.length,A=pa[n-1],M=pm[n-1];
  const W=640,H=220,L=8,R=86,Tp=14,Bm=26,lo=Math.min(...pa,...pm)*.92,hi=Math.max(...pa,...pm)*1.04;
  const x=(i:number)=>L+(W-L-R)*i/(n-1),y=(v:number)=>Tp+(H-Tp-Bm)*(1-(v-lo)/(hi-lo)),path=(arr:number[])=>arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
@@ -70,12 +70,12 @@ function AdvisorChart({d}:{d:MothershipData}){
   <div className="lc-key" aria-hidden="true"><span><i style={{background:'var(--down)'}}/>Advisor account, after fee</span><span><i style={{background:'var(--a-pub)'}}/>Same start in a 60/40 mix</span></div></>;
 }
 
-export function Mothership({data}:{data?:MothershipData}){
+export function Family({data}:{data?:FamilyData}){
  const [sel,setSel]=useState<Selection>({on:Object.fromEntries((data?.people??[]).map(p=>[p.id,true])),cash:true,cry:true});
  const tip=useDefinitions(DEFS);
  const [ref,w]=useWidth();
  const ps=useMemo(()=>data?people(data,sel):[],[data,sel]);
- if(!data||!ps.length)return <CardStack className="ms"><PageHeader title="Mothership"/><Card><p className="ui-status" data-kind="missing">Mothership is not available for this report.</p></Card></CardStack>;
+ if(!data||!ps.length)return <CardStack className="ms"><PageHeader title="Family"/><Card><p className="ui-status" data-kind="missing">Family is not available for this report.</p></Card></CardStack>;
  const toggle=(id:string)=>setSel(s=>{const on={...s.on,[id]:!s.on[id]};return Object.values(on).some(Boolean)?{...s,on}:s;});
  const A:Record<string,Amounts>={};ps.forEach(p=>{A[p.id]=amounts(data,sel,p.id);});
  const T=TYPES.map(t=>({...t,v:ps.reduce((s,p)=>s+A[p.id][t.k],0)})).filter(t=>t.v>0),tot=T.reduce((s,t)=>s+t.v,0),big=T.slice().sort((a,b)=>b.v-a.v)[0];
@@ -89,7 +89,7 @@ export function Mothership({data}:{data?:MothershipData}){
  const years=data.advisor.years.length;
  const toggles=(cls:string)=>data.people.map(p=><button type="button" key={p.id} className={cls} aria-pressed={!!sel.on[p.id]} onClick={()=>toggle(p.id)}><i aria-hidden="true"/>{p.name}</button>);
  return <><div className="ppl" role="group" aria-label="Whose money to show"><span>Showing</span>{toggles('pt')}</div>
- <CardStack className="ms"><PageHeader title="Mothership"/>
+ <CardStack className="ms"><PageHeader title="Family"/>
   <Card data-label="Who’s included"><Takeaway>{`${nAcc} accounts${biz?',':' and'} ${homes.length} ${homes.length>1?'homes':'home'}${biz?' and a business':''} in ${two?'2 households':'1 household'}`}</Takeaway>
    <div className="who">{data.people.map(p=><button type="button" key={p.id} aria-pressed={!!sel.on[p.id]} onClick={()=>toggle(p.id)}><i aria-hidden="true"/><b>{p.name}</b>
     <small>{`${p.sub} · ${p.accts} accounts · ${usdK(sum(amounts(data,sel,p.id)))}`}</small></button>)}</div></Card>

@@ -1,5 +1,5 @@
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
-// Hover (or tap) definitions: one tooltip for a whole tab (Tax, Mothership). Terms carry data-def="key".
+// Hover (or tap) definitions: one tooltip for a whole tab (Tax, Family). Terms carry data-def="key".
 export function useDefinitions(DEFS:Record<string,[string,string]>){
  const [tip,setTip]=useState<{k:string;x:number;y:number;below:boolean;target:Element}|null>(null);
  const pop=useRef<HTMLDivElement>(null),[pos,setPos]=useState<{left:number;top:number}>({left:0,top:0});
