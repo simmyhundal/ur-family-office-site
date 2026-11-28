@@ -78,9 +78,9 @@ test("the owner is not described as an MBA student (About, site.json)", async ()
   for (const rel of PAGES) assert.ok(!/(Hundal|founder|I am|I'm)[^.<]{0,60}MBA student/i.test(await read(rel)), rel || "home");
 });
 
-test("Home shows the real Plus demo on a MacBook (not a phone) and links it as 'See Plus demo'", async () => {
+test("Home shows the real Plus demo on a MacBook (not a phone) and links it as 'Try Plus'", async () => {
   const home = await read("");
-  assert.match(home, /<a class="btn big[^"]*" href="plus-demo\/" aria-label="See Plus with a sample household">See Plus demo</);
+  assert.match(home, /<a class="btn big" href="plus-demo\/" aria-label="Try Plus with a sample household">Try Plus </);
   const fig = home.match(/<figure class="mac-wrap[\s\S]*?<\/figure>/)[0];
   assert.match(fig, /<a class="mac" href="plus-demo\/"/); assert.match(fig, /class="mac-lid"/); assert.match(fig, /class="mac-base"/);
   assert.match(fig, /<img src="img\/plus-mac-light\.png"[^>]*width="1280" height="800"/); assert.match(fig, /srcset="img\/plus-mac-dark\.png"/);
@@ -90,7 +90,8 @@ test("Home shows the real Plus demo on a MacBook (not a phone) and links it as '
   const css = await readFile(new URL("style.css", site), "utf8");
   assert.doesNotMatch(css, /\.phone\b|hover-phone/, "the phone frame CSS is gone");
   for (const f of ["img/plus-mac-light.png", "img/plus-mac-dark.png", "plus-demo/index.html"]) await stat(new URL(f, site));
-  assert.equal(home.split(">See Plus demo<").length - 1, 1, "said once on Home (issue 239)");
+  assert.equal(home.split(">Try Plus ").length - 1, 1, "said once on Home (issue 239)");
+  assert.ok(!home.includes('href="signup/?plan=plus"'), "Home's Plus card opens the demo, not the purchase path (owner, 2026-11-27); the header has Get Plus");
 });
 
 test("Learn is not in the top navigation; the lessons stay reachable from the footer", async () => {
@@ -126,9 +127,8 @@ test("Plus is $67/year, tax included, with an 'Area 67' clearance tag that never
   assert.match(css, /\.plans \{ grid-template-columns: repeat\(auto-fit, [^)]*\)\); justify-content: center;/, "plan cards centred as a group");
 });
 
-test("'Have a code?' ships hidden and empty on Home and Pricing; no list of codes anywhere on the site", async () => {
-  const home = await read("");
-  assert.match(home, /<div class="promo" data-promo hidden><\/div>/);
+test("'Have a code?' ships hidden and empty on Pricing; no list of codes anywhere on the site", async () => {
+  assert.ok(!(await read("")).includes("data-promo"), "Home has no buy button, so no code box (owner, 2026-11-27)");
   assert.match(await read("pricing/"), /a\.mode === "checkout" && cfg\.show_code_box \? `<div class="promo" data-checkout=/);
   const json = (await Promise.all(["data/plans.json", "data/site.json"].map((f) => readFile(new URL(f, site), "utf8")))).join("");
   assert.doesNotMatch(json, /promo|coupon|codes?"/i);
@@ -186,7 +186,6 @@ test("Home says each thing once (issue 239)", async () => {
   for (const gone of ['class="trust-row"', 'class="hero-lesson"', 'class="float-card', 'class="benefits3"', 'class="founder-line"',
     'class="teach-line', 'class="final-cta', "See pricing", "is not a purchase", "Opens the sample household"]) assert.ok(!home.includes(gone), gone);
   assert.match(home, /<h2 id="priv-h">Your numbers never leave your computer<\/h2>\s*<p>Read-only: UFO never moves money\. <a href="privacy\/">/);
-  assert.match(home, /<a class="btn big[^"]*" href="signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(home, /Would yours\?<\/b> <span>Try your own →/);
   const js = await readFile(new URL("js/home.mjs", site), "utf8");
   for (const id of js.matchAll(/\$\("([\w-]+)"\)/g)) assert.ok(home.includes(`id="${id[1]}"`), `home.mjs uses #${id[1]}, missing on Home`);
@@ -258,7 +257,7 @@ test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not '
     const title = html.match(/<title>([^<]*)<\/title>/)[1], desc = meta(html, "name", "description");
     for (const text of [visibleText(html), title, desc]) assert.ok(!/\bmix(es)?\b/i.test(text), `${rel || "home"}: says "mix": ${text.match(/.{0,40}\bmix\b.{0,20}/i)?.[0]}`);
   }
-  assert.ok(marked >= 2, "Home and Try's next step");
+  assert.ok(marked >= 1, "Try's next step (Home's Plus card opens the demo)");
   assert.doesNotMatch(await read(""), /After checkout|installer-shot|Open the live demo/, "Home stays short: setup details live on Pricing");
   for (const f of ["app.js", "share.mjs", "portfolios.mjs", "lesson.mjs", "result.mjs", "home.mjs"]) {
     const js = (await readFile(new URL("js/" + f, site), "utf8")).replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, "");
@@ -280,7 +279,7 @@ test("Plus buttons are marked for buying; no waitlist wording; 'portfolio' not '
 test("Home Plus band label and wording; refund policy on Terms and Pricing", async () => {
   const home = await read("");
   assert.match(home, /<span class="eyebrow">UFO PLUS: \$67\/YR<\/span>/);
-  assert.ok(!home.includes("in a Mac app") && home.includes("side by side, on your Mac."));
+  assert.ok(!home.includes("in a Mac app") && home.includes("<p class=\"sub\">Every investment, side by side.</p>"), "owner, 2026-11-27: no 'on your Mac' on Home");
   const terms = await read("terms/");
   assert.match(terms, /<h2>Refunds<\/h2>/);
   assert.match(terms, /Last updated November 23, 2026/);
