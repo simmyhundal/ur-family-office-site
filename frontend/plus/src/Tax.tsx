@@ -2,6 +2,7 @@
 // Read-only: nothing is sold or proposed. A figure the exports cannot give is shown as not available, never guessed.
 import {useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {ChoiceGate} from './ui/ChoiceGate';
+import {useDefinitions} from './ui/definitions';
 import {Card,CardStack,PageHeader,Takeaway,StatusMessage,Disclosure} from './ui/components';
 import {money,percent,formatDate} from './ui/format';
 import {SankeyWide,SankeyList,useWidth} from './tax-sankey';
@@ -23,29 +24,6 @@ const Def=({k,children}:{k:string;children:string})=><span data-def={k} tabIndex
 const statusWords=(s:Status)=>STATUSES.find(x=>x.value===s)!.words;
 /** The year the investment figures belong to, for the headline. */
 const yearOf=(i?:Investment)=>i?.asof?i.asof.slice(0,4):'';
-
-// ---- Hover (or tap) definitions: one tooltip for the whole tab ----
-function useDefinitions(){
- const [tip,setTip]=useState<{k:string;x:number;y:number;below:boolean;target:Element}|null>(null);
- const pop=useRef<HTMLDivElement>(null),[pos,setPos]=useState<{left:number;top:number}>({left:0,top:0});
- useEffect(()=>{
-  const open=(t:Element)=>{const k=t.getAttribute('data-def');if(!k||!DEFS[k])return;const r=t.getBoundingClientRect();setTip({k,x:r.left,y:r.bottom+8,below:true,target:t});};
-  const find=(e:Event)=>(e.target instanceof Element?e.target.closest('[data-def]'):null);
-  const over=(e:MouseEvent)=>{const t=find(e);if(t&&!t.closest('[inert]'))open(t);else setTip(null);};
-  const focus=(e:FocusEvent)=>{const t=find(e);if(t)open(t);else setTip(null);};
-  const click=(e:MouseEvent)=>{const t=find(e);if(!t){setTip(null);return;}e.preventDefault();setTip(c=>c&&c.target===t?null:(open(t),c));};
-  const hide=()=>setTip(null);
-  document.addEventListener('mouseover',over);document.addEventListener('focusin',focus);document.addEventListener('click',click);addEventListener('scroll',hide,{passive:true});
-  return()=>{document.removeEventListener('mouseover',over);document.removeEventListener('focusin',focus);document.removeEventListener('click',click);removeEventListener('scroll',hide);};
- },[]);
- useLayoutEffect(()=>{
-  if(!tip||!pop.current)return;
-  const pw=pop.current.offsetWidth,ph=pop.current.offsetHeight;
-  let top=tip.y;if(top+ph>innerHeight-8)top=tip.y-16-ph-(tip.target.getBoundingClientRect().height);
-  setPos({left:Math.min(Math.max(8,tip.x),innerWidth-pw-8),top});
- },[tip]);
- return tip?<div className="pop" role="tooltip" ref={pop} style={{left:pos.left,top:pos.top}}><b>{DEFS[tip.k][0]}</b>{DEFS[tip.k][1]}</div>:null;
-}
 
 // ---- The rate picker: the choice every exhibit depends on. The gate itself is the shared ChoiceGate (issue 417). ----
 function RateFields({status,digits,onStatus,onDigits,onEnter}:{status:Status|null;digits:string;onStatus(s:Status):void;onDigits(d:string):void;onEnter():void}){
@@ -196,7 +174,7 @@ export function Tax({data,initialRate}:{data?:TaxData;initialRate?:Rate|null}){
  const [status,setStatus]=useState<Status|null>(initialRate?.status??null);
  const [digits,setDigits]=useState(initialRate?String(initialRate.pay):'');
  useEffect(()=>{if(initialRate!==undefined)return;const r=load();if(r){setRate(r);setStatus(r.status);setDigits(String(r.pay));setEditing(false);}},[initialRate]);
- const tip=useDefinitions();
+ const tip=useDefinitions(DEFS);
  if(!data)return <CardStack className="tax2"><PageHeader title="Tax"/><Card><StatusMessage kind="missing">The tax view is not available for this report. Refresh it in the UFO app.</StatusMessage></Card></CardStack>;
  const pay=digits?+digits:null,ok=!!status&&!!pay&&pay>0,confirmed=!!rate&&!editing,inv=incomeOf(data.investment);
  const confirm=()=>{if(!ok)return;const x={status:status!,pay:pay!};save(x);setRate(x);setEditing(false);};

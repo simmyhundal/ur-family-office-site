@@ -1,0 +1,52 @@
+/* Mothership tab (docs/mocks/mothership-v2.html). Palette: purple public markets, amber studio, teal homes, grey cash, blue crypto. */
+:root:root{--a-pub:#4b2fc2;--a-biz:#c4861a;--a-re:#1f7a80;--a-cash:#98a2b3;--a-cry:#2f6fd0}
+@media (prefers-color-scheme:dark){:root:root:not([data-theme=light]){--a-pub:#9d8cff;--a-biz:#e2a943;--a-re:#4fb8be;--a-cash:#7d8696;--a-cry:#6fa3f2}}
+:root:root[data-theme=dark]{--a-pub:#9d8cff;--a-biz:#e2a943;--a-re:#4fb8be;--a-cash:#7d8696;--a-cry:#6fa3f2}
+:root:root .plus-ui .ms{padding-top:20px;gap:56px}
+:root:root .plus-ui .ms section.ui-card::before{content:attr(data-label)}
+:root:root .plus-ui .ms .ui-takeaway+.ui-caption{margin-top:6px;font-size:14px;color:var(--ink-2)}
+.plus-ui .ms .ui-takeaway{overflow-wrap:anywhere}
+/* People toggles (header row, every figure follows them) */
+.ppl{position:sticky;top:57px;z-index:20;background:var(--bg);display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 0;border-bottom:1px solid var(--line-2);margin-top:12px}
+.ppl>span{font-size:12px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
+.pt{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:6px 14px 6px 10px;border:1px solid var(--line-2);border-radius:999px;background:var(--surface);font:inherit;font-size:14.5px;font-weight:650;color:var(--ink-3);cursor:pointer}
+.pt i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center;font-style:normal;font-size:12px;line-height:1}
+.pt[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:var(--accent-soft)}
+.pt[aria-pressed=true] i{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pt[aria-pressed=true] i::before{content:"✓"}
+.pt:disabled{cursor:not-allowed;opacity:.6}.pt:disabled i::before{content:"🔒";font-size:10px}
+/* Who's included: big toggle cards */
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-top:18px}
+.who button{text-align:left;border:1px solid var(--line-2);background:var(--surface);padding:14px 16px;font:inherit;color:var(--ink-3);cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:center}
+.who button i{grid-row:1/3;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center;font-style:normal;font-size:13px}
+.who button b{font-size:17px;color:inherit}.who button small{font-size:13px}
+.who button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:var(--ink)}
+.who button[aria-pressed=true] i{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.who button[aria-pressed=true] i::before{content:"✓"}
+/* Sankey (style from the Tax tab) */
+.sw2{display:inline-block;width:10px;height:10px;margin-right:8px}
+.sk-narrow .sk-key{margin:0 0 4px}
+.sk .sk-amt{font-size:12.5px;fill:var(--ink-2)}
+.sk path.band{opacity:.28}
+.sk rect.per{fill:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chips label{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:4px 12px;border:1px solid var(--line-2);font-size:14px;font-weight:600;cursor:pointer;background:var(--surface)}
+.chips input{width:18px;height:18px;accent-color:var(--accent)}
+/* Bar rows */
+.br{margin-top:18px}
+.br-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.br-row>b{font-weight:650;font-variant-numeric:tabular-nums}
+.br-row .bar{grid-column:1/-1;height:18px;background:var(--surface-2)}
+.br-row .bar i{display:block;height:100%;transition:width .3s}
+.br-row.dim span,.br-row.dim b{color:var(--ink-3)}
+/* Tables */
+.plus-ui .ms .ui-table th:first-child,.plus-ui .ms .ui-table td:first-child{text-align:left}
+.plus-ui .ms .ui-table small{display:block;color:var(--ink-3);font-weight:450;font-size:12px}
+.fact-up{color:var(--up)}.fact-down{color:var(--down)}
+/* Line chart */
+.lc svg{display:block;width:100%;max-width:760px;height:auto;margin-top:16px;overflow:visible}
+.lc text{font:12px var(--t-body);fill:var(--ink-3)}
+.lc .g{stroke:var(--line);stroke-width:1}
+.lc .l-adv{fill:none;stroke:var(--down);stroke-width:2.5}.lc .l-mix{fill:none;stroke:var(--a-pub);stroke-width:2.5}
+.lc .gap{fill:var(--down);opacity:.1}.lc .lab-end{font-weight:650;font-size:12.5px}
+.lc-key{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.lc-key i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:3px}

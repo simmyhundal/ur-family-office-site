@@ -7,6 +7,8 @@ import {Details} from './Details';
 import {NextSteps} from './NextSteps';
 import {Overview} from './Overview';
 import {Tax} from './Tax';
+import {Mothership} from './Mothership';
+import type {MothershipData} from './mothership-model';
 import type {TaxData} from './tax-model';
 import type {DashboardData} from './types';
 
@@ -26,8 +28,8 @@ function Pilot(){
   },[]);
   const props={...state,onBenchmark:(value:string)=>window.UFOBridge.benchmark(value),onPeriod:(value:string)=>window.UFOBridge.period(value),onNavigate:(value:string)=>window.UFOBridge.navigate(value)};
   const details=document.getElementById('react-details');
-  const next=document.getElementById('react-next'),tax=document.getElementById('react-tax');
-  return <><Overview {...props}/>{tax&&createPortal(<Tax data={(state.data as unknown as {tax?:TaxData}).tax}/>,tax)}{details&&createPortal(<Details {...props}/>,details)}{next&&createPortal(<NextSteps data={state.data} benchmark={state.benchmark} onBenchmark={props.onBenchmark} onNavigate={props.onNavigate}/>,next)}</>;
+  const next=document.getElementById('react-next'),tax=document.getElementById('react-tax'),family=document.getElementById('react-mothership');
+  return <><Overview {...props}/>{family&&(state.data as unknown as {mothership?:MothershipData}).mothership&&createPortal(<Mothership data={(state.data as unknown as {mothership?:MothershipData}).mothership}/>,family)}{tax&&createPortal(<Tax data={(state.data as unknown as {tax?:TaxData}).tax}/>,tax)}{details&&createPortal(<Details {...props}/>,details)}{next&&createPortal(<NextSteps data={state.data} benchmark={state.benchmark} onBenchmark={props.onBenchmark} onNavigate={props.onNavigate}/>,next)}</>;
 }
 try{
   const node=document.getElementById('react-overview');

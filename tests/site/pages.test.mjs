@@ -323,8 +323,15 @@ test("header CTA: Get Plus -> pricing/#plus on every page", async () => {
   assert.match(await read("pricing/"), /<article id="\$\{esc\(p\.id\)\}"/);
 });
 
-test("Mothership demo: standalone mock, invented family, no Exhibit labels", async () => {
+test("Mothership demo: only a redirect to the Plus demo's Mothership tab", async () => {
   const html = await read("mothership-demo/");
-  assert.match(html, /Invented/);
-  assert.doesNotMatch(html, /Exhibit/i);
+  assert.match(html, /url=\.\.\/plus-demo\/#mothership/);
+  assert.match(html, /location\.replace\("\.\.\/plus-demo\/#mothership"\)/);
+  assert.ok(html.length < 1500);
+});
+
+test("Home links to the single Plus demo, not a separate Mothership demo", async () => {
+  const html = await read("");
+  assert.doesNotMatch(html, /mothership-demo/);
+  assert.match(html, /plus-demo\//);
 });
