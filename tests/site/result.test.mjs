@@ -111,14 +111,18 @@ test("hero answer reads well ahead, behind and level, and never hides the gap", 
   assert.equal(even.answer, "Neck and neck."); assert.equal(even.gap, "The same money after 5 years.");
   for (const a of [behind, ahead, even]) { assert.equal(a.hook, "Would yours?"); assert.ok(!/should|buy|sell/i.test(Object.values(a).join(" "))); }
 });
-test("the Home hero leads with the question, not a loss", async () => {
+test("Home leads with Plus; the free check follows with the question, not a loss (owner, 2026-11-27)", async () => {
   const { readFile } = await import("node:fs/promises");
   const home = await readFile(new URL("../../site/index.html", import.meta.url), "utf8");
   const hero = home.match(/<section class="home-hero[\s\S]*?<\/section>/)[0];
-  assert.match(hero, /<h1>Is your portfolio <span class="grad-text">keeping up\?<\/span><\/h1>/);
-  assert.ok(hero.indexOf('id="pv-q"') < hero.indexOf('id="pv-headline"'), "question before the answer");
-  assert.doesNotMatch(hero, /<p class="sub">|pv-top/, "the chart comes right under the headline; no sub-line or card header (owner, 2026-11-27)");
-  assert.match(hero, /Would yours\?/);
+  assert.match(hero, /<h1 id="plus-h">Know what's working\. <span class="grad-text">Fix what isn't\.<\/span><\/h1>/);
+  assert.match(hero, /class="mac-wrap/);
+  assert.ok(!hero.includes('id="pv"'), "the sample chart is the second section, not the hero");
+  const tryS = home.match(/<section class="section plus-band" id="try"[\s\S]*?<\/section>/)[0];
+  assert.match(tryS, /<h2 id="try-h">Is your portfolio <span class="grad-text">keeping up\?<\/span><\/h2>/);
+  assert.ok(tryS.indexOf('id="pv-q"') < tryS.indexOf('id="pv-headline"'), "question before the answer");
+  assert.doesNotMatch(tryS, /pv-top/, "no card header (owner, 2026-11-27)");
+  assert.match(tryS, /Would yours\?/);
 });
 
 // ---------- "So what?" ----------

@@ -729,14 +729,20 @@ th { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color:
 .fund-picker { border-radius: 2px; }
 
 /* Home hero, phones and tablets (owner, 2026-11-27): headline, then the chart, then both buttons on one line; less space on top */
-.home-hero .preview { border-top: 0; }
 @media (max-width: 939px) {
   .home-hero { padding-top: 12px; }
   .home-hero .wrap { gap: 14px; }
   .home-hero .hero-copy { display: contents; }
-  .home-hero .hero-copy h1 { order: 1; margin: 6px 0 0; }
+  .home-hero .hero-copy .eyebrow, .home-hero .hero-copy h1, .home-hero .hero-copy .sub { order: 1; }
+  .home-hero .hero-copy h1 { margin: 6px 0 0; }
+  .home-hero .hero-copy .sub { margin: 0; }
   .home-hero .stage { order: 2; padding: 0; }
-  .home-hero .stage .preview { padding-top: 4px; }
+  .home-hero .promo { order: 4; }
   .home-hero .hero-actions { order: 3; flex-wrap: nowrap; gap: 10px; }
   .home-hero .hero-actions .btn.big { flex: 1 1 0; min-width: 0; padding: 0 10px; min-height: 52px; font-size: 1rem; white-space: nowrap; justify-content: center; }
 }
+
+/* Home: Plus leads, the free check follows (owner, 2026-11-27) */
+.hero-shot .mac-wrap { position: relative; z-index: 1; }
+@media (min-width: 940px) { .try-shot { grid-area: shot; } }
+.try-shot .preview { margin-top: 0; }

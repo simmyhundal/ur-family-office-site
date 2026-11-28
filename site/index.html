@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ur Family Office: is your portfolio keeping up?</title>
+<title>Ur Family Office: a higher view of your money</title>
 <meta name="description" content="See how your 401(k), IRA or brokerage portfolio did against the market. Free and private, in your browser.">
 <meta name="theme-color" content="#f7f7fc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0b1c" media="(prefers-color-scheme: dark)">
@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://simmyhundal.github.io/ur-family-office-site/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ur Family Office">
-<meta property="og:title" content="Ur Family Office: is your portfolio keeping up?">
+<meta property="og:title" content="Ur Family Office: a higher view of your money">
 <meta property="og:description" content="See how your 401(k), IRA or brokerage portfolio did against the market. Free and private, in your browser.">
 <meta property="og:url" content="https://simmyhundal.github.io/ur-family-office-site/">
 <meta property="og:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
@@ -21,7 +21,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Ur Family Office: a higher view of your money">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ur Family Office: is your portfolio keeping up?">
+<meta name="twitter:title" content="Ur Family Office: a higher view of your money">
 <meta name="twitter:description" content="See how your 401(k), IRA or brokerage portfolio did against the market. Free and private, in your browser.">
 <meta name="twitter:image" content="https://simmyhundal.github.io/ur-family-office-site/img/og-card.png">
 <!-- /link preview -->
@@ -37,16 +37,37 @@
 </div></header>
 <main id="main">
 
-<section class="home-hero mesh">
+<section class="home-hero mesh" id="plus" aria-labelledby="plus-h">
   <div class="wrap">
     <div class="hero-copy">
-      <h1>Is your portfolio <span class="grad-text">keeping up?</span></h1>
+      <span class="eyebrow">UFO PLUS: $67/YR</span>
+      <h1 id="plus-h">Know what's working. <span class="grad-text">Fix what isn't.</span></h1>
+      <p class="sub">Every account, asset and family member, side by side, on your Mac.</p>
       <div class="hero-actions">
-        <a class="btn big" href="try/?own=1">Check yours <span class="arr" aria-hidden="true">→</span></a>
-        <a class="btn big ghost" href="plus-demo/" aria-label="See Plus with a sample household">See Plus demo</a>
+        <a class="btn big" href="plus-demo/" aria-label="See Plus with a sample household">See Plus demo</a>
+        <a class="btn big ghost" href="signup/?plan=plus" data-plus-cta><span data-cta-label>Get notified</span></a>
       </div>
+      <div class="promo" data-promo hidden></div>
     </div>
-    <div class="stage">
+    <div class="stage hero-shot">
+    <figure class="mac-wrap">
+      <a class="mac" href="plus-demo/">
+        <span class="mac-lid"><span class="mac-screen"><picture><source srcset="img/plus-mac-dark.png" media="(prefers-color-scheme: dark)"><img src="img/plus-mac-light.png" alt="The Plus dashboard on a Mac: an invented household's accounts added up and compared with the market" width="1280" height="800" loading="lazy" decoding="async"></picture></span></span>
+        <span class="mac-base" aria-hidden="true"></span>
+        <span class="shot-tag">Invented household</span>
+      </a>
+    </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section plus-band" id="try" aria-labelledby="try-h">
+  <div class="wrap plus-grid">
+    <div class="plus-head reveal">
+      <span class="eyebrow">FREE</span>
+      <h2 id="try-h">Is your portfolio <span class="grad-text">keeping up?</span></h2>
+    </div>
+    <div class="stage try-shot">
       <div class="orbit" aria-hidden="true"></div>
       <a class="preview glass" id="pv" href="try/?sample=1">
         <p class="pv-q" id="pv-q" hidden>Did this household keep up?</p>
@@ -64,26 +85,8 @@
         <p class="pv-hook"><b id="pv-hook">Would yours?</b> <span>Try your own →</span></p>
       </a>
     </div>
-  </div>
-</section>
-
-<section class="section plus-band" id="plus" aria-labelledby="plus-h">
-  <div class="wrap plus-grid">
-    <div class="plus-head reveal">
-      <span class="eyebrow">UFO PLUS: $67/YR</span>
-      <h2 id="plus-h">Your whole portfolio, <span class="grad-text">from above</span></h2>
-      <p class="lead">Every account side by side, on your Mac.</p>
-    </div>
-    <figure class="mac-wrap reveal">
-      <a class="mac" href="plus-demo/">
-        <span class="mac-lid"><span class="mac-screen"><picture><source srcset="img/plus-mac-dark.png" media="(prefers-color-scheme: dark)"><img src="img/plus-mac-light.png" alt="The Plus dashboard on a Mac: an invented household's accounts added up and compared with the market" width="1280" height="800" loading="lazy" decoding="async"></picture></span></span>
-        <span class="mac-base" aria-hidden="true"></span>
-        <span class="shot-tag">Invented household</span>
-      </a>
-    </figure>
     <div class="plus-copy reveal">
-      <div class="hero-actions"><a class="btn big" href="signup/?plan=plus" data-plus-cta><span data-cta-label>Get notified</span> <span class="arr" aria-hidden="true">→</span></a></div>
-      <div class="promo" data-promo hidden></div>
+      <div class="hero-actions"><a class="btn big" href="try/?own=1">Check yours <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </div>
 </section>

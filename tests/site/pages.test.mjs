@@ -186,7 +186,7 @@ test("Home says each thing once (issue 239)", async () => {
   for (const gone of ['class="trust-row"', 'class="hero-lesson"', 'class="float-card', 'class="benefits3"', 'class="founder-line"',
     'class="teach-line', 'class="final-cta', "See pricing", "is not a purchase", "Opens the sample household"]) assert.ok(!home.includes(gone), gone);
   assert.match(home, /<h2 id="priv-h">Your numbers never leave your computer<\/h2>\s*<p>Read-only: UFO never moves money\. <a href="privacy\/">/);
-  assert.match(home, /<a class="btn big" href="signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
+  assert.match(home, /<a class="btn big[^"]*" href="signup\/\?plan=plus" data-plus-cta><span data-cta-label>Get notified<\/span>/);
   assert.match(home, /Would yours\?<\/b> <span>Try your own →/);
   const js = await readFile(new URL("js/home.mjs", site), "utf8");
   for (const id of js.matchAll(/\$\("([\w-]+)"\)/g)) assert.ok(home.includes(`id="${id[1]}"`), `home.mjs uses #${id[1]}, missing on Home`);
